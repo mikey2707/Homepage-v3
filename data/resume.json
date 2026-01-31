@@ -1,0 +1,110 @@
+{
+  "personalInfo": {
+    "name": "Michael Chavez",
+    "roles": ["Home Lab Enthusiast", "Self-hosting Enjoyer", "AI Automater", "Hardware Enthusiast"],
+    "email": "michaelchavezm@gmail.com",
+    "location": "South Carolina",
+    "bio": "Experienced techie with expertise in system administration, and media server management. Passionate about building efficient solutions, managing complex infrastructure, and automating everything in my home lab.",
+    "social": {
+      "github": "https://github.com/username",
+      "linkedin": "https://linkedin.com/in/username"
+    }
+  },
+  "projects": [
+    {
+      "name": "Media Server Stack",
+      "description": "Complete media automation with Jellyfin, Sonarr, Radarr, and Jellyseerr. Automated downloads, organization, and streaming.",
+      "tech": ["Docker", "Jellyfin", "Sonarr", "Radarr", "Nginx"],
+      "link": "/services"
+    },
+    {
+      "name": "Home Network",
+      "description": "Self-managed network infrastructure with VLANs, firewall rules, and VPN access for secure remote management.",
+      "tech": ["pfSense", "UniFi", "WireGuard", "VLAN"]
+    },
+    {
+      "name": "Virtualization Cluster",
+      "description": "Proxmox-based virtualization environment running VMs and containers for various services and experiments.",
+      "tech": ["Proxmox", "LXC", "KVM", "ZFS"]
+    },
+    {
+      "name": "Monitoring Stack",
+      "description": "Comprehensive monitoring and alerting system for all home lab services with dashboards and notifications.",
+      "tech": ["Grafana", "Prometheus", "Uptime Kuma"]
+    },
+    {
+      "name": "AI & Automation",
+      "description": "Local AI models and automation workflows for smart home control and personal productivity.",
+      "tech": ["Home Assistant", "n8n", "Ollama", "Python"]
+    },
+    {
+      "name": "Storage Server",
+      "description": "Network attached storage with redundancy, snapshots, and automated backups for all important data.",
+      "tech": ["TrueNAS", "ZFS", "Restic", "Rclone"]
+    }
+  ],
+  "skillCategories": [
+    {
+      "name": "DevOps & Cloud",
+      "icon": "cloud",
+      "skills": ["Docker", "Kubernetes", "Terraform", "Ansible", "CI/CD", "Google Cloud"]
+    },
+    {
+      "name": "Infrastructure",
+      "icon": "server",
+      "skills": ["Proxmox", "TrueNAS", "pfSense", "Nginx", "Linux", "Networking"]
+    }
+  ],
+  "experience": [
+    {
+      "title": "Data Center Technician 2",
+      "company": "Google",
+      "period": "2025 - Present",
+      "description": "Maintain Google Cloud server operation. In the hardware and networking operations.",
+      "tech": ["Fiber", "Hardware", "GSO"]
+    },
+    {
+      "title": "Level 2 Support Engineer",
+      "company": "Dyopath",
+      "period": "2024 - 2025",
+      "description": "Provided Tier-3 support and SME input to internal and external customers while explaining technical concepts in clear terms to assist non-technical users.",
+      "tech": ["Intune", "ServiceNow", "Powershell"]
+    },
+    {
+      "title": "Network Administrator - Consultant",
+      "company": "PrePaidIQ",
+      "period": "2022 - 2024",
+      "description": "Managed Active Directory (AD), Entra ID, DHCP, and DNS configurations, along with administering Windows Server infrastructure to ensure secure and reliable network services.",
+      "tech": ["DHCP", "Ubiquiti", "DNS"]
+    },
+    {
+      "title": "R&D Technician",
+      "company": "Corsair",
+      "period": "2023 - 2024",
+      "description": "Identified opportunities for process optimization in validation activities, improving testing turnaround time and reducing costs while developing and executing validation protocols for computer components. Collected and analyzed test data, documented results, and collaborated with product development teams to provide feedback on design improvements and potential issues.",
+      "tech": ["CPU", "GPU", "RAM"]
+    },
+    {
+      "title": "Product Support Specialist",
+      "company": "Corsair",
+      "period": "2021 - 2023",
+      "description": "Collaborated with Assemblers and Integrators to support end-user service requests, provided technical specifications, and maintained composure while applying de-escalation techniques in challenging customer situations. Operated and maintained an Epilog Laser machine and LogoJet UV printer, performed QA assessments, identified hardware issues using diagnostic tools, disassembled computer systems for troubleshooting, and documented repairs and replacements for budgeting purposes.",
+      "tech": ["Epilog Laser", "UV Printer", "SoP"]
+    }
+  ],
+  "education": [
+    {
+      "degree": "Bachelor of Science in Information Technology",
+      "institution": "Florida International University",
+      "period": "2018 - 2023",
+      "details": "Focus on networking engineering and infrastructure topology"
+    }
+  ],
+  "certifications": [
+    {
+      "name": "CompTIA A+",
+      "issuer": "CompTIA",
+      "date": "2024"
+    }
+  ]
+}

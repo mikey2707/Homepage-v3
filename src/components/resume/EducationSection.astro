@@ -1,0 +1,121 @@
+---
+interface Education {
+  degree: string;
+  institution: string;
+  period: string;
+  details?: string;
+}
+
+interface Certification {
+  name: string;
+  issuer: string;
+  date?: string;
+  link?: string;
+}
+
+interface Props {
+  education: Education[];
+  certifications?: Certification[];
+}
+
+const { education, certifications = [] } = Astro.props;
+---
+
+<section id="education" class="py-20">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+      <!-- Education Column -->
+      <div>
+        <h2 class="fade-in-section fade-in-up text-3xl md:text-4xl font-semibold mb-10 tracking-tight" style="color: var(--theme-primary);">
+          Education
+        </h2>
+        <div class="space-y-6">
+          {education.map((edu, index) => (
+            <div
+              class={`fade-in-section fade-in-left stagger-${Math.min(index + 1, 6)} rounded-2xl p-8 md:p-10 border-l-[3px] transition-all duration-300 glass glass-hover hover:scale-[1.01]`}
+              style="border-left-color: var(--theme-primary);"
+            >
+              <div class="flex flex-col md:flex-row md:justify-between md:items-start">
+                <div>
+                  <h3 class="text-xl md:text-2xl font-semibold mb-2 tracking-tight" style="color: var(--theme-text);">
+                    {edu.degree}
+                  </h3>
+                  <p class="text-base md:text-lg font-medium mb-2" style="color: var(--theme-primary);">
+                    {edu.institution}
+                  </p>
+                  {edu.details && (
+                    <p class="text-sm md:text-base mt-2 opacity-75 font-light leading-relaxed" style="color: var(--theme-text);">
+                      {edu.details}
+                    </p>
+                  )}
+                </div>
+                <span class="text-sm md:text-base mt-3 md:mt-0 opacity-60 font-medium whitespace-nowrap" style="color: var(--theme-text);">
+                  {edu.period}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <!-- Certifications Column -->
+      {certifications.length > 0 && (
+        <div>
+          <h2 class="fade-in-section fade-in-up text-3xl md:text-4xl font-semibold mb-10 tracking-tight" style="color: var(--theme-primary);">
+            Certifications
+          </h2>
+          <div class="space-y-4">
+            {certifications.map((cert, index) => (
+              <div
+                class={`fade-in-section fade-in-right stagger-${Math.min(index + 1, 6)} rounded-xl p-6 transition-all duration-300 glass glass-hover hover:scale-[1.02]`}
+              >
+                <div class="flex items-start justify-between">
+                  <div>
+                    <h3 class="text-lg font-semibold mb-1 tracking-tight" style="color: var(--theme-text);">
+                      {cert.name}
+                    </h3>
+                    <p class="text-sm font-medium" style="color: var(--theme-primary);">
+                      {cert.issuer}
+                    </p>
+                    {cert.date && (
+                      <p class="text-xs mt-1 opacity-60" style="color: var(--theme-text);">
+                        {cert.date}
+                      </p>
+                    )}
+                  </div>
+                  {cert.link && (
+                    <a
+                      href={cert.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="p-2 rounded-lg transition-colors hover:bg-opacity-50 flex-shrink-0"
+                      style="background-color: var(--theme-bg);"
+                      aria-label={`View ${cert.name} certificate`}
+                    >
+                      <svg class="w-4 h-4" style="color: var(--theme-text);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                      </svg>
+                    </a>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  </div>
+</section>
+
+<style>
+  .fade-in-right {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+
+  .fade-in-right.visible {
+    opacity: 1;
+    transform: translateX(0);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+</style>

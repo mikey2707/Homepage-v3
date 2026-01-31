@@ -1,0 +1,43 @@
+# Dependencies
+node_modules
+
+# Build output
+dist
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment files (use docker-compose env instead)
+.env
+.env.*
+!.env.example
+
+# Documentation
+*.md
+!README.md
+
+# Test files
+*.test.*
+*.spec.*
+__tests__
+coverage
+
+# Development files
+.prettierrc
+.eslintrc*
+tsconfig.tsbuildinfo

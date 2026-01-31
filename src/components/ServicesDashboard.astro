@@ -1,0 +1,434 @@
+---
+interface ServiceConfig {
+  name: string;
+  icon: string;
+  logo?: string;
+  description: string;
+  apiUrl: string;
+  color: string;
+}
+
+interface Props {
+  services?: ServiceConfig[];
+  title?: string;
+}
+
+const allServices: ServiceConfig[] = [
+  {
+    name: "Sonarr",
+    icon: "📺",
+    description: "TV Series Management",
+    apiUrl: "/api/sonarr",
+    color: "from-blue-500/80 to-blue-600/80"
+  },
+  {
+    name: "Radarr",
+    icon: "🎬",
+    description: "Movie Management",
+    apiUrl: "/api/radarr",
+    color: "from-purple-500/80 to-purple-600/80"
+  },
+  {
+    name: "Jellyfin",
+    icon: "🎥",
+    description: "Media Server",
+    apiUrl: "/api/jellyfin",
+    color: "from-pink-500/80 to-pink-600/80"
+  },
+  {
+    name: "qBittorrent",
+    icon: "⬇️",
+    description: "Torrent Client",
+    apiUrl: "/api/qbittorrent",
+    color: "from-green-500/80 to-green-600/80"
+  },
+  {
+    name: "Jellyseerr",
+    icon: "🎫",
+    description: "Media Requests",
+    apiUrl: "/api/jellyseerr",
+    color: "from-indigo-500/80 to-indigo-600/80"
+  },
+  {
+    name: "Immich",
+    icon: "📸",
+    description: "Photo Management",
+    apiUrl: "/api/immich",
+    color: "from-teal-500/80 to-teal-600/80"
+  },
+  {
+    name: "Portainer",
+    icon: "🐳",
+    description: "Container Management",
+    apiUrl: "/api/portainer",
+    color: "from-sky-500/80 to-sky-600/80"
+  },
+  {
+    name: "AdGuard",
+    icon: "🛡️",
+    description: "DNS Ad Blocker",
+    apiUrl: "/api/adguard",
+    color: "from-emerald-500/80 to-emerald-600/80"
+  },
+  {
+    name: "HomeAssistant",
+    icon: "🏠",
+    description: "Home Automation",
+    apiUrl: "/api/homeassistant",
+    color: "from-blue-400/80 to-blue-500/80"
+  },
+  {
+    name: "Proxmox",
+    icon: "🖥️",
+    description: "Virtualization",
+    apiUrl: "/api/proxmox",
+    color: "from-orange-400/80 to-orange-500/80"
+  },
+  {
+    name: "TrueNAS",
+    icon: "💾",
+    description: "Storage Server",
+    apiUrl: "/api/truenas",
+    color: "from-gray-500/80 to-gray-600/80"
+  }
+];
+
+const { services = allServices, title = "Services Dashboard" } = Astro.props;
+const serviceNames = JSON.stringify(services.map(s => s.name.toLowerCase()));
+---
+
+<section class="py-16 px-4 sm:px-6 lg:px-8 transition-colors" style="background-color: var(--theme-bg);">
+  <div class="max-w-7xl mx-auto">
+    <h2 class="fade-in-section fade-in-up text-4xl font-bold mb-8 text-center transition-colors" style="color: var(--theme-primary);">{title}</h2>
+
+    <!-- Dashboard Controls -->
+    <div class="fade-in-section flex flex-wrap items-center justify-between mb-8 p-4 rounded-xl glass">
+      <div class="flex items-center gap-4">
+        <button
+          id="auto-refresh-toggle"
+          onclick="toggleAutoRefresh()"
+          class="px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:scale-105 glass glass-hover"
+          style="color: var(--theme-text);"
+        >
+          Auto-refresh ON
+        </button>
+        <button
+          onclick="refreshAllServices()"
+          class="px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:scale-105"
+          style="background-color: var(--theme-primary-bg); color: white;"
+        >
+          Refresh All
+        </button>
+      </div>
+      <div class="text-sm mt-2 sm:mt-0" style="color: var(--theme-text); opacity: 0.7;">
+        Last updated: <span id="last-refresh-time" class="font-medium">--:--:--</span>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {services.map((service, index) => (
+        <div
+          class={`fade-in-section fade-in-scale stagger-${Math.min(Math.floor(index / 2) + 1, 6)} service-card glass glass-hover rounded-2xl overflow-hidden transition-all duration-300`}
+          data-service={service.name.toLowerCase()}
+        >
+          <!-- Glass gradient header -->
+          <div class={`bg-gradient-to-r ${service.color} p-5`} style="backdrop-filter: blur(10px);">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-xl font-bold text-white">{service.name}</h3>
+                <p class="text-white/70 text-xs mt-1">{service.description}</p>
+              </div>
+              {service.logo ? (
+                <img src={service.logo} alt={service.name} class="w-10 h-10 object-contain opacity-90" loading="lazy" />
+              ) : (
+                <span class="text-3xl opacity-80">{service.icon}</span>
+              )}
+            </div>
+          </div>
+
+          <div class="p-5">
+            <!-- Status row -->
+            <div id={`${service.name.toLowerCase()}-status`} class="mb-3">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-xs font-medium uppercase tracking-wider" style="color: var(--theme-text); opacity: 0.5;">Status</span>
+                <div class="flex items-center gap-2">
+                  <span id={`${service.name.toLowerCase()}-status-indicator`} class="inline-block w-2.5 h-2.5 rounded-full bg-gray-600 pulse-dot"></span>
+                  <span id={`${service.name.toLowerCase()}-status-text`} class="text-xs" style="color: var(--theme-text); opacity: 0.5;">Checking...</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stats container -->
+            <div id={`${service.name.toLowerCase()}-stats`} class="space-y-1.5 text-sm">
+              <!-- Shimmer loading placeholder -->
+              <div class="shimmer-placeholder space-y-2">
+                <div class="h-4 rounded shimmer" style="width: 80%;"></div>
+                <div class="h-4 rounded shimmer" style="width: 60%;"></div>
+                <div class="h-4 rounded shimmer" style="width: 70%;"></div>
+              </div>
+            </div>
+
+            <button
+              onclick={`refreshService('${service.name.toLowerCase()}')`}
+              class="mt-4 w-full py-2 px-4 rounded-lg font-medium text-sm transition-all duration-200 hover:scale-[1.02] glass glass-hover"
+              style="color: var(--theme-text);"
+            >
+              Refresh
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<script define:vars={{ serviceNames }}>
+  window.__serviceNames = JSON.parse(serviceNames);
+</script>
+
+<script>
+  interface ServiceStatus {
+    online: boolean;
+    stats?: Record<string, any>;
+    error?: string;
+  }
+
+  async function checkServiceStatus(serviceName: string): Promise<ServiceStatus> {
+    try {
+      const response = await fetch(`/api/${serviceName}`);
+      const data = await response.json();
+
+      if (data.online === false) {
+        return {
+          online: false,
+          error: data.error || 'Service unavailable'
+        };
+      }
+
+      if (response.ok && data.online !== false) {
+        return { online: true, stats: data };
+      }
+
+      return {
+        online: false,
+        error: data.error || `HTTP error! status: ${response.status}`
+      };
+    } catch (error) {
+      return {
+        online: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+
+  function updateServiceUI(serviceName: string, status: ServiceStatus) {
+    const statusIndicator = document.getElementById(`${serviceName}-status-indicator`);
+    const statusText = document.getElementById(`${serviceName}-status-text`);
+    const statsContainer = document.getElementById(`${serviceName}-stats`);
+
+    if (statusIndicator) {
+      statusIndicator.className = `inline-block w-2.5 h-2.5 rounded-full pulse-dot ${
+        status.online ? 'bg-green-500' : 'bg-red-500'
+      }`;
+    }
+
+    if (statusText) {
+      statusText.textContent = status.online ? 'Online' : `Offline`;
+      statusText.className = `text-xs font-medium ${status.online ? 'text-green-400' : 'text-red-400'}`;
+    }
+
+    if (statsContainer && status.online && status.stats) {
+      const formatValue = (key: string, value: any): string => {
+        // Handle viewers array specially (for Jellyfin)
+        if (key === 'viewers' && Array.isArray(value)) {
+          if (value.length === 0) {
+            return '<span style="color: var(--theme-text); opacity: 0.4;" class="italic text-xs">No active viewers</span>';
+          }
+          return value.map((viewer: any) =>
+            `<div class="mt-1 p-2 rounded-lg glass">
+              <div class="font-semibold text-pink-400 text-xs">${viewer.user}</div>
+              <div class="text-xs" style="color: var(--theme-text); opacity: 0.5;">${viewer.content}</div>
+              <div class="text-xs mt-1" style="color: var(--theme-text); opacity: 0.4;">${viewer.client} &bull; ${viewer.deviceName}</div>
+            </div>`
+          ).join('');
+        }
+
+        // Handle activeTorrents array (for qBittorrent)
+        if (key === 'activeTorrents' && Array.isArray(value)) {
+          if (value.length === 0) {
+            return '<span style="color: var(--theme-text); opacity: 0.4;" class="italic text-xs">No active torrents</span>';
+          }
+          return value.map((torrent: any) => {
+            const formatSpeed = (bytes: number): string => {
+              if (bytes === 0) return '0 B/s';
+              const k = 1024;
+              const sizes = ['B/s', 'KB/s', 'MB/s', 'GB/s'];
+              const i = Math.floor(Math.log(bytes) / Math.log(k));
+              return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`;
+            };
+
+            const dlSpeed = torrent.dlspeed > 0 ? `↓ ${formatSpeed(torrent.dlspeed)}` : '';
+            const upSpeed = torrent.upspeed > 0 ? `↑ ${formatSpeed(torrent.upspeed)}` : '';
+            const speeds = [dlSpeed, upSpeed].filter(s => s).join(' ');
+
+            return `<div class="mt-1 p-2 rounded-lg glass">
+              <div class="font-semibold text-green-400 text-xs truncate" title="${torrent.name}">${torrent.name}</div>
+              <div class="flex justify-between items-center mt-1">
+                <span class="text-xs" style="color: var(--theme-text); opacity: 0.5;">${torrent.progress}</span>
+                <span class="text-xs" style="color: var(--theme-text); opacity: 0.4;">${speeds}</span>
+              </div>
+            </div>`;
+          }).join('');
+        }
+
+        // Handle pools array (for TrueNAS)
+        if (key === 'pools' && Array.isArray(value)) {
+          if (value.length === 0) {
+            return '<span style="color: var(--theme-text); opacity: 0.4;" class="italic text-xs">No pools found</span>';
+          }
+          return value.map((pool: any) => {
+            let barColor = 'bg-green-500';
+            if (pool.usedPctNum >= 80) barColor = 'bg-red-500';
+            else if (pool.usedPctNum >= 60) barColor = 'bg-yellow-500';
+
+            return `<div class="mt-1 p-2 rounded-lg glass">
+              <div class="flex justify-between items-center">
+                <span class="font-semibold text-xs" style="color: var(--theme-text);">${pool.name}</span>
+                <span class="text-xs px-1.5 py-0.5 rounded-full ${pool.status === 'ONLINE' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}">${pool.status}</span>
+              </div>
+              <div class="w-full rounded-full h-1.5 mt-1.5" style="background: var(--theme-border-glass);">
+                <div class="${barColor} h-1.5 rounded-full transition-all duration-500" style="width: ${pool.usedPctNum}%"></div>
+              </div>
+              <div class="flex justify-between text-xs mt-1" style="color: var(--theme-text); opacity: 0.5;">
+                <span>${pool.used} / ${pool.capacity}</span>
+                <span>${pool.usedPercentage}</span>
+              </div>
+            </div>`;
+          }).join('');
+        }
+
+        // Skip arrays that aren't viewers, activeTorrents, or pools
+        if (Array.isArray(value)) {
+          return `${value.length} items`;
+        }
+
+        // Skip complex objects
+        if (typeof value === 'object' && value !== null) {
+          return '';
+        }
+
+        // Format download/upload speeds
+        if (key.includes('Speed') || key.includes('speed')) {
+          const bytes = Number(value);
+          if (bytes === 0) return '0 B/s';
+          const k = 1024;
+          const sizes = ['B/s', 'KB/s', 'MB/s', 'GB/s'];
+          const i = Math.floor(Math.log(bytes) / Math.log(k));
+          return `${(bytes / Math.pow(k, i)).toFixed(2)} ${sizes[i]}`;
+        }
+        // Format numbers with commas
+        if (typeof value === 'number') {
+          return value.toLocaleString();
+        }
+        return String(value);
+      };
+
+      statsContainer.innerHTML = Object.entries(status.stats)
+        .filter(([key]) => key !== 'online' && key !== 'error')
+        .map(([key, value]) => {
+          const displayKey = key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1');
+          const formattedValue = formatValue(key, value);
+
+          // Special handling for viewers - full width display
+          if (key === 'viewers') {
+            return `<div class="col-span-2 py-1">
+              <div class="mb-1.5 font-semibold text-xs" style="color: var(--theme-text); opacity: 0.6;">Current Viewers</div>
+              <div class="space-y-1.5">${formattedValue}</div>
+            </div>`;
+          }
+
+          // Special handling for activeTorrents - full width display
+          if (key === 'activeTorrents') {
+            return `<div class="col-span-2 py-1">
+              <div class="mb-1.5 font-semibold text-xs" style="color: var(--theme-text); opacity: 0.6;">Active Torrents</div>
+              <div class="space-y-1.5">${formattedValue}</div>
+            </div>`;
+          }
+
+          // Special handling for pools - full width display
+          if (key === 'pools') {
+            return `<div class="col-span-2 py-1">
+              <div class="mb-1.5 font-semibold text-xs" style="color: var(--theme-text); opacity: 0.6;">Storage Pools</div>
+              <div class="space-y-1.5">${formattedValue}</div>
+            </div>`;
+          }
+
+          // Skip empty values
+          if (!formattedValue) return '';
+
+          return `<div class="flex justify-between py-0.5"><span class="text-xs" style="color: var(--theme-text); opacity: 0.5;">${displayKey}</span><span class="text-xs font-medium" style="color: var(--theme-text);">${formattedValue}</span></div>`;
+        })
+        .filter(html => html !== '')
+        .join('');
+    } else if (statsContainer && !status.online) {
+      statsContainer.innerHTML = status.error
+        ? `<div class="text-xs py-2" style="color: var(--theme-text); opacity: 0.4;">${status.error}</div>`
+        : '';
+    }
+  }
+
+  async function refreshService(serviceName: string) {
+    const status = await checkServiceStatus(serviceName);
+    updateServiceUI(serviceName, status);
+  }
+
+  // Auto-refresh functionality
+  let autoRefreshInterval: number | null = null;
+  let autoRefreshEnabled = true;
+  const REFRESH_INTERVAL = 30000; // 30 seconds
+
+  async function refreshAllServices() {
+    const services: string[] = (window as any).__serviceNames || ['sonarr', 'radarr', 'jellyfin', 'qbittorrent', 'jellyseerr', 'immich', 'portainer', 'adguard', 'homeassistant', 'proxmox', 'truenas'];
+
+    for (const service of services) {
+      await refreshService(service);
+      await new Promise(resolve => setTimeout(resolve, 200));
+    }
+
+    const lastRefreshEl = document.getElementById('last-refresh-time');
+    if (lastRefreshEl) {
+      const now = new Date();
+      lastRefreshEl.textContent = now.toLocaleTimeString();
+    }
+  }
+
+  function toggleAutoRefresh() {
+    autoRefreshEnabled = !autoRefreshEnabled;
+    const toggleBtn = document.getElementById('auto-refresh-toggle');
+
+    if (autoRefreshEnabled) {
+      if (toggleBtn) toggleBtn.textContent = 'Auto-refresh ON';
+      autoRefreshInterval = window.setInterval(refreshAllServices, REFRESH_INTERVAL);
+    } else {
+      if (toggleBtn) toggleBtn.textContent = 'Auto-refresh OFF';
+      if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+        autoRefreshInterval = null;
+      }
+    }
+  }
+
+  // Check all services on page load
+  document.addEventListener('DOMContentLoaded', async () => {
+    await refreshAllServices();
+
+    if (autoRefreshEnabled) {
+      autoRefreshInterval = window.setInterval(refreshAllServices, REFRESH_INTERVAL);
+    }
+  });
+
+  // Make functions available globally
+  (window as any).refreshService = refreshService;
+  (window as any).refreshAllServices = refreshAllServices;
+  (window as any).toggleAutoRefresh = toggleAutoRefresh;
+</script>

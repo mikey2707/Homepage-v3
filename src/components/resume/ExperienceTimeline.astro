@@ -1,0 +1,183 @@
+---
+interface Experience {
+  title: string;
+  company: string;
+  period: string;
+  description: string;
+  achievements?: string[];
+  tech?: string[];
+}
+
+interface Props {
+  experiences: Experience[];
+}
+
+const { experiences } = Astro.props;
+---
+
+<section id="experience" class="py-20">
+  <div class="max-w-4xl mx-auto px-4">
+    <h2 class="fade-in-section fade-in-up text-3xl md:text-4xl font-semibold mb-16 tracking-tight" style="color: var(--theme-primary);">
+      Experience
+    </h2>
+
+    <!-- Timeline Container -->
+    <div class="relative">
+      <!-- Vertical Timeline Line -->
+      <div class="absolute left-8 md:left-12 top-0 bottom-0 w-0.5 timeline-line" style="background: linear-gradient(to bottom, var(--theme-primary), transparent);"></div>
+
+      <!-- Timeline Items -->
+      <div class="space-y-12 md:space-y-16">
+        {experiences.map((exp, index) => (
+          <div class="timeline-item relative pl-20 md:pl-28" data-timeline-index={index}>
+            <!-- Timeline Node -->
+            <div
+              class="absolute left-6 md:left-10 top-2 w-4 h-4 rounded-full border-2 timeline-node transition-all duration-500"
+              style="background-color: var(--theme-bg); border-color: var(--theme-primary); transform: scale(0) rotate(0deg);"
+            >
+              <div
+                class="absolute inset-0 rounded-full timeline-node-inner"
+                style="background-color: var(--theme-primary); transform: scale(0);"
+              />
+            </div>
+
+            <!-- Content -->
+            <div class="timeline-content opacity-0">
+              <!-- Period Badge -->
+              <div class="mb-4">
+                <span
+                  class="inline-block px-3 py-1 rounded-full text-xs md:text-sm font-medium"
+                  style="background-color: var(--theme-primary-bg); color: var(--theme-primary);"
+                >
+                  {exp.period}
+                </span>
+              </div>
+
+              <!-- Title and Company -->
+              <div class="mb-3">
+                <h3 class="text-xl md:text-2xl font-semibold mb-1 tracking-tight" style="color: var(--theme-text);">
+                  {exp.title}
+                </h3>
+                <p class="text-base md:text-lg font-medium" style="color: var(--theme-primary);">
+                  {exp.company}
+                </p>
+              </div>
+
+              <!-- Description -->
+              <p class="mb-4 text-base md:text-lg leading-relaxed opacity-85 font-light" style="color: var(--theme-text);">
+                {exp.description}
+              </p>
+
+              <!-- Tech Stack -->
+              {exp.tech && exp.tech.length > 0 && (
+                <div class="flex flex-wrap gap-2 mb-4">
+                  {exp.tech.map((tech) => (
+                    <span
+                      class="px-2 py-1 rounded text-xs font-medium border"
+                      style="background-color: var(--theme-bg); color: var(--theme-text); border-color: var(--theme-border); opacity: 0.8;"
+                    >
+                      {tech}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              <!-- Achievements -->
+              {exp.achievements && exp.achievements.length > 0 && (
+                <ul class="list-none space-y-2.5 mt-5">
+                  {exp.achievements.map((achievement) => (
+                    <li class="flex items-start gap-3">
+                      <span
+                        class="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0"
+                        style="background-color: var(--theme-primary);"
+                      />
+                      <span
+                        class="text-sm md:text-base opacity-80 font-light leading-relaxed"
+                        style="color: var(--theme-text);"
+                      >
+                        {achievement}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Smooth slide-up reveal animation */
+  .timeline-content {
+    transform: translateY(40px);
+    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .timeline-item.active .timeline-node {
+    transform: scale(1) !important;
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+                border-color 0.3s ease;
+  }
+
+  .timeline-item.active .timeline-node-inner {
+    transform: scale(0.5) !important;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s;
+  }
+
+  .timeline-item.active .timeline-content {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .timeline-line {
+    transition: opacity 0.6s ease-out;
+  }
+
+  .timeline-line.active {
+    opacity: 1;
+  }
+
+  /* Subtle hover effect on timeline items */
+  .timeline-item .timeline-content:hover {
+    transform: translateY(-2px);
+  }
+</style>
+
+<script>
+  // Smooth scroll-based timeline animation
+  const timelineObserverOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -80px 0px'
+  };
+
+  const timelineObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        const timelineItem = entry.target as HTMLElement;
+
+        // Smooth reveal with minimal delay
+        requestAnimationFrame(() => {
+          timelineItem.classList.add('active');
+        });
+
+        // Activate timeline line on first item
+        const timelineLine = document.querySelector('.timeline-line');
+        if (timelineLine && !timelineLine.classList.contains('active')) {
+          timelineLine.classList.add('active');
+        }
+
+        // Unobserve after animation
+        timelineObserver.unobserve(timelineItem);
+      }
+    });
+  }, timelineObserverOptions);
+
+  // Observe all timeline items
+  document.querySelectorAll('.timeline-item').forEach(item => {
+    timelineObserver.observe(item);
+  });
+</script>

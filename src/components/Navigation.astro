@@ -1,0 +1,133 @@
+---
+import { isAuthenticated } from '../lib/auth';
+
+const authenticated = isAuthenticated(Astro.cookies);
+
+const publicNavItems = [
+  { name: 'Home', href: '/' },
+  { name: 'Resume', href: '/resume' },
+  { name: 'Dashboard', href: '/dashboard' },
+];
+
+const authNavItems = [
+  ...publicNavItems,
+  { name: 'Services', href: '/services' },
+];
+
+const navItems = authenticated ? authNavItems : publicNavItems;
+---
+
+<nav class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
+  <div class="flex items-center justify-center">
+    <!-- Floating Island Navigation -->
+    <div class="glass rounded-full px-6 py-3 transition-all duration-300 hover:shadow-xl">
+      <div class="flex items-center space-x-1">
+        {navItems.map((item) => (
+          <a
+            href={item.href}
+            class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 hover:scale-105 relative"
+            style="color: var(--theme-text);"
+            data-nav-item
+          >
+            {item.name}
+          </a>
+        ))}
+
+        <!-- Mobile Menu Button -->
+        <button
+          id="mobile-menu-button"
+          class="md:hidden ml-2 p-2 rounded-full transition-all duration-200 hover:scale-105 focus:outline-none"
+          style="color: var(--theme-text);"
+        >
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Menu Dropdown -->
+  <div id="mobile-menu" class="hidden md:hidden fixed top-20 left-1/2 transform -translate-x-1/2 glass rounded-2xl p-4 min-w-[200px] transition-all duration-300">
+    <div class="flex flex-col space-y-2">
+      {navItems.map((item) => (
+        <a
+          href={item.href}
+          class="block px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 hover:scale-105 text-center"
+          style="color: var(--theme-text); background-color: var(--theme-bg);"
+        >
+          {item.name}
+        </a>
+      ))}
+    </div>
+  </div>
+</nav>
+
+<style>
+  /* Active link indicator */
+  a[data-nav-item] {
+    position: relative;
+  }
+
+  a[data-nav-item]:hover {
+    background-color: var(--theme-bg);
+  }
+
+  /* Active state for current page */
+  a[data-nav-item][aria-current="page"],
+  a[data-nav-item].active {
+    background-color: var(--theme-primary-bg);
+    color: var(--theme-primary-text) !important;
+    font-weight: 600;
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const button = document.getElementById('mobile-menu-button');
+    const menu = document.getElementById('mobile-menu');
+
+    if (button && menu) {
+      button.addEventListener('click', () => {
+        menu.classList.toggle('hidden');
+      });
+    }
+
+    // Set active state for current page
+    const currentPath = window.location.pathname;
+    document.querySelectorAll('a[data-nav-item]').forEach(link => {
+      const href = link.getAttribute('href');
+      if (href === currentPath || (currentPath === '/' && href === '/')) {
+        link.classList.add('active');
+        link.setAttribute('aria-current', 'page');
+      }
+    });
+
+    // Smooth scrolling for anchor links (enhanced) - only on same page
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const targetId = this.getAttribute('href');
+        if (targetId === '#') return;
+
+        const target = document.querySelector(targetId);
+        if (target) {
+          const offsetTop = target.offsetTop - 80; // Account for fixed nav
+          window.scrollTo({
+            top: offsetTop,
+            behavior: 'smooth'
+          });
+          // Close mobile menu if open
+          if (menu) menu.classList.add('hidden');
+        }
+      });
+    });
+
+    // Close mobile menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (menu && !menu.contains(e.target) && !button?.contains(e.target)) {
+        menu.classList.add('hidden');
+      }
+    });
+  });
+</script>

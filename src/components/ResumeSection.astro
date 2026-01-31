@@ -1,0 +1,110 @@
+---
+// This is a template - you can customize with your actual resume data
+const resumeData = {
+  name: "Mikey",
+  title: "Full Stack Developer",
+  email: "your.email@example.com",
+  location: "Your Location",
+  summary: "Experienced developer with expertise in web development, system administration, and media server management.",
+  experience: [
+    {
+      title: "Senior Developer",
+      company: "Company Name",
+      period: "2020 - Present",
+      description: "Lead development of web applications and manage infrastructure."
+    },
+    {
+      title: "Developer",
+      company: "Previous Company",
+      period: "2018 - 2020",
+      description: "Developed and maintained web applications."
+    }
+  ],
+  skills: [
+    "JavaScript", "TypeScript", "React", "Astro", "Node.js",
+    "Python", "Docker", "Linux", "System Administration"
+  ],
+  education: [
+    {
+      degree: "Bachelor's Degree",
+      institution: "University Name",
+      period: "2014 - 2018"
+    }
+  ]
+};
+---
+
+<section id="resume" class="py-20 px-4 sm:px-6 lg:px-8 bg-gray-800">
+  <div class="max-w-4xl mx-auto">
+    <h2 class="text-4xl font-bold mb-12 text-center text-primary-400">Resume / CV</h2>
+    
+    <div class="bg-gray-900 rounded-lg shadow-xl p-8 space-y-8">
+      <!-- Header -->
+      <div class="text-center border-b border-gray-700 pb-8">
+        <h1 class="text-4xl font-bold mb-2">{resumeData.name}</h1>
+        <p class="text-xl text-gray-400 mb-4">{resumeData.title}</p>
+        <div class="flex justify-center gap-4 text-sm text-gray-500">
+          <span>{resumeData.email}</span>
+          <span>•</span>
+          <span>{resumeData.location}</span>
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div>
+        <h3 class="text-2xl font-semibold mb-4 text-primary-400">Summary</h3>
+        <p class="text-gray-300 leading-relaxed">{resumeData.summary}</p>
+      </div>
+
+      <!-- Experience -->
+      <div>
+        <h3 class="text-2xl font-semibold mb-4 text-primary-400">Experience</h3>
+        <div class="space-y-6">
+          {resumeData.experience.map((exp) => (
+            <div class="border-l-4 border-primary-500 pl-4">
+              <div class="flex justify-between items-start mb-2">
+                <div>
+                  <h4 class="text-xl font-semibold">{exp.title}</h4>
+                  <p class="text-primary-400">{exp.company}</p>
+                </div>
+                <span class="text-gray-500 text-sm">{exp.period}</span>
+              </div>
+              <p class="text-gray-300">{exp.description}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <!-- Skills -->
+      <div>
+        <h3 class="text-2xl font-semibold mb-4 text-primary-400">Skills</h3>
+        <div class="flex flex-wrap gap-2">
+          {resumeData.skills.map((skill) => (
+            <span class="px-4 py-2 bg-primary-900/50 text-primary-300 rounded-full text-sm">
+              {skill}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <!-- Education -->
+      <div>
+        <h3 class="text-2xl font-semibold mb-4 text-primary-400">Education</h3>
+        <div class="space-y-4">
+          {resumeData.education.map((edu) => (
+            <div class="border-l-4 border-primary-500 pl-4">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h4 class="text-xl font-semibold">{edu.degree}</h4>
+                  <p class="text-primary-400">{edu.institution}</p>
+                </div>
+                <span class="text-gray-500 text-sm">{edu.period}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+

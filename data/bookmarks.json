@@ -1,0 +1,32 @@
+{
+  "bookmarks": [
+    {
+      "name": "Jellyfin",
+      "description": "Media Streaming",
+      "url": "https://jelly.mikey.host",
+      "icon": "jellyfin",
+      "color": "from-purple-500/30 to-pink-500/30"
+    },
+    {
+      "name": "Jellyseerr",
+      "description": "Media Requests",
+      "url": "https://jellyseerr.mikey.host",
+      "icon": "jellyseerr",
+      "color": "from-indigo-500/30 to-purple-500/30"
+    },
+    {
+      "name": "Immich",
+      "description": "Photo Management",
+      "url": "https://photo.mikey.host",
+      "icon": "immich",
+      "color": "from-teal-500/30 to-cyan-500/30"
+    },
+    {
+      "name": "UTA",
+      "description": "IT Tools",
+      "url": "https://tools.mikey.host",
+      "icon": "it-tools",
+      "color": "from-orange-500/30 to-amber-500/30"
+    }
+  ]
+}

@@ -1,0 +1,747 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import ThemeSelector from '../components/ThemeSelector.astro';
+import { getSession } from '../lib/auth';
+
+const session = getSession(Astro.cookies);
+
+// Dashboard Icons CDN base URL
+const iconBase = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png";
+
+// All services for center column (2-column grid)
+const allServices = [
+  { name: "AdGuard", logo: `${iconBase}/adguard-home.png`, apiUrl: "/api/adguard" },
+  { name: "HomeAssistant", logo: `${iconBase}/home-assistant.png`, apiUrl: "/api/homeassistant" },
+  { name: "TrueNAS", logo: `${iconBase}/truenas.png`, apiUrl: "/api/truenas" },
+  { name: "Portainer", logo: `${iconBase}/portainer.png`, apiUrl: "/api/portainer" },
+  { name: "Proxmox", logo: `${iconBase}/proxmox.png`, apiUrl: "/api/proxmox" },
+  { name: "Jellyfin", logo: `${iconBase}/jellyfin.png`, apiUrl: "/api/jellyfin" },
+  { name: "qBittorrent", logo: `${iconBase}/qbittorrent.png`, apiUrl: "/api/qbittorrent" },
+  { name: "Immich", logo: `${iconBase}/immich.png`, apiUrl: "/api/immich" },
+  { name: "Sonarr", logo: `${iconBase}/sonarr.png`, apiUrl: "/api/sonarr" },
+  { name: "Radarr", logo: `${iconBase}/radarr.png`, apiUrl: "/api/radarr" },
+  { name: "Jellyseerr", logo: `${iconBase}/jellyseerr.png`, apiUrl: "/api/jellyseerr" },
+];
+
+const allServiceNames = allServices.map(s => s.name.toLowerCase());
+---
+
+<Layout title="Services Dashboard - Mikey's Home Page">
+  <Navigation />
+  <ThemeSelector />
+
+  <main class="pt-20 pb-8 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-[1800px] mx-auto">
+      <!-- Header Bar -->
+      <div class="flex items-center justify-between mb-6 p-4 rounded-xl glass">
+        <div class="flex items-center gap-4">
+          {session && (
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold" style="background-color: var(--theme-primary-bg);">
+                {session.username.charAt(0).toUpperCase()}
+              </div>
+              <span class="text-sm font-medium hidden sm:block" style="color: var(--theme-text);">{session.username}</span>
+            </div>
+          )}
+          <div class="h-6 w-px hidden sm:block" style="background: var(--theme-border-glass);"></div>
+          <button
+            id="auto-refresh-toggle"
+            class="px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 hover:scale-105 glass glass-hover"
+            style="color: var(--theme-text);"
+          >
+            Auto: ON
+          </button>
+          <button
+            id="refresh-all-btn"
+            class="px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 hover:scale-105"
+            style="background-color: var(--theme-primary-bg); color: white;"
+          >
+            Refresh All
+          </button>
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="text-xs hidden sm:block" style="color: var(--theme-text); opacity: 0.5;">
+            Updated: <span id="last-refresh-time">--:--</span>
+          </span>
+          {session && (
+            <a
+              href="/api/auth/logout"
+              class="px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 hover:scale-105 glass glass-hover flex items-center gap-1.5"
+              style="color: var(--theme-text);"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+              </svg>
+              Logout
+            </a>
+          )}
+        </div>
+      </div>
+
+      <!-- 3-Column Dashboard Grid: Feeds | Services | YouTube -->
+      <div class="dashboard-grid">
+        <!-- Left Column: RSS + Reddit -->
+        <div class="feed-column">
+          <!-- RSS Feed -->
+          <div class="feed-section glass rounded-xl p-4 mb-4">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-base">📰</span>
+              <span class="font-semibold text-sm" style="color: var(--theme-text);">News</span>
+              <span id="rss-page-info" class="text-xs ml-auto" style="color: var(--theme-text); opacity: 0.5;">1/1</span>
+            </div>
+            <div id="feed-rss" class="space-y-2">
+              <div class="glass rounded-lg p-3 space-y-2">
+                <div class="h-3 rounded shimmer" style="width: 40%;"></div>
+                <div class="h-4 rounded shimmer" style="width: 90%;"></div>
+              </div>
+              <div class="glass rounded-lg p-3 space-y-2">
+                <div class="h-3 rounded shimmer" style="width: 35%;"></div>
+                <div class="h-4 rounded shimmer" style="width: 85%;"></div>
+              </div>
+            </div>
+            <div class="flex justify-between mt-3">
+              <button id="rss-prev" class="px-3 py-1 rounded-lg text-xs glass glass-hover disabled:opacity-30" style="color: var(--theme-text);">← Prev</button>
+              <button id="rss-next" class="px-3 py-1 rounded-lg text-xs glass glass-hover disabled:opacity-30" style="color: var(--theme-text);">Next →</button>
+            </div>
+          </div>
+
+          <!-- Reddit Feed -->
+          <div class="feed-section glass rounded-xl p-4">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-base">🔗</span>
+              <span class="font-semibold text-sm" style="color: var(--theme-text);">Reddit</span>
+              <span id="reddit-page-info" class="text-xs ml-auto" style="color: var(--theme-text); opacity: 0.5;">1/1</span>
+            </div>
+            <div id="feed-reddit" class="space-y-2">
+              <div class="glass rounded-lg p-3 space-y-2">
+                <div class="h-3 rounded shimmer" style="width: 30%;"></div>
+                <div class="h-4 rounded shimmer" style="width: 95%;"></div>
+              </div>
+              <div class="glass rounded-lg p-3 space-y-2">
+                <div class="h-3 rounded shimmer" style="width: 35%;"></div>
+                <div class="h-4 rounded shimmer" style="width: 90%;"></div>
+              </div>
+            </div>
+            <div class="flex justify-between mt-3">
+              <button id="reddit-prev" class="px-3 py-1 rounded-lg text-xs glass glass-hover disabled:opacity-30" style="color: var(--theme-text);">← Prev</button>
+              <button id="reddit-next" class="px-3 py-1 rounded-lg text-xs glass glass-hover disabled:opacity-30" style="color: var(--theme-text);">Next →</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Center Column: Services (2-column grid) -->
+        <div class="services-column">
+          <div class="text-xs font-semibold uppercase tracking-wider mb-3 px-1 text-center" style="color: var(--theme-text); opacity: 0.5;">
+            Services
+          </div>
+          <div class="services-grid">
+            {allServices.map((service) => (
+              <div
+                class="service-widget glass glass-hover rounded-xl p-4 cursor-pointer transition-all duration-200"
+                data-service={service.name.toLowerCase()}
+              >
+                <div class="flex items-center gap-2 mb-3">
+                  <img src={service.logo} alt={service.name} class="w-6 h-6 object-contain" loading="lazy" />
+                  <span class="text-sm font-semibold truncate" style="color: var(--theme-text);">{service.name}</span>
+                  <span
+                    id={`${service.name.toLowerCase()}-status-dot`}
+                    class="ml-auto w-2.5 h-2.5 rounded-full bg-gray-500 pulse-dot"
+                  ></span>
+                </div>
+                <div id={`${service.name.toLowerCase()}-stats`} class="space-y-1.5 text-xs">
+                  <div class="h-3 rounded shimmer" style="width: 80%;"></div>
+                  <div class="h-3 rounded shimmer" style="width: 60%;"></div>
+                  <div class="h-3 rounded shimmer" style="width: 70%;"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <!-- Right Column: YouTube -->
+        <div class="feed-column">
+          <div class="feed-section glass rounded-xl p-4 h-full">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-base">▶️</span>
+              <span class="font-semibold text-sm" style="color: var(--theme-text);">YouTube</span>
+              <span id="youtube-page-info" class="text-xs ml-auto" style="color: var(--theme-text); opacity: 0.5;">1/1</span>
+            </div>
+            <div id="feed-youtube" class="space-y-3">
+              <div class="glass rounded-lg overflow-hidden">
+                <div class="h-28 shimmer"></div>
+                <div class="p-3 space-y-2">
+                  <div class="h-4 rounded shimmer" style="width: 90%;"></div>
+                  <div class="h-3 rounded shimmer" style="width: 60%;"></div>
+                </div>
+              </div>
+              <div class="glass rounded-lg overflow-hidden">
+                <div class="h-28 shimmer"></div>
+                <div class="p-3 space-y-2">
+                  <div class="h-4 rounded shimmer" style="width: 85%;"></div>
+                  <div class="h-3 rounded shimmer" style="width: 55%;"></div>
+                </div>
+              </div>
+            </div>
+            <div class="flex justify-between mt-3">
+              <button id="youtube-prev" class="px-3 py-1 rounded-lg text-xs glass glass-hover disabled:opacity-30" style="color: var(--theme-text);">← Prev</button>
+              <button id="youtube-next" class="px-3 py-1 rounded-lg text-xs glass glass-hover disabled:opacity-30" style="color: var(--theme-text);">Next →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <style>
+    .dashboard-grid {
+      display: flex;
+      gap: 1rem;
+      min-height: calc(100vh - 180px);
+    }
+
+    .feed-column {
+      width: 280px;
+      flex-shrink: 0;
+    }
+
+    .services-column {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+
+    .service-widget:hover {
+      transform: translateY(-2px);
+    }
+
+    .feed-card:hover {
+      transform: translateY(-1px);
+    }
+
+    /* Large desktop: 3 columns for services */
+    @media (min-width: 1600px) {
+      .services-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    /* Tablet: feeds on top, services below */
+    @media (max-width: 1280px) {
+      .dashboard-grid {
+        flex-wrap: wrap;
+      }
+      .feed-column {
+        width: calc(50% - 0.5rem);
+      }
+      .services-column {
+        order: -1;
+        width: 100%;
+        flex: none;
+        margin-bottom: 1rem;
+      }
+      .services-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    /* Mobile: single column everything */
+    @media (max-width: 768px) {
+      .dashboard-grid {
+        flex-direction: column;
+      }
+      .feed-column {
+        width: 100%;
+      }
+      .services-column {
+        order: 0;
+      }
+      .services-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .services-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  </style>
+
+  <script is:inline define:vars={{ allServiceNames }}>
+    window.__allServiceNames = allServiceNames;
+  </script>
+
+  <script>
+    // Format speed helper
+    function formatSpeed(bytes: number): string {
+      if (!bytes || bytes === 0) return '0 B/s';
+      const k = 1024;
+      const sizes = ['B/s', 'KB/s', 'MB/s', 'GB/s'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`;
+    }
+
+    // Render stats HTML for each service
+    function renderServiceStats(serviceName: string, data: any): string {
+      if (!data || data.online === false) {
+        return `<div class="text-red-400">${data?.error || 'Offline'}</div>`;
+      }
+
+      const row = (label: string, value: string | number) =>
+        `<div class="flex justify-between"><span style="opacity: 0.5;">${label}</span><span class="font-medium">${value}</span></div>`;
+
+      switch (serviceName) {
+        case 'adguard':
+          return [
+            row('Version', data.version || 'Unknown'),
+            row('Protection', data.protection || 'Unknown'),
+            row('DNS Queries', data.dnsQueries?.toLocaleString() || '0'),
+            row('Blocked', data.blockedQueries?.toLocaleString() || '0'),
+            row('Block Rate', data.blockRate || '0%'),
+            row('Safe Browsing', data.safeBrowsingBlocked?.toLocaleString() || '0'),
+            row('Parental', data.parentalBlocked?.toLocaleString() || '0'),
+            row('Avg Response', data.avgProcessingTime || '0 ms'),
+          ].join('');
+
+        case 'homeassistant':
+          return [
+            row('Version', data.version || 'Unknown'),
+            row('Total Entities', data.totalEntities?.toLocaleString() || '0'),
+            row('Lights', data.lights?.toLocaleString() || '0'),
+            row('Switches', data.switches?.toLocaleString() || '0'),
+            row('Sensors', data.sensors?.toLocaleString() || '0'),
+            row('Automations', data.automations?.toLocaleString() || '0'),
+          ].join('');
+
+        case 'truenas':
+          let truenasHtml = [
+            row('CPU Usage', data.cpuUsage || 'N/A'),
+            row('Memory Usage', data.memoryUsage || 'N/A'),
+            row('Free RAM', data.memoryFree || 'N/A'),
+            row('ZFS Cache', data.memoryZfsCache || 'N/A'),
+            row('Services', data.memoryServices || 'N/A'),
+            row('Storage Usage', data.storageUsage || '0%'),
+          ].join('');
+          if (data.pools && data.pools.length > 0) {
+            truenasHtml += `<div class="mt-2 pt-2 border-t" style="border-color: var(--theme-border-glass);">`;
+            for (const pool of data.pools) {
+              const barColor = pool.usedPctNum >= 80 ? 'bg-red-500' : pool.usedPctNum >= 60 ? 'bg-yellow-500' : 'bg-green-500';
+              truenasHtml += `
+                <div class="mb-2">
+                  <div class="flex justify-between mb-1">
+                    <span class="font-medium">${pool.name}</span>
+                    <span class="text-xs px-1.5 rounded ${pool.status === 'ONLINE' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}">${pool.status}</span>
+                  </div>
+                  <div class="w-full rounded-full h-1.5" style="background: var(--theme-border-glass);">
+                    <div class="${barColor} h-1.5 rounded-full" style="width: ${pool.usedPctNum}%"></div>
+                  </div>
+                  <div class="flex justify-between mt-0.5" style="opacity: 0.5;"><span>${pool.used}</span><span>${pool.usedPercentage}</span></div>
+                </div>`;
+            }
+            truenasHtml += `</div>`;
+          }
+          return truenasHtml;
+
+        case 'portainer':
+          return [
+            row('Total Containers', data.totalContainers?.toLocaleString() || '0'),
+            row('Running', data.runningContainers?.toLocaleString() || '0'),
+            row('Stopped', data.stoppedContainers?.toLocaleString() || '0'),
+            row('Endpoints', data.activeEndpoints?.toLocaleString() || '0'),
+          ].join('');
+
+        case 'proxmox':
+          let proxmoxHtml = [
+            row('Guests', `${data.runningGuests || 0} Running / ${data.stoppedGuests || 0} Stopped`),
+            row('CPU Usage', data.cpuUsage || '0%'),
+            row('Memory', `${data.memoryUsed || '0 B'} / ${data.memoryTotal || '0 B'}`),
+            row('Memory Usage', data.memoryUsage || '0%'),
+          ].join('');
+          // Per-guest breakdown
+          if (data.guests && data.guests.length > 0) {
+            proxmoxHtml += `<div class="mt-2 pt-2 border-t" style="border-color: var(--theme-border-glass);">`;
+            proxmoxHtml += `<div class="text-[10px] uppercase font-semibold mb-1.5" style="opacity: 0.5;">Running Guests</div>`;
+            for (const guest of data.guests.slice(0, 6)) {
+              const typeColor = guest.type === 'VM' ? 'text-blue-400' : 'text-purple-400';
+              proxmoxHtml += `
+                <div class="mb-1.5 p-1.5 rounded" style="background: var(--theme-border-glass);">
+                  <div class="flex items-center justify-between mb-0.5">
+                    <span class="font-medium truncate" style="max-width: 120px;">${guest.name}</span>
+                    <span class="text-[10px] px-1.5 rounded ${typeColor}" style="background: var(--theme-border-glass);">${guest.type}</span>
+                  </div>
+                  <div class="flex justify-between text-[10px]" style="opacity: 0.6;">
+                    <span>CPU: ${guest.cpu}</span>
+                    <span>RAM: ${guest.memory}</span>
+                  </div>
+                </div>`;
+            }
+            if (data.guests.length > 6) {
+              proxmoxHtml += `<div class="text-[10px] text-center" style="opacity: 0.4;">+${data.guests.length - 6} more</div>`;
+            }
+            proxmoxHtml += `</div>`;
+          }
+          return proxmoxHtml;
+
+        case 'jellyfin':
+          let jellyfinHtml = [
+            row('Version', data.version || 'Unknown'),
+            row('Movies', data.movieCount?.toLocaleString() || '0'),
+            row('Series', data.seriesCount?.toLocaleString() || '0'),
+            row('Episodes', data.episodeCount?.toLocaleString() || '0'),
+            row('Active Streams', data.activeStreams?.toLocaleString() || '0'),
+          ].join('');
+          if (data.viewers && data.viewers.length > 0) {
+            jellyfinHtml += `<div class="mt-2 pt-2 border-t" style="border-color: var(--theme-border-glass);">`;
+            for (const v of data.viewers.slice(0, 3)) {
+              jellyfinHtml += `
+                <div class="mb-1.5 p-1.5 rounded" style="background: var(--theme-border-glass);">
+                  <div class="font-medium text-pink-400">${v.user}</div>
+                  <div style="opacity: 0.6;">${v.content}</div>
+                  <div style="opacity: 0.4;">${v.client} • ${v.deviceName}</div>
+                </div>`;
+            }
+            jellyfinHtml += `</div>`;
+          }
+          return jellyfinHtml;
+
+        case 'qbittorrent':
+          let qbtHtml = [
+            row('Torrents', data.torrentCount?.toLocaleString() || '0'),
+            row('Download', formatSpeed(data.downloadSpeed || 0)),
+            row('Upload', formatSpeed(data.uploadSpeed || 0)),
+          ].join('');
+          if (data.activeTorrents && data.activeTorrents.length > 0) {
+            qbtHtml += `<div class="mt-2 pt-2 border-t" style="border-color: var(--theme-border-glass);">`;
+            for (const t of data.activeTorrents.slice(0, 3)) {
+              qbtHtml += `
+                <div class="mb-1.5 p-1.5 rounded" style="background: var(--theme-border-glass);">
+                  <div class="font-medium text-green-400 truncate" title="${t.name}">${t.name}</div>
+                  <div class="flex justify-between" style="opacity: 0.6;">
+                    <span>${t.progress}</span>
+                    <span>↓${formatSpeed(t.dlspeed)} ↑${formatSpeed(t.upspeed)}</span>
+                  </div>
+                </div>`;
+            }
+            qbtHtml += `</div>`;
+          }
+          return qbtHtml;
+
+        case 'immich':
+          return [
+            row('Photos', data.photos?.toLocaleString() || '0'),
+            row('Videos', data.videos?.toLocaleString() || '0'),
+            row('Usage', data.usage || '0 B'),
+            data.diskSize ? row('Disk Size', data.diskSize) : '',
+            data.diskUsage ? row('Disk Usage', data.diskUsage) : '',
+          ].filter(Boolean).join('');
+
+        case 'sonarr':
+          return [
+            row('Version', data.version || 'Unknown'),
+            row('Series', data.seriesCount?.toLocaleString() || '0'),
+            row('Queue', data.queueCount?.toLocaleString() || '0'),
+            row('Status', data.status || 'Unknown'),
+          ].join('');
+
+        case 'radarr':
+          return [
+            row('Version', data.version || 'Unknown'),
+            row('Movies', data.movieCount?.toLocaleString() || '0'),
+            row('Queue', data.queueCount?.toLocaleString() || '0'),
+            row('Status', data.status || 'Unknown'),
+          ].join('');
+
+        case 'jellyseerr':
+          return [
+            row('Version', data.version || 'Unknown'),
+            row('Pending', data.pendingRequests?.toLocaleString() || '0'),
+            row('Approved', data.approvedRequests?.toLocaleString() || '0'),
+            row('Total Requests', data.totalRequests?.toLocaleString() || '0'),
+          ].join('');
+
+        default:
+          return '<div style="opacity: 0.5;">No data available</div>';
+      }
+    }
+
+    // Update service widget UI
+    function updateServiceWidget(serviceName: string, data: any) {
+      const statusDot = document.getElementById(`${serviceName}-status-dot`);
+      const statsContainer = document.getElementById(`${serviceName}-stats`);
+
+      const isOnline = data && data.online !== false;
+
+      if (statusDot) {
+        statusDot.className = `ml-auto w-2.5 h-2.5 rounded-full pulse-dot ${isOnline ? 'bg-green-500' : 'bg-red-500'}`;
+      }
+
+      if (statsContainer) {
+        statsContainer.innerHTML = renderServiceStats(serviceName, data);
+      }
+    }
+
+    // Fetch service status
+    async function fetchService(serviceName: string) {
+      try {
+        const response = await fetch(`/api/${serviceName}`);
+        const data = await response.json();
+        updateServiceWidget(serviceName, data);
+      } catch (error) {
+        updateServiceWidget(serviceName, { online: false, error: 'Connection failed' });
+      }
+    }
+
+    // Feed pagination state
+    const feedState: Record<string, { items: any[]; page: number; perPage: number }> = {
+      rss: { items: [], page: 0, perPage: 4 },
+      reddit: { items: [], page: 0, perPage: 4 },
+      youtube: { items: [], page: 0, perPage: 5 },
+    };
+
+    function timeAgo(dateString: string): string {
+      const now = Date.now();
+      const date = new Date(dateString).getTime();
+      if (isNaN(date)) return '';
+      const diffMs = now - date;
+      const diffMins = Math.floor(diffMs / 60000);
+      if (diffMins < 1) return 'now';
+      if (diffMins < 60) return `${diffMins}m`;
+      const diffHours = Math.floor(diffMins / 60);
+      if (diffHours < 24) return `${diffHours}h`;
+      const diffDays = Math.floor(diffHours / 24);
+      return `${diffDays}d`;
+    }
+
+    function escapeHtml(str: string): string {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function updatePageInfo(type: string) {
+      const state = feedState[type];
+      const totalPages = Math.ceil(state.items.length / state.perPage) || 1;
+      const currentPage = state.page + 1;
+      const pageInfo = document.getElementById(`${type}-page-info`);
+      if (pageInfo) {
+        pageInfo.textContent = `${currentPage}/${totalPages}`;
+      }
+
+      // Update button states
+      const prevBtn = document.getElementById(`${type}-prev`) as HTMLButtonElement;
+      const nextBtn = document.getElementById(`${type}-next`) as HTMLButtonElement;
+      if (prevBtn) prevBtn.disabled = state.page === 0;
+      if (nextBtn) nextBtn.disabled = currentPage >= totalPages;
+    }
+
+    function renderRSSPage() {
+      const state = feedState.rss;
+      const container = document.getElementById('feed-rss');
+      if (!container) return;
+
+      const start = state.page * state.perPage;
+      const items = state.items.slice(start, start + state.perPage);
+
+      if (state.items.length === 0) {
+        container.innerHTML = '<div class="text-center py-6 text-xs" style="color: var(--theme-text); opacity: 0.5;">No news articles</div>';
+      } else {
+        container.innerHTML = items.map(item => `
+          <a href="${escapeHtml(item.link)}" target="_blank" rel="noopener noreferrer"
+             class="feed-card glass glass-hover rounded-lg p-3 block transition-all duration-200">
+            <div class="flex items-center gap-2 mb-1.5">
+              <span class="text-[10px] px-2 py-0.5 rounded-full font-medium truncate max-w-[100px]" style="background-color: var(--theme-primary-bg); color: white;">
+                ${escapeHtml(item.source)}
+              </span>
+              <span class="text-[10px] ml-auto flex-shrink-0" style="color: var(--theme-text); opacity: 0.4;">${timeAgo(item.pubDate)}</span>
+            </div>
+            <h3 class="font-medium text-xs leading-snug line-clamp-2" style="color: var(--theme-text);">${escapeHtml(item.title)}</h3>
+          </a>
+        `).join('');
+      }
+      updatePageInfo('rss');
+    }
+
+    function renderRedditPage() {
+      const state = feedState.reddit;
+      const container = document.getElementById('feed-reddit');
+      if (!container) return;
+
+      const start = state.page * state.perPage;
+      const items = state.items.slice(start, start + state.perPage);
+
+      if (state.items.length === 0) {
+        container.innerHTML = '<div class="text-center py-6 text-xs" style="color: var(--theme-text); opacity: 0.5;">No Reddit posts</div>';
+      } else {
+        container.innerHTML = items.map(item => `
+          <a href="${escapeHtml(item.link)}" target="_blank" rel="noopener noreferrer"
+             class="feed-card glass glass-hover rounded-lg p-3 block transition-all duration-200">
+            <div class="flex items-center gap-2 mb-1.5">
+              <span class="text-[10px] px-2 py-0.5 rounded-full font-medium bg-orange-500/20 text-orange-400 truncate max-w-[100px]">
+                ${escapeHtml(item.subreddit)}
+              </span>
+              <span class="text-[10px] ml-auto flex-shrink-0" style="color: var(--theme-text); opacity: 0.4;">↑${item.score?.toLocaleString() || 0}</span>
+            </div>
+            <h3 class="font-medium text-xs leading-snug line-clamp-2" style="color: var(--theme-text);">${escapeHtml(item.title)}</h3>
+          </a>
+        `).join('');
+      }
+      updatePageInfo('reddit');
+    }
+
+    function renderYouTubePage() {
+      const state = feedState.youtube;
+      const container = document.getElementById('feed-youtube');
+      if (!container) return;
+
+      const start = state.page * state.perPage;
+      const items = state.items.slice(start, start + state.perPage);
+
+      if (state.items.length === 0) {
+        container.innerHTML = '<div class="text-center py-6 text-xs" style="color: var(--theme-text); opacity: 0.5;">No YouTube videos</div>';
+      } else {
+        container.innerHTML = items.map(item => `
+          <a href="${escapeHtml(item.link)}" target="_blank" rel="noopener noreferrer"
+             class="feed-card glass glass-hover rounded-lg overflow-hidden block transition-all duration-200">
+            <div class="relative">
+              <img src="${escapeHtml(item.thumbnail)}" alt="" class="w-full h-28 object-cover" loading="lazy" />
+              <div class="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 hover:opacity-100 transition-opacity">
+                <span class="text-2xl text-white">▶</span>
+              </div>
+            </div>
+            <div class="p-2.5">
+              <h3 class="font-medium text-xs leading-snug line-clamp-2 mb-1" style="color: var(--theme-text);">${escapeHtml(item.title)}</h3>
+              <div class="text-[10px] truncate" style="color: var(--theme-text); opacity: 0.4;">${escapeHtml(item.channelName)} • ${timeAgo(item.pubDate)}</div>
+            </div>
+          </a>
+        `).join('');
+      }
+      updatePageInfo('youtube');
+    }
+
+    function changePage(type: string, delta: number) {
+      const state = feedState[type];
+      const totalPages = Math.ceil(state.items.length / state.perPage);
+      const newPage = state.page + delta;
+
+      if (newPage >= 0 && newPage < totalPages) {
+        state.page = newPage;
+        if (type === 'rss') renderRSSPage();
+        else if (type === 'reddit') renderRedditPage();
+        else if (type === 'youtube') renderYouTubePage();
+      }
+    }
+
+    // Fetch feeds
+    async function fetchFeed(type: string) {
+      try {
+        const response = await fetch(`/api/feeds/${type}`);
+        if (response.ok) {
+          const data = await response.json();
+          return data.items || [];
+        }
+      } catch {
+        // ignore
+      }
+      return [];
+    }
+
+    async function refreshAllFeeds() {
+      const [rss, reddit, youtube] = await Promise.all([
+        fetchFeed('rss'),
+        fetchFeed('reddit'),
+        fetchFeed('youtube'),
+      ]);
+
+      feedState.rss.items = rss;
+      feedState.rss.page = 0;
+      feedState.reddit.items = reddit;
+      feedState.reddit.page = 0;
+      feedState.youtube.items = youtube;
+      feedState.youtube.page = 0;
+
+      renderRSSPage();
+      renderRedditPage();
+      renderYouTubePage();
+    }
+
+    // Refresh all services
+    async function refreshAllServices() {
+      const services: string[] = (window as any).__allServiceNames || [];
+
+      for (const service of services) {
+        await fetchService(service);
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+
+      const lastRefreshEl = document.getElementById('last-refresh-time');
+      if (lastRefreshEl) {
+        lastRefreshEl.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      }
+    }
+
+    // Auto-refresh toggle
+    let autoRefreshInterval: number | null = null;
+    let autoRefreshEnabled = true;
+    const SERVICE_REFRESH_INTERVAL = 30000;
+    const FEED_REFRESH_INTERVAL = 300000;
+
+    function toggleAutoRefresh() {
+      autoRefreshEnabled = !autoRefreshEnabled;
+      const toggleBtn = document.getElementById('auto-refresh-toggle');
+
+      if (autoRefreshEnabled) {
+        if (toggleBtn) toggleBtn.textContent = 'Auto: ON';
+        autoRefreshInterval = window.setInterval(refreshAllServices, SERVICE_REFRESH_INTERVAL);
+      } else {
+        if (toggleBtn) toggleBtn.textContent = 'Auto: OFF';
+        if (autoRefreshInterval) {
+          clearInterval(autoRefreshInterval);
+          autoRefreshInterval = null;
+        }
+      }
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Set up pagination buttons
+      document.getElementById('rss-prev')?.addEventListener('click', () => changePage('rss', -1));
+      document.getElementById('rss-next')?.addEventListener('click', () => changePage('rss', 1));
+      document.getElementById('reddit-prev')?.addEventListener('click', () => changePage('reddit', -1));
+      document.getElementById('reddit-next')?.addEventListener('click', () => changePage('reddit', 1));
+      document.getElementById('youtube-prev')?.addEventListener('click', () => changePage('youtube', -1));
+      document.getElementById('youtube-next')?.addEventListener('click', () => changePage('youtube', 1));
+
+      // Fetch everything
+      await Promise.all([
+        refreshAllServices(),
+        refreshAllFeeds(),
+      ]);
+
+      // Set up auto-refresh
+      if (autoRefreshEnabled) {
+        autoRefreshInterval = window.setInterval(refreshAllServices, SERVICE_REFRESH_INTERVAL);
+      }
+      setInterval(refreshAllFeeds, FEED_REFRESH_INTERVAL);
+
+      // Button handlers
+      document.getElementById('auto-refresh-toggle')?.addEventListener('click', toggleAutoRefresh);
+      document.getElementById('refresh-all-btn')?.addEventListener('click', () => {
+        refreshAllServices();
+        refreshAllFeeds();
+      });
+    });
+  </script>
+</Layout>

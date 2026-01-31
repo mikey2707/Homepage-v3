@@ -1,0 +1,152 @@
+---
+import SocialLinks from './SocialLinks.astro';
+
+interface Props {
+  name: string;
+  roles: string[];
+  bio: string;
+  email?: string;
+  location?: string;
+  social?: {
+    github?: string;
+    linkedin?: string;
+    twitter?: string;
+    website?: string;
+  };
+}
+
+const { name, roles, bio, email, location, social = {} } = Astro.props;
+---
+
+<section class="flex flex-col justify-center items-center text-center py-6">
+  <div class="max-w-4xl mx-auto px-4">
+    <!-- Terminal Window -->
+    <div class="fade-in-section fade-in-up mb-6 rounded-2xl overflow-hidden glass shadow-2xl">
+      <!-- Terminal Header -->
+      <div class="flex items-center gap-2 px-4 py-3 border-b" style="border-color: var(--theme-border-glass);">
+        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+        <span class="ml-2 text-sm font-mono opacity-60" style="color: var(--theme-text);">~/portfolio</span>
+      </div>
+      <!-- Terminal Content -->
+      <div class="p-6 font-mono text-left">
+        <p class="mb-2" style="color: var(--theme-text); opacity: 0.7;">
+          <span style="color: var(--theme-primary);">$</span> whoami
+        </p>
+        <p class="mb-4 text-lg" style="color: var(--theme-primary);">
+          <span id="terminal-name" class="inline-block"></span>
+          <span class="animate-pulse">_</span>
+        </p>
+        <p class="mb-2" style="color: var(--theme-text); opacity: 0.7;">
+          <span style="color: var(--theme-primary);">$</span> cat about.txt
+        </p>
+        <p class="text-sm leading-relaxed" style="color: var(--theme-text); opacity: 0.85;">
+          {bio}
+        </p>
+      </div>
+    </div>
+
+    <!-- Name -->
+    <h1 class="fade-in-section fade-in-up stagger-1 text-5xl md:text-6xl lg:text-7xl font-bold mb-3 bg-clip-text text-transparent leading-tight tracking-tight" style="background-image: linear-gradient(to right, var(--theme-primary), var(--theme-primary-hover)); -webkit-background-clip: text;">
+      {name}
+    </h1>
+
+    <!-- Animated Roles -->
+    <div class="fade-in-section fade-in-up stagger-2 text-lg md:text-xl lg:text-2xl mb-4 font-light tracking-wide" style="color: var(--theme-text); opacity: 0.85;">
+      <span id="typewriter-text" class="inline-block min-h-[1.5em] font-medium"></span>
+      <span class="animate-pulse ml-1">|</span>
+    </div>
+
+    <!-- Location & Email -->
+    <div class="fade-in-section fade-in-up stagger-3 flex flex-wrap justify-center gap-4 md:gap-6 mb-4 text-sm" style="color: var(--theme-text); opacity: 0.65;">
+      {location && (
+        <span class="flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          {location}
+        </span>
+      )}
+      {email && (
+        <>
+          <span class="opacity-40">•</span>
+          <a href={`mailto:${email}`} class="hover:opacity-100 transition-all duration-200 hover:underline flex items-center gap-2" style="color: var(--theme-text);">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            </svg>
+            {email}
+          </a>
+        </>
+      )}
+    </div>
+
+    <!-- Social Links -->
+    <div class="fade-in-section fade-in-scale stagger-4">
+      <SocialLinks
+        github={social.github}
+        linkedin={social.linkedin}
+        twitter={social.twitter}
+        email={email}
+        website={social.website}
+      />
+    </div>
+
+  </div>
+</section>
+
+<script define:vars={{ roles, name }}>
+  // Terminal name typing effect
+  const terminalName = document.getElementById('terminal-name');
+  if (terminalName) {
+    let charIndex = 0;
+    const fullName = name.toLowerCase().replace(' ', '_');
+
+    function typeTerminalName() {
+      if (charIndex < fullName.length) {
+        terminalName.textContent += fullName.charAt(charIndex);
+        charIndex++;
+        setTimeout(typeTerminalName, 80);
+      }
+    }
+
+    setTimeout(typeTerminalName, 500);
+  }
+
+  // Typewriter effect for roles
+  const typewriterText = document.getElementById('typewriter-text');
+  if (typewriterText) {
+    let currentPhraseIndex = 0;
+    let currentCharIndex = 0;
+    let isDeleting = false;
+    let typingSpeed = 100;
+
+    function typeWriter() {
+      const currentPhrase = roles[currentPhraseIndex];
+
+      if (!isDeleting && currentCharIndex < currentPhrase.length) {
+        typewriterText.textContent = currentPhrase.substring(0, currentCharIndex + 1);
+        currentCharIndex++;
+        typingSpeed = 100;
+      } else if (!isDeleting && currentCharIndex === currentPhrase.length) {
+        typingSpeed = 2000;
+        isDeleting = true;
+      } else if (isDeleting && currentCharIndex > 0) {
+        typewriterText.textContent = currentPhrase.substring(0, currentCharIndex - 1);
+        currentCharIndex--;
+        typingSpeed = 50;
+      } else if (isDeleting && currentCharIndex === 0) {
+        isDeleting = false;
+        currentPhraseIndex = (currentPhraseIndex + 1) % roles.length;
+        typingSpeed = 500;
+      }
+
+      setTimeout(typeWriter, typingSpeed);
+    }
+
+    setTimeout(() => {
+      typeWriter();
+    }, 1000);
+  }
+</script>

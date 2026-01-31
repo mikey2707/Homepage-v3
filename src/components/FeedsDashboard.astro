@@ -1,0 +1,256 @@
+---
+const feedSections = [
+  { id: 'rss', name: 'News', icon: '📰', apiUrl: '/api/feeds/rss' },
+  { id: 'reddit', name: 'Reddit', icon: '🔗', apiUrl: '/api/feeds/reddit' },
+  { id: 'youtube', name: 'YouTube', icon: '▶️', apiUrl: '/api/feeds/youtube' },
+];
+---
+
+<section class="py-16 px-4 sm:px-6 lg:px-8 transition-colors" style="background-color: var(--theme-bg);">
+  <div class="max-w-7xl mx-auto">
+    <h2 class="fade-in-section fade-in-up text-4xl font-bold mb-8 text-center transition-colors" style="color: var(--theme-primary);">
+      Feeds & News
+    </h2>
+
+    <!-- Tab Navigation -->
+    <div class="fade-in-section flex flex-wrap justify-center gap-2 mb-8">
+      {feedSections.map((section, i) => (
+        <button
+          data-feed-tab={section.id}
+          class={`feed-tab-btn px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 glass glass-hover ${i === 0 ? 'active-feed-tab' : ''}`}
+          style={`color: var(--theme-text);${i === 0 ? ' background-color: var(--theme-primary-bg);' : ''}`}
+        >
+          {section.icon} {section.name}
+        </button>
+      ))}
+      <button
+        id="feed-refresh-btn"
+        class="px-4 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 glass glass-hover"
+        style="color: var(--theme-text);"
+      >
+        Refresh
+      </button>
+    </div>
+
+    <!-- Feed Content Panels -->
+    {feedSections.map((section, i) => (
+      <div
+        id={`feed-panel-${section.id}`}
+        class={`feed-panel ${i === 0 ? '' : 'hidden'}`}
+      >
+        <div id={`feed-items-${section.id}`} class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Shimmer loading placeholders -->
+          <div class="glass rounded-2xl overflow-hidden">
+            <div class="p-5 space-y-3">
+              <div class="h-4 rounded shimmer" style="width: 40%;"></div>
+              <div class="h-5 rounded shimmer" style="width: 90%;"></div>
+              <div class="h-4 rounded shimmer" style="width: 70%;"></div>
+            </div>
+          </div>
+          <div class="glass rounded-2xl overflow-hidden hidden md:block">
+            <div class="p-5 space-y-3">
+              <div class="h-4 rounded shimmer" style="width: 35%;"></div>
+              <div class="h-5 rounded shimmer" style="width: 85%;"></div>
+              <div class="h-4 rounded shimmer" style="width: 65%;"></div>
+            </div>
+          </div>
+          <div class="glass rounded-2xl overflow-hidden hidden lg:block">
+            <div class="p-5 space-y-3">
+              <div class="h-4 rounded shimmer" style="width: 45%;"></div>
+              <div class="h-5 rounded shimmer" style="width: 80%;"></div>
+              <div class="h-4 rounded shimmer" style="width: 60%;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+</section>
+
+<script>
+  function timeAgo(dateString: string): string {
+    const now = Date.now();
+    const date = new Date(dateString).getTime();
+    if (isNaN(date)) return '';
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    if (diffMins < 1) return 'just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays < 30) return `${diffDays}d ago`;
+    return new Date(dateString).toLocaleDateString();
+  }
+
+  function escapeHtml(str: string): string {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function renderRSSItems(items: any[]): string {
+    if (items.length === 0) {
+      return '<div class="col-span-full text-center py-12" style="color: var(--theme-text); opacity: 0.5;">No news articles found. Configure RSS_FEED_URLS in your .env file.</div>';
+    }
+    return items.map((item: any) => `
+      <a href="${escapeHtml(item.link)}" target="_blank" rel="noopener noreferrer"
+         class="block glass glass-hover rounded-2xl overflow-hidden transition-all duration-300">
+        <div class="p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="text-xs px-2.5 py-1 rounded-full font-medium" style="background-color: var(--theme-primary-bg); color: white;">
+              ${escapeHtml(item.source)}
+            </span>
+            <span class="text-xs" style="color: var(--theme-text); opacity: 0.4;">${timeAgo(item.pubDate)}</span>
+          </div>
+          <h3 class="font-semibold text-sm leading-snug mb-2" style="color: var(--theme-text);">${escapeHtml(item.title)}</h3>
+          ${item.description ? `<p class="text-xs leading-relaxed line-clamp-3" style="color: var(--theme-text); opacity: 0.5;">${escapeHtml(item.description)}</p>` : ''}
+        </div>
+      </a>
+    `).join('');
+  }
+
+  function renderRedditItems(items: any[]): string {
+    if (items.length === 0) {
+      return '<div class="col-span-full text-center py-12" style="color: var(--theme-text); opacity: 0.5;">No Reddit posts found. Configure REDDIT_SUBREDDITS in your .env file.</div>';
+    }
+    return items.map((item: any) => `
+      <a href="${escapeHtml(item.link)}" target="_blank" rel="noopener noreferrer"
+         class="block glass glass-hover rounded-2xl overflow-hidden transition-all duration-300">
+        ${item.thumbnail ? `<img src="${escapeHtml(item.thumbnail)}" alt="" class="w-full h-36 object-cover" loading="lazy" />` : ''}
+        <div class="p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="text-xs px-2.5 py-1 rounded-full font-medium bg-orange-500/20 text-orange-400">
+              ${escapeHtml(item.subreddit)}
+            </span>
+            <span class="text-xs" style="color: var(--theme-text); opacity: 0.4;">u/${escapeHtml(item.author)}</span>
+          </div>
+          <h3 class="font-semibold text-sm leading-snug mb-3" style="color: var(--theme-text);">${escapeHtml(item.title)}</h3>
+          <div class="flex items-center gap-4 text-xs" style="color: var(--theme-text); opacity: 0.4;">
+            <span>↑ ${item.score.toLocaleString()}</span>
+            <span>💬 ${item.numComments.toLocaleString()}</span>
+            <span>${timeAgo(item.pubDate)}</span>
+          </div>
+        </div>
+      </a>
+    `).join('');
+  }
+
+  function renderYouTubeItems(items: any[]): string {
+    if (items.length === 0) {
+      return '<div class="col-span-full text-center py-12" style="color: var(--theme-text); opacity: 0.5;">No YouTube videos found. Configure YOUTUBE_CHANNEL_IDS in your .env file.</div>';
+    }
+    return items.map((item: any) => `
+      <a href="${escapeHtml(item.link)}" target="_blank" rel="noopener noreferrer"
+         class="block glass glass-hover rounded-2xl overflow-hidden transition-all duration-300">
+        <div class="relative">
+          <img src="${escapeHtml(item.thumbnail)}" alt="${escapeHtml(item.title)}" class="w-full h-44 object-cover" loading="lazy" />
+          <div class="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 hover:opacity-100 transition-opacity duration-200">
+            <span class="text-4xl text-white">▶</span>
+          </div>
+        </div>
+        <div class="p-5">
+          <h3 class="font-semibold text-sm leading-snug mb-2" style="color: var(--theme-text);">${escapeHtml(item.title)}</h3>
+          <div class="flex items-center gap-2 text-xs" style="color: var(--theme-text); opacity: 0.4;">
+            <span>${escapeHtml(item.channelName)}</span>
+            <span>&bull;</span>
+            <span>${timeAgo(item.pubDate)}</span>
+          </div>
+        </div>
+      </a>
+    `).join('');
+  }
+
+  const feedRenderers: Record<string, (items: any[]) => string> = {
+    rss: renderRSSItems,
+    reddit: renderRedditItems,
+    youtube: renderYouTubeItems,
+  };
+
+  const feedCache: Record<string, { items: any[]; error?: string }> = {};
+
+  async function fetchFeed(type: string): Promise<{ items: any[]; error?: string }> {
+    try {
+      const response = await fetch(`/api/feeds/${type}`);
+      if (response.ok) {
+        const data = await response.json();
+        feedCache[type] = { items: data.items || [], error: data.error };
+        return feedCache[type];
+      }
+    } catch {
+      // Return cached data or empty
+    }
+    return feedCache[type] || { items: [] };
+  }
+
+  async function renderFeed(type: string) {
+    const container = document.getElementById(`feed-items-${type}`);
+    if (!container) return;
+
+    const result = await fetchFeed(type);
+    const renderer = feedRenderers[type];
+    if (renderer) {
+      if (result.items.length === 0 && result.error) {
+        container.innerHTML = `<div class="col-span-full text-center py-12" style="color: var(--theme-text); opacity: 0.5;">Error: ${escapeHtml(result.error)}</div>`;
+      } else {
+        container.innerHTML = renderer(result.items);
+      }
+    }
+  }
+
+  function switchFeedTab(tabId: string) {
+    document.querySelectorAll('.feed-panel').forEach(panel => {
+      panel.classList.add('hidden');
+    });
+
+    const selectedPanel = document.getElementById(`feed-panel-${tabId}`);
+    if (selectedPanel) {
+      selectedPanel.classList.remove('hidden');
+    }
+
+    document.querySelectorAll('.feed-tab-btn').forEach(btn => {
+      btn.classList.remove('active-feed-tab');
+      (btn as HTMLElement).style.backgroundColor = '';
+    });
+
+    const activeBtn = document.querySelector(`[data-feed-tab="${tabId}"]`);
+    if (activeBtn) {
+      activeBtn.classList.add('active-feed-tab');
+      (activeBtn as HTMLElement).style.backgroundColor = 'var(--theme-primary-bg)';
+    }
+  }
+
+  async function refreshAllFeeds() {
+    const types = ['rss', 'reddit', 'youtube'];
+    await Promise.all(types.map(type => renderFeed(type)));
+  }
+
+  // Initialize
+  document.addEventListener('DOMContentLoaded', async () => {
+    document.querySelectorAll('.feed-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tabId = (btn as HTMLElement).dataset.feedTab;
+        if (tabId) switchFeedTab(tabId);
+      });
+    });
+
+    const refreshBtn = document.getElementById('feed-refresh-btn');
+    if (refreshBtn) {
+      refreshBtn.addEventListener('click', refreshAllFeeds);
+    }
+
+    await refreshAllFeeds();
+
+    // Auto-refresh every 5 minutes
+    setInterval(refreshAllFeeds, 300000);
+  });
+</script>
+
+<style>
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+</style>

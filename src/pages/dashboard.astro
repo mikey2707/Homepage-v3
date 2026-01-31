@@ -1,0 +1,112 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import ServicesDashboard from '../components/ServicesDashboard.astro';
+import ThemeSelector from '../components/ThemeSelector.astro';
+
+// Dashboard Icons CDN base URL
+const iconBase = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png";
+
+// Professional dashboard - only safe/presentable services
+const professionalServices = [
+  {
+    name: "Portainer",
+    icon: "🐳",
+    logo: `${iconBase}/portainer.png`,
+    description: "Container Management",
+    apiUrl: "/api/portainer",
+    color: "from-sky-500/80 to-sky-600/80"
+  },
+  {
+    name: "HomeAssistant",
+    icon: "🏠",
+    logo: `${iconBase}/home-assistant.png`,
+    description: "Home Automation",
+    apiUrl: "/api/homeassistant",
+    color: "from-blue-400/80 to-blue-500/80"
+  },
+  {
+    name: "Immich",
+    icon: "📸",
+    logo: `${iconBase}/immich.png`,
+    description: "Photo Management",
+    apiUrl: "/api/immich",
+    color: "from-teal-500/80 to-teal-600/80"
+  },
+  {
+    name: "AdGuard",
+    icon: "🛡️",
+    logo: `${iconBase}/adguard-home.png`,
+    description: "DNS Ad Blocker",
+    apiUrl: "/api/adguard",
+    color: "from-emerald-500/80 to-emerald-600/80"
+  },
+  {
+    name: "TrueNAS",
+    icon: "💾",
+    logo: `${iconBase}/truenas.png`,
+    description: "Storage Server",
+    apiUrl: "/api/truenas",
+    color: "from-gray-500/80 to-gray-600/80"
+  },
+];
+---
+
+<Layout title="Dashboard - Mikey's Home Page">
+  <Navigation />
+  <ThemeSelector />
+
+  <main class="pt-20 pb-20 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+      <ServicesDashboard services={professionalServices} title="System Overview" />
+    </div>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const observerOptions = {
+        threshold: 0.15,
+        rootMargin: '0px 0px -100px 0px'
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+
+            const children = entry.target.querySelectorAll('.fade-in-section:not(.visible)');
+            children.forEach((child, index) => {
+              const staggerClass = Array.from(child.classList).find(cls => cls.startsWith('stagger-'));
+              let delay = 0;
+
+              if (staggerClass) {
+                const staggerNum = parseInt(staggerClass.split('-')[1]);
+                delay = staggerNum * 100;
+              } else {
+                delay = index * 80;
+              }
+
+              setTimeout(() => {
+                child.classList.add('visible');
+              }, delay);
+            });
+
+            observer.unobserve(entry.target);
+          }
+        });
+      }, observerOptions);
+
+      const animatedElements = document.querySelectorAll('.fade-in-section');
+      animatedElements.forEach(element => {
+        observer.observe(element);
+      });
+
+      const heroElements = document.querySelectorAll('.fade-in-section');
+      heroElements.forEach((element, index) => {
+        setTimeout(() => {
+          element.classList.add('visible');
+        }, index * 150);
+      });
+    });
+  </script>
+</Layout>

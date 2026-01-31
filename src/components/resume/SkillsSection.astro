@@ -1,0 +1,85 @@
+---
+interface SkillCategory {
+  name: string;
+  icon: string;
+  skills: string[];
+}
+
+interface Props {
+  categories: SkillCategory[];
+}
+
+const { categories } = Astro.props;
+---
+
+<section id="skills" class="py-20">
+  <div class="max-w-6xl mx-auto px-4">
+    <h2 class="fade-in-section fade-in-up text-3xl md:text-4xl font-semibold mb-12 tracking-tight" style="color: var(--theme-primary);">
+      Skills & Technologies
+    </h2>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      {categories.map((category, categoryIndex) => (
+        <div
+          class={`fade-in-section fade-in-left stagger-${Math.min(categoryIndex + 1, 6)} rounded-2xl p-6 md:p-8 transition-all duration-300 glass glass-hover`}
+        >
+          <!-- Category Header -->
+          <div class="flex items-center gap-3 mb-6">
+            <span class="text-2xl">{category.icon}</span>
+            <h3 class="text-xl font-semibold tracking-tight" style="color: var(--theme-text);">
+              {category.name}
+            </h3>
+          </div>
+
+          <!-- Skills Grid -->
+          <div class="flex flex-wrap gap-2">
+            {category.skills.map((skill, skillIndex) => (
+              <span
+                class={`skill-tag px-4 py-2 rounded-full text-sm font-medium border transition-all duration-300 hover:scale-105 hover:shadow-md cursor-default`}
+                style="background-color: var(--theme-bg); color: var(--theme-text); border-color: var(--theme-border);"
+                data-delay={skillIndex * 50}
+              >
+                {skill}
+              </span>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .skill-tag {
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeInUp 0.3s ease forwards;
+  }
+
+  @keyframes fadeInUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
+
+<script>
+  // Staggered animation for skill tags when section comes into view
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const skillTags = entry.target.querySelectorAll('.skill-tag');
+        skillTags.forEach((tag, index) => {
+          const element = tag as HTMLElement;
+          element.style.animationDelay = `${index * 50}ms`;
+        });
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.2 });
+
+  document.querySelectorAll('#skills > div > div').forEach(section => {
+    observer.observe(section);
+  });
+</script>

@@ -1,0 +1,87 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import ThemeSelector from '../components/ThemeSelector.astro';
+import HeroSection from '../components/resume/HeroSection.astro';
+import { getResumeData, getBookmarks } from '../lib/data';
+
+// Load data
+const resumeData = getResumeData();
+const bookmarks = getBookmarks();
+
+// Fallback values if data file is missing
+const personalInfo = resumeData?.personalInfo || {
+  name: "Your Name",
+  roles: ["Developer"],
+  email: "email@example.com",
+  location: "Location",
+  bio: "Your bio here",
+  social: {}
+};
+---
+
+<Layout title="Mikey's Home Page">
+  <Navigation />
+  <ThemeSelector />
+
+  <main class="min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 py-8">
+    <div class="w-full max-w-5xl mx-auto">
+      <!-- Compact Hero Section -->
+      <div class="text-center mb-6">
+        <HeroSection
+          name={personalInfo.name}
+          roles={personalInfo.roles}
+          bio={personalInfo.bio}
+          email={personalInfo.email}
+          location={personalInfo.location}
+          social={personalInfo.social}
+        />
+      </div>
+
+      <!-- Bookmarks Section -->
+      <section class="w-full">
+        <h2 class="fade-in-section fade-in-up text-xl font-bold text-center mb-4" style="color: var(--theme-primary);">
+          Quick Links
+        </h2>
+
+        <div class="flex justify-center">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {bookmarks.map((bookmark, i) => (
+            <a
+              href={bookmark.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class={`fade-in-section fade-in-scale stagger-${Math.min(i + 1, 6)} group glass glass-hover rounded-xl p-3 flex flex-col items-center gap-2 transition-all duration-300`}
+            >
+              <div class={`w-10 h-10 rounded-lg bg-gradient-to-br ${bookmark.color} flex items-center justify-center p-1 transition-transform duration-300 group-hover:scale-110`}>
+                <img
+                  src={bookmark.icon}
+                  alt={bookmark.name}
+                  class="w-7 h-7 object-contain"
+                  loading="lazy"
+                />
+              </div>
+              <div class="text-center">
+                <h3 class="font-semibold text-xs" style="color: var(--theme-text);">{bookmark.name}</h3>
+                <p class="text-xs" style="color: var(--theme-text); opacity: 0.4;">{bookmark.description}</p>
+              </div>
+            </a>
+          ))}
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    // Simple fade-in animation on load
+    document.addEventListener('DOMContentLoaded', () => {
+      const elements = document.querySelectorAll('.fade-in-section');
+      elements.forEach((element, index) => {
+        setTimeout(() => {
+          element.classList.add('visible');
+        }, index * 80);
+      });
+    });
+  </script>
+</Layout>

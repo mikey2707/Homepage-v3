@@ -1,0 +1,108 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import ThemeSelector from '../components/ThemeSelector.astro';
+import ProjectsSection from '../components/resume/ProjectsSection.astro';
+import SkillsSection from '../components/resume/SkillsSection.astro';
+import ExperienceTimeline from '../components/resume/ExperienceTimeline.astro';
+import EducationSection from '../components/resume/EducationSection.astro';
+import { getResumeData } from '../lib/data';
+
+// Load resume data from data/resume.json
+const resumeData = getResumeData();
+
+// Fallback values if data file is missing
+const personalInfo = resumeData?.personalInfo || {
+  name: "Your Name",
+};
+
+const projects = resumeData?.projects || [];
+const skillCategories = resumeData?.skillCategories || [];
+const experience = resumeData?.experience || [];
+const education = resumeData?.education || [];
+const certifications = resumeData?.certifications || [];
+---
+
+<Layout title={`Resume - ${personalInfo.name}`}>
+  <Navigation />
+  <ThemeSelector />
+
+  <main class="pt-20 pb-20 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+      <!-- Page Header -->
+      <header class="text-center mb-12 fade-in-section fade-in-up">
+        <h1 class="text-4xl font-bold mb-2" style="color: var(--theme-primary);">
+          Resume
+        </h1>
+        <p class="text-sm" style="color: var(--theme-text); opacity: 0.6;">
+          Projects, Skills & Experience
+        </p>
+      </header>
+
+      <!-- Projects Section -->
+      <ProjectsSection projects={projects} />
+
+      <!-- Skills Section -->
+      <SkillsSection categories={skillCategories} />
+
+      <!-- Experience Timeline -->
+      <ExperienceTimeline experiences={experience} />
+
+      <!-- Education Section -->
+      <EducationSection
+        education={education}
+        certifications={certifications.length > 0 ? certifications : undefined}
+      />
+    </div>
+  </main>
+
+  <script>
+    // Intersection Observer for scroll-triggered animations
+    document.addEventListener('DOMContentLoaded', () => {
+      const observerOptions = {
+        threshold: 0.15,
+        rootMargin: '0px 0px -100px 0px'
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+
+            const children = entry.target.querySelectorAll('.fade-in-section:not(.visible)');
+            children.forEach((child, index) => {
+              const staggerClass = Array.from(child.classList).find(cls => cls.startsWith('stagger-'));
+              let delay = 0;
+
+              if (staggerClass) {
+                const staggerNum = parseInt(staggerClass.split('-')[1]);
+                delay = staggerNum * 100;
+              } else {
+                delay = index * 80;
+              }
+
+              setTimeout(() => {
+                child.classList.add('visible');
+              }, delay);
+            });
+
+            observer.unobserve(entry.target);
+          }
+        });
+      }, observerOptions);
+
+      const animatedElements = document.querySelectorAll('.fade-in-section');
+      animatedElements.forEach(element => {
+        observer.observe(element);
+      });
+
+      // Animate header immediately on load
+      const headerElements = document.querySelectorAll('header .fade-in-section');
+      headerElements.forEach((element, index) => {
+        setTimeout(() => {
+          element.classList.add('visible');
+        }, index * 150);
+      });
+    });
+  </script>
+</Layout>

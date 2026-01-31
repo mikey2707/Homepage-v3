@@ -1,0 +1,201 @@
+---
+---
+
+<div class="fixed top-4 right-4 z-50">
+  <div class="relative">
+    <button
+      id="theme-button"
+      class="p-3 rounded-lg border shadow-lg transition-colors"
+      style="background-color: var(--theme-card); border-color: var(--theme-border); color: var(--theme-text);"
+      aria-label="Select theme"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
+      </svg>
+    </button>
+    
+    <div
+      id="theme-menu"
+      class="hidden absolute right-0 mt-2 w-48 rounded-lg border shadow-xl overflow-hidden transition-colors"
+      style="background-color: var(--theme-card); border-color: var(--theme-border);"
+    >
+      <button
+        data-theme="light"
+        class="theme-option w-full text-left px-4 py-3 transition-colors flex items-center gap-3"
+        style="color: var(--theme-text);"
+      >
+        <span class="w-4 h-4 rounded-full bg-yellow-400 border-2" style="border-color: var(--theme-border);"></span>
+        <span>Light</span>
+      </button>
+      <button
+        data-theme="dark"
+        class="theme-option w-full text-left px-4 py-3 transition-colors flex items-center gap-3"
+        style="color: var(--theme-text);"
+      >
+        <span class="w-4 h-4 rounded-full bg-sky-500 border-2" style="border-color: var(--theme-border);"></span>
+        <span>Blue</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const themes = {
+      light: {
+        bg: '#f9fafb',
+        text: '#111827',
+        card: '#ffffff',
+        border: '#e5e7eb',
+        primary: '#2563eb',
+        primaryBg: 'rgba(37, 99, 235, 0.1)',
+        primaryText: '#1d4ed8',
+        primaryHover: '#1d4ed8',
+        cardGlass: 'rgba(255, 255, 255, 0.6)',
+        borderGlass: 'rgba(0, 0, 0, 0.08)',
+        glow: 'rgba(37, 99, 235, 0.1)',
+      },
+      dark: {
+        bg: '#111827',
+        text: '#f3f4f6',
+        card: '#1f2937',
+        border: '#374151',
+        primary: '#38bdf8',
+        primaryBg: 'rgba(56, 189, 248, 0.15)',
+        primaryText: '#7dd3fc',
+        primaryHover: '#0369a1',
+        cardGlass: 'rgba(17, 24, 39, 0.6)',
+        borderGlass: 'rgba(255, 255, 255, 0.08)',
+        glow: 'rgba(56, 189, 248, 0.15)',
+      },
+    };
+
+    const getTheme = () => {
+      if (typeof window !== 'undefined') {
+        const stored = localStorage.getItem('color-theme');
+        return stored || 'dark';
+      }
+      return 'dark';
+    };
+
+    const applyTheme = (themeName: string) => {
+      if (typeof document === 'undefined') return;
+      
+      const root = document.documentElement;
+      const theme = themes[themeName as keyof typeof themes];
+      
+      if (!theme) return;
+
+      // Remove all theme classes
+      root.classList.remove('theme-light', 'theme-dark');
+      
+      // Add current theme class
+      root.classList.add(`theme-${themeName}`);
+      
+      // Set CSS custom properties
+      root.style.setProperty('--theme-bg', theme.bg);
+      root.style.setProperty('--theme-text', theme.text);
+      root.style.setProperty('--theme-card', theme.card);
+      root.style.setProperty('--theme-border', theme.border);
+      root.style.setProperty('--theme-primary', theme.primary);
+      root.style.setProperty('--theme-primary-bg', theme.primaryBg);
+      root.style.setProperty('--theme-primary-text', theme.primaryText);
+      root.style.setProperty('--theme-primary-hover', theme.primaryHover);
+      root.style.setProperty('--theme-card-glass', theme.cardGlass);
+      root.style.setProperty('--theme-border-glass', theme.borderGlass);
+      root.style.setProperty('--theme-glow', theme.glow);
+      
+      // Update active state in menu
+      document.querySelectorAll('.theme-option').forEach(btn => {
+        const btnElement = btn as HTMLElement;
+        btnElement.style.backgroundColor = '';
+        if (btn.getAttribute('data-theme') === themeName) {
+          btnElement.style.backgroundColor = theme.bg === '#111827' ? '#374151' : '#f3f4f6';
+        }
+      });
+      
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('color-theme', themeName);
+      }
+    };
+
+    // Initialize
+    if (typeof document !== 'undefined') {
+      const currentTheme = getTheme();
+      applyTheme(currentTheme);
+
+      // Toggle menu
+      const themeButton = document.getElementById('theme-button');
+      const themeMenu = document.getElementById('theme-menu');
+      
+      if (themeButton && themeMenu) {
+        themeButton.addEventListener('click', (e) => {
+          e.stopPropagation();
+          themeMenu.classList.toggle('hidden');
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+          if (themeButton && themeMenu && !themeButton.contains(e.target as Node) && !themeMenu.contains(e.target as Node)) {
+            themeMenu.classList.add('hidden');
+          }
+        });
+
+        // Theme selection
+        document.querySelectorAll('.theme-option').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const theme = btn.getAttribute('data-theme');
+            if (theme) {
+              applyTheme(theme);
+              if (themeMenu) themeMenu.classList.add('hidden');
+            }
+          });
+        });
+      }
+    }
+  })();
+</script>
+
+<style is:global>
+  :root {
+    --theme-bg: #111827;
+    --theme-text: #f3f4f6;
+    --theme-card: #1f2937;
+    --theme-border: #374151;
+    --theme-primary: #38bdf8;
+    --theme-primary-bg: rgba(56, 189, 248, 0.15);
+    --theme-primary-text: #7dd3fc;
+    --theme-primary-hover: #0369a1;
+    --theme-card-glass: rgba(17, 24, 39, 0.6);
+    --theme-border-glass: rgba(255, 255, 255, 0.08);
+    --theme-glow: rgba(56, 189, 248, 0.15);
+  }
+
+  .theme-light {
+    --theme-bg: #f9fafb;
+    --theme-text: #111827;
+    --theme-card: #ffffff;
+    --theme-border: #e5e7eb;
+    --theme-primary: #2563eb;
+    --theme-primary-bg: rgba(37, 99, 235, 0.1);
+    --theme-primary-text: #1d4ed8;
+    --theme-primary-hover: #1d4ed8;
+    --theme-card-glass: rgba(255, 255, 255, 0.6);
+    --theme-border-glass: rgba(0, 0, 0, 0.08);
+    --theme-glow: rgba(37, 99, 235, 0.1);
+  }
+
+  .theme-dark {
+    --theme-bg: #111827;
+    --theme-text: #f3f4f6;
+    --theme-card: #1f2937;
+    --theme-border: #374151;
+    --theme-primary: #38bdf8;
+    --theme-primary-bg: rgba(56, 189, 248, 0.15);
+    --theme-primary-text: #7dd3fc;
+    --theme-primary-hover: #0369a1;
+    --theme-card-glass: rgba(17, 24, 39, 0.6);
+    --theme-border-glass: rgba(255, 255, 255, 0.08);
+    --theme-glow: rgba(56, 189, 248, 0.15);
+  }
+</style>
