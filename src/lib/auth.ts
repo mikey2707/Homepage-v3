@@ -19,15 +19,22 @@ const SESSION_DURATION = 24 * 60 * 60 * 1000; // 24 hours
  * When migrating to Authentik, replace this with OAuth token validation
  */
 export function validateCredentials(username: string, password: string): boolean {
-  const validUsername = import.meta.env.AUTH_USERNAME || 'admin';
-  const validPassword = import.meta.env.AUTH_PASSWORD || '';
+  // Use process.env for runtime Docker compatibility
+  const validUsername = process.env.AUTH_USERNAME || import.meta.env.AUTH_USERNAME || 'admin';
+  const validPassword = process.env.AUTH_PASSWORD || import.meta.env.AUTH_PASSWORD || '';
+
+  console.log('[Auth] Debug - Username from env:', validUsername);
+  console.log('[Auth] Debug - Password configured:', !!validPassword);
+  console.log('[Auth] Debug - Login attempt for:', username);
 
   if (!validPassword) {
-    console.warn('AUTH_PASSWORD not set - authentication disabled');
+    console.warn('[Auth] AUTH_PASSWORD not set - authentication disabled');
     return false;
   }
 
-  return username === validUsername && password === validPassword;
+  const result = username === validUsername && password === validPassword;
+  console.log('[Auth] Debug - Login result:', result ? 'SUCCESS' : 'FAILED');
+  return result;
 }
 
 /**
@@ -35,7 +42,8 @@ export function validateCredentials(username: string, password: string): boolean
  * When migrating to Authentik, this would store/validate Authentik tokens
  */
 export function createSessionToken(username: string): string {
-  const secret = import.meta.env.AUTH_SECRET || 'default-secret-change-me';
+  // Use process.env for runtime Docker compatibility
+  const secret = process.env.AUTH_SECRET || import.meta.env.AUTH_SECRET || 'default-secret-change-me';
   const expiresAt = Date.now() + SESSION_DURATION;
   const payload = JSON.stringify({ username, expiresAt });
 
@@ -54,7 +62,8 @@ export function createSessionToken(username: string): string {
 export function validateSessionToken(token: string): AuthSession | null {
   if (!token) return null;
 
-  const secret = import.meta.env.AUTH_SECRET || 'default-secret-change-me';
+  // Use process.env for runtime Docker compatibility
+  const secret = process.env.AUTH_SECRET || import.meta.env.AUTH_SECRET || 'default-secret-change-me';
   const parts = token.split('.');
 
   if (parts.length !== 2) return null;

@@ -1,8 +1,12 @@
 import type { APIRoute } from 'astro';
 
 export const GET: APIRoute = async ({ request }) => {
-  const TRUENAS_URL = import.meta.env.TRUENAS_URL || 'http://localhost:80';
-  const TRUENAS_API_KEY = import.meta.env.TRUENAS_API_KEY || '';
+  // Use process.env for runtime Docker compatibility
+  const TRUENAS_URL = process.env.TRUENAS_URL || import.meta.env.TRUENAS_URL || 'http://localhost:80';
+  const TRUENAS_API_KEY = process.env.TRUENAS_API_KEY || import.meta.env.TRUENAS_API_KEY || '';
+
+  console.log('[TrueNAS] Debug - URL:', TRUENAS_URL);
+  console.log('[TrueNAS] Debug - API Key configured:', !!TRUENAS_API_KEY);
 
   if (!TRUENAS_API_KEY) {
     return new Response(

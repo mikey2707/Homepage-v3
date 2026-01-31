@@ -1,9 +1,12 @@
 import type { APIRoute } from 'astro';
 
 export const GET: APIRoute = async ({ request }) => {
-  // Get configuration from environment variables
-  const JELLYSEERR_URL = import.meta.env.JELLYSEERR_URL || 'http://localhost:5055';
-  const JELLYSEERR_API_KEY = import.meta.env.JELLYSEERR_API_KEY || '';
+  // Use process.env for runtime Docker compatibility
+  const JELLYSEERR_URL = process.env.JELLYSEERR_URL || import.meta.env.JELLYSEERR_URL || 'http://localhost:5055';
+  const JELLYSEERR_API_KEY = process.env.JELLYSEERR_API_KEY || import.meta.env.JELLYSEERR_API_KEY || '';
+
+  console.log('[Jellyseerr] Debug - URL:', JELLYSEERR_URL);
+  console.log('[Jellyseerr] Debug - API Key configured:', !!JELLYSEERR_API_KEY);
 
   if (!JELLYSEERR_API_KEY) {
     return new Response(

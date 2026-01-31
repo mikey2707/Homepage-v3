@@ -1,8 +1,12 @@
 import type { APIRoute } from 'astro';
 
 export const GET: APIRoute = async ({ request }) => {
-  const HA_URL = import.meta.env.HOMEASSISTANT_URL || 'http://localhost:8123';
-  const HA_TOKEN = import.meta.env.HOMEASSISTANT_TOKEN || '';
+  // Use process.env for runtime Docker compatibility
+  const HA_URL = process.env.HOMEASSISTANT_URL || import.meta.env.HOMEASSISTANT_URL || 'http://localhost:8123';
+  const HA_TOKEN = process.env.HOMEASSISTANT_TOKEN || import.meta.env.HOMEASSISTANT_TOKEN || '';
+
+  console.log('[HomeAssistant] Debug - URL:', HA_URL);
+  console.log('[HomeAssistant] Debug - Token configured:', !!HA_TOKEN);
 
   if (!HA_TOKEN) {
     return new Response(

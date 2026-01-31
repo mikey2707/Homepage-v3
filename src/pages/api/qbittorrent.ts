@@ -1,9 +1,14 @@
 import type { APIRoute } from 'astro';
 
 export const GET: APIRoute = async ({ request }) => {
-  const QBITTORRENT_URL = import.meta.env.QBITTORRENT_URL || 'http://localhost:8080';
-  const QBITTORRENT_USERNAME = import.meta.env.QBITTORRENT_USERNAME || '';
-  const QBITTORRENT_PASSWORD = import.meta.env.QBITTORRENT_PASSWORD || '';
+  // Use process.env for runtime Docker compatibility
+  const QBITTORRENT_URL = process.env.QBITTORRENT_URL || import.meta.env.QBITTORRENT_URL || 'http://localhost:8080';
+  const QBITTORRENT_USERNAME = process.env.QBITTORRENT_USERNAME || import.meta.env.QBITTORRENT_USERNAME || '';
+  const QBITTORRENT_PASSWORD = process.env.QBITTORRENT_PASSWORD || import.meta.env.QBITTORRENT_PASSWORD || '';
+
+  console.log('[qBittorrent] Debug - URL:', QBITTORRENT_URL);
+  console.log('[qBittorrent] Debug - Username configured:', !!QBITTORRENT_USERNAME);
+  console.log('[qBittorrent] Debug - Password configured:', !!QBITTORRENT_PASSWORD);
 
   if (!QBITTORRENT_USERNAME || !QBITTORRENT_PASSWORD) {
     return new Response(

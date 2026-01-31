@@ -1,8 +1,12 @@
 import type { APIRoute } from 'astro';
 
 export const GET: APIRoute = async ({ request }) => {
-  const PORTAINER_URL = import.meta.env.PORTAINER_URL || 'http://localhost:9000';
-  const PORTAINER_API_KEY = import.meta.env.PORTAINER_API_KEY || '';
+  // Use process.env for runtime Docker compatibility
+  const PORTAINER_URL = process.env.PORTAINER_URL || import.meta.env.PORTAINER_URL || 'http://localhost:9000';
+  const PORTAINER_API_KEY = process.env.PORTAINER_API_KEY || import.meta.env.PORTAINER_API_KEY || '';
+
+  console.log('[Portainer] Debug - URL:', PORTAINER_URL);
+  console.log('[Portainer] Debug - API Key configured:', !!PORTAINER_API_KEY);
 
   if (!PORTAINER_API_KEY) {
     return new Response(

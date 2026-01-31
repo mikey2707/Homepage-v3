@@ -1,8 +1,12 @@
 import type { APIRoute } from 'astro';
 
 export const GET: APIRoute = async ({ request }) => {
-  const RADARR_URL = import.meta.env.RADARR_URL || 'http://localhost:7878';
-  const RADARR_API_KEY = import.meta.env.RADARR_API_KEY || '';
+  // Use process.env for runtime Docker compatibility
+  const RADARR_URL = process.env.RADARR_URL || import.meta.env.RADARR_URL || 'http://localhost:7878';
+  const RADARR_API_KEY = process.env.RADARR_API_KEY || import.meta.env.RADARR_API_KEY || '';
+
+  console.log('[Radarr] Debug - URL:', RADARR_URL);
+  console.log('[Radarr] Debug - API Key configured:', !!RADARR_API_KEY);
 
   if (!RADARR_API_KEY) {
     return new Response(

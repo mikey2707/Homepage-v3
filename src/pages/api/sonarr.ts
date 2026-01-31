@@ -1,9 +1,12 @@
 import type { APIRoute } from 'astro';
 
 export const GET: APIRoute = async ({ request }) => {
-  // Get configuration from environment variables
-  const SONARR_URL = import.meta.env.SONARR_URL || 'http://localhost:8989';
-  const SONARR_API_KEY = import.meta.env.SONARR_API_KEY || '';
+  // Use process.env for runtime Docker compatibility
+  const SONARR_URL = process.env.SONARR_URL || import.meta.env.SONARR_URL || 'http://localhost:8989';
+  const SONARR_API_KEY = process.env.SONARR_API_KEY || import.meta.env.SONARR_API_KEY || '';
+
+  console.log('[Sonarr] Debug - URL:', SONARR_URL);
+  console.log('[Sonarr] Debug - API Key configured:', !!SONARR_API_KEY);
 
   if (!SONARR_API_KEY) {
     return new Response(

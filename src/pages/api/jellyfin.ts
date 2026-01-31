@@ -1,8 +1,12 @@
 import type { APIRoute } from 'astro';
 
 export const GET: APIRoute = async ({ request }) => {
-  const JELLYFIN_URL = import.meta.env.JELLYFIN_URL || 'http://localhost:8096';
-  const JELLYFIN_API_KEY = import.meta.env.JELLYFIN_API_KEY || '';
+  // Use process.env for runtime Docker compatibility
+  const JELLYFIN_URL = process.env.JELLYFIN_URL || import.meta.env.JELLYFIN_URL || 'http://localhost:8096';
+  const JELLYFIN_API_KEY = process.env.JELLYFIN_API_KEY || import.meta.env.JELLYFIN_API_KEY || '';
+
+  console.log('[Jellyfin] Debug - URL:', JELLYFIN_URL);
+  console.log('[Jellyfin] Debug - API Key configured:', !!JELLYFIN_API_KEY);
 
   if (!JELLYFIN_API_KEY) {
     return new Response(

@@ -1,9 +1,14 @@
 import type { APIRoute } from 'astro';
 
 export const GET: APIRoute = async ({ request }) => {
-  const ADGUARD_URL = import.meta.env.ADGUARD_URL || 'http://localhost:3000';
-  const ADGUARD_USERNAME = import.meta.env.ADGUARD_USERNAME || '';
-  const ADGUARD_PASSWORD = import.meta.env.ADGUARD_PASSWORD || '';
+  // Use process.env for runtime Docker compatibility
+  const ADGUARD_URL = process.env.ADGUARD_URL || import.meta.env.ADGUARD_URL || 'http://localhost:3000';
+  const ADGUARD_USERNAME = process.env.ADGUARD_USERNAME || import.meta.env.ADGUARD_USERNAME || '';
+  const ADGUARD_PASSWORD = process.env.ADGUARD_PASSWORD || import.meta.env.ADGUARD_PASSWORD || '';
+
+  console.log('[AdGuard] Debug - URL:', ADGUARD_URL);
+  console.log('[AdGuard] Debug - Username configured:', !!ADGUARD_USERNAME);
+  console.log('[AdGuard] Debug - Password configured:', !!ADGUARD_PASSWORD);
 
   if (!ADGUARD_USERNAME || !ADGUARD_PASSWORD) {
     return new Response(

@@ -2,9 +2,14 @@ import type { APIRoute } from 'astro';
 import https from 'https';
 
 export const GET: APIRoute = async ({ request }) => {
-  const PROXMOX_URL = import.meta.env.PROXMOX_URL || 'https://localhost:8006';
-  const PROXMOX_TOKEN_ID = import.meta.env.PROXMOX_TOKEN_ID || '';
-  const PROXMOX_TOKEN_SECRET = import.meta.env.PROXMOX_TOKEN_SECRET || '';
+  // Use process.env for runtime Docker compatibility
+  const PROXMOX_URL = process.env.PROXMOX_URL || import.meta.env.PROXMOX_URL || 'https://localhost:8006';
+  const PROXMOX_TOKEN_ID = process.env.PROXMOX_TOKEN_ID || import.meta.env.PROXMOX_TOKEN_ID || '';
+  const PROXMOX_TOKEN_SECRET = process.env.PROXMOX_TOKEN_SECRET || import.meta.env.PROXMOX_TOKEN_SECRET || '';
+
+  console.log('[Proxmox] Debug - URL:', PROXMOX_URL);
+  console.log('[Proxmox] Debug - Token ID configured:', !!PROXMOX_TOKEN_ID);
+  console.log('[Proxmox] Debug - Token Secret configured:', !!PROXMOX_TOKEN_SECRET);
 
   if (!PROXMOX_TOKEN_ID || !PROXMOX_TOKEN_SECRET) {
     return new Response(
