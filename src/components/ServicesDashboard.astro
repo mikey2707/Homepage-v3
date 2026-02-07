@@ -113,11 +113,15 @@ const serviceNames = JSON.stringify(services.map(s => s.name.toLowerCase()));
           Auto-refresh ON
         </button>
         <button
+          id="refresh-all-btn"
           onclick="refreshAllServices()"
-          class="px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:scale-105"
+          class="px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:scale-105 flex items-center gap-2"
           style="background-color: var(--theme-primary-bg); color: white;"
         >
-          Refresh All
+          <svg id="refresh-all-icon" class="w-4 h-4 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          <span id="refresh-all-text">Refresh All</span>
         </button>
       </div>
       <div class="text-sm mt-2 sm:mt-0" style="color: var(--theme-text); opacity: 0.7;">
@@ -169,11 +173,15 @@ const serviceNames = JSON.stringify(services.map(s => s.name.toLowerCase()));
             </div>
 
             <button
+              id={`${service.name.toLowerCase()}-refresh-btn`}
               onclick={`refreshService('${service.name.toLowerCase()}')`}
-              class="mt-4 w-full py-2 px-4 rounded-lg font-medium text-sm transition-all duration-200 hover:scale-[1.02] glass glass-hover"
+              class="mt-4 w-full py-2 px-4 rounded-lg font-medium text-sm transition-all duration-200 hover:scale-[1.02] glass glass-hover flex items-center justify-center gap-2"
               style="color: var(--theme-text);"
             >
-              Refresh
+              <svg id={`${service.name.toLowerCase()}-refresh-icon`} class="w-3.5 h-3.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+              <span id={`${service.name.toLowerCase()}-refresh-text`}>Refresh</span>
             </button>
           </div>
         </div>
@@ -377,21 +385,63 @@ const serviceNames = JSON.stringify(services.map(s => s.name.toLowerCase()));
     }
   }
 
-  async function refreshService(serviceName: string) {
+  async function refreshService(serviceName: string, showAnimation: boolean = true) {
+    const refreshBtn = document.getElementById(`${serviceName}-refresh-btn`);
+    const refreshIcon = document.getElementById(`${serviceName}-refresh-icon`);
+    const refreshText = document.getElementById(`${serviceName}-refresh-text`);
+    
+    // Start spinning animation
+    if (showAnimation) {
+      if (refreshBtn) refreshBtn.classList.add('pointer-events-none');
+      if (refreshIcon) refreshIcon.classList.add('animate-spin');
+      if (refreshText) refreshText.textContent = 'Refreshing...';
+    }
+    
     const status = await checkServiceStatus(serviceName);
     updateServiceUI(serviceName, status);
+    
+    // Show success state
+    if (showAnimation) {
+      if (refreshIcon) {
+        refreshIcon.classList.remove('animate-spin');
+        refreshIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>';
+      }
+      if (refreshText) refreshText.textContent = 'Done!';
+      
+      // Reset after delay
+      setTimeout(() => {
+        if (refreshIcon) {
+          refreshIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>';
+        }
+        if (refreshText) refreshText.textContent = 'Refresh';
+        if (refreshBtn) refreshBtn.classList.remove('pointer-events-none');
+      }, 800);
+    }
   }
 
   // Auto-refresh functionality
   let autoRefreshInterval: number | null = null;
   let autoRefreshEnabled = true;
+  let isRefreshingAll = false;
   const REFRESH_INTERVAL = 30000; // 30 seconds
 
   async function refreshAllServices() {
+    if (isRefreshingAll) return;
+    isRefreshingAll = true;
+    
+    const refreshBtn = document.getElementById('refresh-all-btn');
+    const refreshIcon = document.getElementById('refresh-all-icon');
+    const refreshText = document.getElementById('refresh-all-text');
+    
+    // Start spinning animation
+    if (refreshBtn) refreshBtn.classList.add('pointer-events-none');
+    if (refreshIcon) refreshIcon.classList.add('animate-spin');
+    if (refreshText) refreshText.textContent = 'Refreshing...';
+    
     const services: string[] = (window as any).__serviceNames || ['sonarr', 'radarr', 'jellyfin', 'qbittorrent', 'jellyseerr', 'immich', 'portainer', 'adguard', 'homeassistant', 'proxmox', 'truenas'];
 
     for (const service of services) {
-      await refreshService(service);
+      await refreshService(service, false); // Don't show individual animations during bulk refresh
       await new Promise(resolve => setTimeout(resolve, 200));
     }
 
@@ -400,6 +450,23 @@ const serviceNames = JSON.stringify(services.map(s => s.name.toLowerCase()));
       const now = new Date();
       lastRefreshEl.textContent = now.toLocaleTimeString();
     }
+    
+    // Show success state
+    if (refreshIcon) {
+      refreshIcon.classList.remove('animate-spin');
+      refreshIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>';
+    }
+    if (refreshText) refreshText.textContent = 'Done!';
+    
+    // Reset after delay
+    setTimeout(() => {
+      if (refreshIcon) {
+        refreshIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>';
+      }
+      if (refreshText) refreshText.textContent = 'Refresh All';
+      if (refreshBtn) refreshBtn.classList.remove('pointer-events-none');
+      isRefreshingAll = false;
+    }, 1000);
   }
 
   function toggleAutoRefresh() {

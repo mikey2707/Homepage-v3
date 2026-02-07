@@ -200,5 +200,24 @@ const { title, description = "Mikey's Home Page" } = Astro.props;
   .timeline-line.active {
     opacity: 1;
   }
+
+  /* Spin animation for refresh buttons */
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .animate-spin {
+    animation: spin 0.8s linear infinite;
+  }
+
+  /* Pointer events none utility */
+  .pointer-events-none {
+    pointer-events: none;
+  }
 </style>
 

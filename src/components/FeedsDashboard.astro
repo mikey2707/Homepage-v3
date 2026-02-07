@@ -25,10 +25,13 @@ const feedSections = [
       ))}
       <button
         id="feed-refresh-btn"
-        class="px-4 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 glass glass-hover"
+        class="px-4 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 glass glass-hover flex items-center gap-2"
         style="color: var(--theme-text);"
       >
-        Refresh
+        <svg id="feed-refresh-icon" class="w-4 h-4 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+        <span id="feed-refresh-text">Refresh</span>
       </button>
     </div>
 
@@ -221,8 +224,33 @@ const feedSections = [
   }
 
   async function refreshAllFeeds() {
+    const refreshBtn = document.getElementById('feed-refresh-btn');
+    const refreshIcon = document.getElementById('feed-refresh-icon');
+    const refreshText = document.getElementById('feed-refresh-text');
+    
+    // Start spinning animation
+    if (refreshBtn) refreshBtn.classList.add('pointer-events-none');
+    if (refreshIcon) refreshIcon.classList.add('animate-spin');
+    if (refreshText) refreshText.textContent = 'Refreshing...';
+    
     const types = ['rss', 'reddit', 'youtube'];
     await Promise.all(types.map(type => renderFeed(type)));
+    
+    // Show success state
+    if (refreshIcon) {
+      refreshIcon.classList.remove('animate-spin');
+      refreshIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>';
+    }
+    if (refreshText) refreshText.textContent = 'Done!';
+    
+    // Reset after delay
+    setTimeout(() => {
+      if (refreshIcon) {
+        refreshIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>';
+      }
+      if (refreshText) refreshText.textContent = 'Refresh';
+      if (refreshBtn) refreshBtn.classList.remove('pointer-events-none');
+    }, 1000);
   }
 
   // Initialize
@@ -252,5 +280,18 @@ const feedSections = [
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
+  }
+
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .animate-spin {
+    animation: spin 0.8s linear infinite;
   }
 </style>
