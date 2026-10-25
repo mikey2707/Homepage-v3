@@ -49,7 +49,6 @@ export const GET: APIRoute = async () => {
   // Use process.env for runtime Docker compatibility
   const RSS_FEED_URLS = process.env.RSS_FEED_URLS || import.meta.env.RSS_FEED_URLS || '';
 
-  console.log('[RSS] Debug - Feed URLs configured:', !!RSS_FEED_URLS);
 
   if (!RSS_FEED_URLS) {
     return new Response(

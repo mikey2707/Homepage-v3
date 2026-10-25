@@ -1,0 +1,78 @@
+---
+// 3D WebGL Canvas Component for Mikey's Pizza Parlor
+---
+
+<div id="pizza-scene-wrapper" class="relative w-full h-full overflow-hidden select-none bg-[#120c0a]">
+  <canvas id="pizza-canvas" class="w-full h-full block cursor-default"></canvas>
+</div>
+
+<script>
+  import { PizzaExperience } from '../../lib/pizza/scene';
+
+  let experience: PizzaExperience | null = null;
+
+  function initPizzaExperience() {
+    const canvas = document.getElementById('pizza-canvas') as HTMLCanvasElement | null;
+    if (!canvas) return;
+
+    if (experience) {
+      experience.destroy();
+    }
+
+    experience = new PizzaExperience(canvas);
+    (window as any).__experience = experience;
+
+    // Event listener for intro swoop
+    window.addEventListener('pizza-start-intro', () => {
+      experience?.startIntro();
+    });
+
+    // Event listener for station travel
+    window.addEventListener('pizza-go-station', ((e: CustomEvent) => {
+      const station = e.detail?.station;
+      if (station && experience) {
+        experience.goToStation(station);
+      }
+    }) as EventListener);
+
+    // Event listener for live TrueNAS telemetry (updates fridge LED texture)
+    window.addEventListener('pizza-telemetry-update', ((e: CustomEvent) => {
+      const data = e.detail;
+      if (data && experience?.world) {
+        const tempC = typeof data.cpuTempC === 'number' ? data.cpuTempC : 38.2;
+        const tempF = typeof data.cpuTempF === 'number' ? data.cpuTempF : 100.8;
+        const statusText = data.online ? 'COOLING [OK]' : 'STANDBY';
+        experience.world.updateFridgeTemperature(tempC, tempF, statusText);
+      }
+    }) as EventListener);
+
+    // Event listener for Dark Mode / Cozy Lighting toggle
+    window.addEventListener('pizza-lighting-mode', ((e: CustomEvent) => {
+      const isDark = !!e.detail?.dark;
+      experience?.setDarkMode(isDark);
+    }) as EventListener);
+
+    // Apply saved lighting preference if set
+    try {
+      if (localStorage.getItem('pizza-lighting-mode') === 'dark') {
+        experience.setDarkMode(true);
+      }
+    } catch {
+      // ignore storage errors
+    }
+  }
+
+  // Initialize when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPizzaExperience);
+  } else {
+    initPizzaExperience();
+  }
+
+  // Handle Astro page transitions if any
+  document.addEventListener('astro:page-load', initPizzaExperience);
+  document.addEventListener('astro:before-swap', () => {
+    experience?.destroy();
+    experience = null;
+  });
+</script>

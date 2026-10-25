@@ -1,0 +1,576 @@
+---
+import { getResumeData } from '../../lib/data';
+
+const resumeData = getResumeData();
+const projects = resumeData.projects || [];
+const personal = resumeData.personalInfo || { name: 'Michael Chavez', roles: [], email: 'michaelchavezm@gmail.com', location: 'South Carolina', bio: '', social: {} };
+const experience = resumeData.experience || [];
+const skills = resumeData.skills || [];
+const education = resumeData.education || [];
+---
+
+<div id="pizza-modal-container" class="fixed inset-0 pointer-events-none z-40 transition-opacity duration-300 opacity-0">
+  
+  <!-- Backdrop for station modals -->
+  <div id="modal-backdrop" class="absolute inset-0 bg-void-black/30 pointer-events-auto transition-opacity duration-300 opacity-0 hidden"></div>
+
+  <!-- 1. OVEN STATION: Fresh Out of the Oven (Projects) -->
+  <div id="modal-oven" class="station-modal hidden absolute inset-x-3 sm:inset-x-6 top-16 bottom-20 sm:bottom-24 max-w-xl mx-auto lg:inset-x-auto lg:right-8 lg:top-20 lg:bottom-24 lg:w-[620px] lg:max-w-2xl lg:mx-0 bg-slate-gray/90 border border-tangerine-dream/40 rounded-3xl p-4 sm:p-6 md:p-8 backdrop-blur-xl shadow-2xl flex flex-col pointer-events-auto transform translate-y-6 transition-all duration-300">
+    <div class="flex items-center justify-between pb-4 border-b border-white/10">
+      <div class="flex items-center gap-3">
+        <span class="text-3xl p-2 bg-tangerine-dream/20 rounded-2xl border border-tangerine-dream/40">🔥</span>
+        <div>
+          <h2 class="text-2xl font-black text-cream tracking-wide font-serif">Fresh Out Of The Oven</h2>
+          <p class="text-xs font-mono text-tangerine-dream tracking-wider uppercase">Artisanal Systems & Homelab Projects</p>
+        </div>
+      </div>
+      <button class="close-modal-btn p-2 rounded-xl bg-white/5 hover:bg-white/15 text-ash-gray hover:text-white transition-colors" title="Return to shop overview">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <!-- Projects List Scrollable -->
+    <div class="flex-1 overflow-y-auto space-y-4 py-4 pr-1 custom-scrollbar">
+      {projects.map((proj, idx) => (
+        <div class="p-5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-tangerine-dream/40 transition-all group">
+          <div class="flex items-start justify-between gap-2 mb-2">
+            <h3 class="text-lg font-bold text-cream group-hover:text-tangerine-dream transition-colors">
+              <span class="text-tangerine-dream mr-2 font-mono">#{idx + 1}</span> {proj.name}
+            </h3>
+            <span class="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-tangerine-dream/20 text-tangerine-dream border border-tangerine-dream/30 whitespace-nowrap">
+              HOT SLICE
+            </span>
+          </div>
+          <p class="text-xs text-ash-gray leading-relaxed mb-4">{proj.description}</p>
+          <div class="flex flex-wrap gap-1.5 mb-4">
+            {proj.tech.map((t) => (
+              <span class="px-2 py-0.5 rounded-md text-[11px] font-mono bg-white/5 text-cream border border-white/10">
+                {t}
+              </span>
+            ))}
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="px-3.5 py-1.5 rounded-xl text-xs font-bold font-mono bg-white/10 text-cream border border-white/15 flex items-center gap-1.5">
+              <span>🔥 Wood-Fired Production</span>
+            </span>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div class="pt-4 border-t border-white/10 flex items-center justify-between text-xs text-ash-gray font-mono">
+      <span>🍕 100% Self-Hosted on Bare Metal</span>
+      <button class="close-modal-btn text-tangerine-dream hover:underline font-bold">Back to Pizzeria</button>
+    </div>
+  </div>
+
+  <!-- 2. MENU STATION: The Chalkboard Specials (Resume & Skills) -->
+  <div id="modal-menu" class="station-modal hidden absolute inset-x-3 sm:inset-x-6 top-16 bottom-20 sm:bottom-24 max-w-xl mx-auto lg:inset-x-auto lg:right-8 lg:top-16 lg:bottom-20 lg:w-[680px] lg:max-w-2xl lg:mx-0 bg-slate-gray/95 border border-cyan-400/40 rounded-3xl p-4 sm:p-6 md:p-8 backdrop-blur-xl shadow-2xl flex flex-col pointer-events-auto transform translate-y-6 transition-all duration-300">
+    <div class="flex items-center justify-between pb-4 border-b border-white/10">
+      <div class="flex items-center gap-3">
+        <span class="text-3xl p-2 bg-cyan-500/20 rounded-2xl border border-cyan-400/40">📋</span>
+        <div>
+          <h2 class="text-2xl font-black text-cream tracking-wide font-serif">Today's Specials: Resume</h2>
+          <p class="text-xs font-mono text-cyan-400 tracking-wider uppercase">{personal.name} • {personal.roles[0]}</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button class="close-modal-btn p-2 rounded-xl bg-white/5 hover:bg-white/15 text-ash-gray hover:text-white transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Tabs switcher -->
+    <div class="flex gap-2 pt-4 pb-2 border-b border-white/10 text-xs font-mono font-bold">
+      <button class="menu-tab-btn active px-3.5 py-1.5 rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 transition-all" data-tab="tab-summary">Chef's Summary</button>
+      <button class="menu-tab-btn px-3.5 py-1.5 rounded-xl bg-white/5 text-ash-gray hover:text-white hover:bg-white/10 border border-white/10 transition-all" data-tab="tab-experience">Experience</button>
+      <button class="menu-tab-btn px-3.5 py-1.5 rounded-xl bg-white/5 text-ash-gray hover:text-white hover:bg-white/10 border border-white/10 transition-all" data-tab="tab-skills">Ingredients (Skills)</button>
+    </div>
+
+    <!-- Tab 1: Summary -->
+    <div id="tab-summary" class="menu-tab-content flex-1 overflow-y-auto py-4 space-y-4 text-xs leading-relaxed text-ash-gray custom-scrollbar">
+      <div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+        <h3 class="text-sm font-bold text-cream mb-2 font-serif">Executive Overview</h3>
+        <p class="text-ash-gray leading-relaxed">{personal.bio}</p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div class="p-3.5 rounded-xl bg-white/5 border border-white/10">
+          <span class="text-[10px] font-mono text-cyan-400 uppercase">Specialty</span>
+          <p class="font-bold text-cream mt-0.5">High-Availability Virtualization</p>
+        </div>
+        <div class="p-3.5 rounded-xl bg-white/5 border border-white/10">
+          <span class="text-[10px] font-mono text-cyan-400 uppercase">Storage Pools</span>
+          <p class="font-bold text-cream mt-0.5">55.4 TiB Enterprise ZFS</p>
+        </div>
+        <div class="p-3.5 rounded-xl bg-white/5 border border-white/10">
+          <span class="text-[10px] font-mono text-cyan-400 uppercase">Self-Hosting</span>
+          <p class="font-bold text-cream mt-0.5">5+ Years Bare-Metal Exp</p>
+        </div>
+        <div class="p-3.5 rounded-xl bg-white/5 border border-white/10">
+          <span class="text-[10px] font-mono text-cyan-400 uppercase">Location</span>
+          <p class="font-bold text-cream mt-0.5">{personal.location}</p>
+        </div>
+      </div>
+
+      <div class="p-4 rounded-2xl bg-cyan-950/40 border border-cyan-500/30 flex items-center justify-between">
+        <div>
+          <h4 class="font-bold text-cyan-200">Verified Career Qualifications</h4>
+          <p class="text-[11px] text-cyan-300/80">All experience, credentials & skills listed on this chalkboard</p>
+        </div>
+        <span class="px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold bg-cyan-400/20 text-cyan-300 border border-cyan-400/30">
+          ✓ Verified Credentials
+        </span>
+      </div>
+    </div>
+
+    <!-- Tab 2: Experience -->
+    <div id="tab-experience" class="menu-tab-content hidden flex-1 overflow-y-auto py-4 space-y-4 custom-scrollbar">
+      {experience.map((exp: any) => (
+        <div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+          <div class="flex items-start justify-between mb-1">
+            <h4 class="font-bold text-cream text-sm">{exp.title}</h4>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded-md bg-white/10 text-cyan-300">{exp.period}</span>
+          </div>
+          <p class="text-xs text-cyan-400/90 font-mono mb-2">{exp.company}</p>
+          <p class="text-xs text-ash-gray leading-relaxed mb-3">{exp.description}</p>
+          {exp.tech && (
+            <div class="flex flex-wrap gap-1">
+              {exp.tech.map((t: string) => (
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-white/10 text-cyan-200">
+                  {t}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+
+    <!-- Tab 3: Skills / Ingredients -->
+    <div id="tab-skills" class="menu-tab-content hidden flex-1 overflow-y-auto py-4 space-y-4 custom-scrollbar">
+      {(resumeData.skillCategories || []).map((cat: any) => (
+        <div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+          <h4 class="text-xs font-mono font-bold text-cyan-300 uppercase tracking-wider mb-2.5">{cat.name}</h4>
+          <div class="flex flex-wrap gap-1.5">
+            {cat.skills && cat.skills.map((skill: string) => (
+              <span class="px-2.5 py-1 rounded-lg text-xs font-mono bg-white/10 text-cream border border-white/10">
+                {skill}
+              </span>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div class="pt-4 border-t border-white/10 flex items-center justify-between text-xs text-ash-gray font-mono">
+      <span>⭐ Prepared Fresh Daily by Chef Michael</span>
+      <button class="close-modal-btn text-cyan-400 hover:underline font-bold">Back to Pizzeria</button>
+    </div>
+  </div>
+
+  <!-- 3. FRIDGE STATION: Walk-In Fridge & Homelab Ops (Checklist, Telemetry & TrueNAS) -->
+  <div id="modal-arcade" class="station-modal hidden absolute inset-x-3 sm:inset-x-6 top-16 bottom-20 sm:bottom-24 max-w-xl mx-auto lg:inset-x-auto lg:right-8 lg:top-20 lg:bottom-24 lg:w-[620px] lg:max-w-2xl lg:mx-0 bg-slate-gray/95 border border-cyan-400/40 rounded-3xl p-4 sm:p-6 md:p-8 backdrop-blur-xl shadow-2xl flex flex-col pointer-events-auto transform translate-y-6 transition-all duration-300">
+    <div class="flex items-center justify-between pb-4 border-b border-white/10">
+      <div class="flex items-center gap-3">
+        <span class="text-3xl p-2 bg-cyan-500/20 rounded-2xl border border-cyan-400/40">🧊</span>
+        <div>
+          <h2 class="text-2xl font-black text-cream tracking-wide font-mono">WALK-IN FRIDGE // HOMELAB OPS</h2>
+          <p class="text-xs font-mono text-cyan-400 tracking-wider uppercase">Kitchen To-Do List, TrueNAS Thermals & Services</p>
+        </div>
+      </div>
+      <button class="close-modal-btn p-2 rounded-xl bg-white/5 hover:bg-white/15 text-ash-gray hover:text-white transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="flex-1 overflow-y-auto py-4 space-y-4 custom-scrollbar">
+      <!-- Fridge Temperature & Live Telemetry Box -->
+      <div class="p-4 rounded-2xl bg-black/70 border border-cyan-500/30 font-mono text-xs text-cyan-300 space-y-1.5">
+        <div class="flex justify-between items-center text-cyan-200 border-b border-cyan-500/20 pb-1 mb-2">
+          <span>SYS.COOLER.TELEMETRY</span>
+          <span class="inline-flex items-center gap-1.5 text-[10px] text-emerald-400">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span id="fridge-modal-temp">38.2°C // 100.8°F [OPTIMAL]</span>
+          </span>
+        </div>
+        <p id="fridge-modal-cpu">&gt; SERVER 1 (TRUENAS SCALE) : AMD THREADRIPPER 3970X (32c/64t) • 0.1% LOAD</p>
+        <p id="fridge-modal-ram">&gt; SERVER 1 MEMORY : 66.6 GiB FREE / 251.6 GiB (ARC CACHE: 170.8 GiB)</p>
+        <p id="fridge-modal-storage">&gt; SERVER 1 STORAGE : 3 ZFS POOLS (55.4 TiB CAPACITY // 19.5 TiB USED)</p>
+        <p>&gt; SERVER 2 (PROXMOX VE 9): INTEL 2.8GHz HYPERVISOR • 64 GiB DDR4 • 6 VMs/LXCs</p>
+        <p>&gt; EDGE SECURITY : NGINX PROXY MANAGER (:81) + CROWDSEC + WAZUH SIEM</p>
+      </div>
+
+      <!-- Live ZFS Pools Breakdown -->
+      <div class="p-4 rounded-2xl bg-cyan-950/25 border border-cyan-500/20 font-mono text-xs">
+        <div class="flex items-center justify-between text-cyan-300 font-bold mb-2 pb-1 border-b border-cyan-500/20">
+          <span>💾 TRUENAS ZFS STORAGE POOLS</span>
+          <span class="text-[10px] text-emerald-400">ONLINE // HEALTHY</span>
+        </div>
+        <div id="fridge-modal-pools" class="space-y-2">
+          <div class="p-2 rounded bg-white/5 border border-white/5">
+            <div class="flex justify-between text-cream font-bold">
+              <span>Vault (Primary Mass Archive)</span>
+              <span class="text-emerald-400">ONLINE</span>
+            </div>
+            <div class="flex justify-between text-[11px] text-ash-gray mt-0.5">
+              <span>19.2 TiB / 43.6 TiB</span>
+              <span>44.0%</span>
+            </div>
+            <div class="w-full bg-white/10 h-1.5 rounded-full mt-1 overflow-hidden">
+              <div class="bg-gradient-to-r from-cyan-400 to-emerald-400 h-full rounded-full" style="width: 44.0%"></div>
+            </div>
+          </div>
+          <div class="p-2 rounded bg-white/5 border border-white/5">
+            <div class="flex justify-between text-cream font-bold">
+              <span>Library (Media Staging)</span>
+              <span class="text-emerald-400">ONLINE</span>
+            </div>
+            <div class="flex justify-between text-[11px] text-ash-gray mt-0.5">
+              <span>201.2 GiB / 7.3 TiB</span>
+              <span>2.7%</span>
+            </div>
+            <div class="w-full bg-white/10 h-1.5 rounded-full mt-1 overflow-hidden">
+              <div class="bg-gradient-to-r from-cyan-400 to-indigo-400 h-full rounded-full" style="width: 2.7%"></div>
+            </div>
+          </div>
+          <div class="p-2 rounded bg-white/5 border border-white/5">
+            <div class="flex justify-between text-cream font-bold">
+              <span>SSD-Locker (NVMe High-Speed Scratch)</span>
+              <span class="text-emerald-400">ONLINE</span>
+            </div>
+            <div class="flex justify-between text-[11px] text-ash-gray mt-0.5">
+              <span>88.5 GiB / 4.5 TiB</span>
+              <span>1.9%</span>
+            </div>
+            <div class="w-full bg-white/10 h-1.5 rounded-full mt-1 overflow-hidden">
+              <div class="bg-gradient-to-r from-cyan-400 to-emerald-400 h-full rounded-full" style="width: 1.9%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pinned To-Do List Summary -->
+      <div class="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2 text-xs font-mono">
+        <div class="flex items-center justify-between text-cream font-bold pb-1 border-b border-white/10">
+          <span class="flex items-center gap-1.5"><span>📋</span> Pinned Ops Checklist</span>
+          <span class="text-[10px] text-emerald-400">9/10 ACTIVE</span>
+        </div>
+        <div class="space-y-1.5 text-ash-gray text-[11px]">
+          <div class="flex items-center gap-2 text-emerald-400">
+            <span>[✓]</span> <span>TrueNAS SCALE Threadripper 3970X (251.6 GiB ECC RAM)</span>
+          </div>
+          <div class="flex items-center gap-2 text-emerald-400">
+            <span>[✓]</span> <span>Proxmox VE 9.0.5 Hypervisor (pve01 standalone)</span>
+          </div>
+          <div class="flex items-center gap-2 text-emerald-400">
+            <span>[✓]</span> <span>Docker 23 Microservices Stack on VM 100</span>
+          </div>
+          <div class="flex items-center gap-2 text-emerald-400">
+            <span>[✓]</span> <span>Jellyfin 4K Transcode & Media Pipeline Active</span>
+          </div>
+          <div class="flex items-center gap-2 text-emerald-400">
+            <span>[✓]</span> <span>Gluetun VPN Namespace Isolation for qBittorrent</span>
+          </div>
+          <div class="flex items-center gap-2 text-amber-300">
+            <span>[ ]</span> <span>Nightly Encrypted Offsite Rclone Snapshot (03:00)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pt-4 border-t border-white/10 flex items-center justify-between text-xs text-ash-gray font-mono">
+      <span>🧊 Walk-In Chiller: <span id="fridge-footer-temp">38.2°C // 100.8°F</span> • 99.99% Uptime</span>
+      <button class="close-modal-btn text-cyan-400 hover:underline font-bold">Back to Pizzeria</button>
+    </div>
+  </div>
+
+  <!-- 4. REGISTER STATION: Pizzeria Cashier & Takeout (Contact) -->
+  <div id="modal-register" class="station-modal hidden absolute inset-x-3 sm:inset-x-6 top-16 bottom-20 sm:bottom-24 max-w-xl mx-auto lg:inset-x-auto lg:right-8 lg:top-20 lg:bottom-24 lg:w-[600px] lg:max-w-2xl lg:mx-0 bg-slate-gray/95 border border-amber-400/40 rounded-3xl p-4 sm:p-6 md:p-8 backdrop-blur-xl shadow-2xl flex flex-col pointer-events-auto transform translate-y-6 transition-all duration-300">
+    <div class="flex items-center justify-between pb-4 border-b border-white/10">
+      <div class="flex items-center gap-3">
+        <span class="text-3xl p-2 bg-amber-500/20 rounded-2xl border border-amber-400/40">🧾</span>
+        <div>
+          <h2 class="text-2xl font-black text-cream tracking-wide font-serif">Place An Order // Contact</h2>
+          <p class="text-xs font-mono text-amber-400 tracking-wider uppercase">Order Michael For Your Infrastructure Team</p>
+        </div>
+      </div>
+      <button class="close-modal-btn p-2 rounded-xl bg-white/5 hover:bg-white/15 text-ash-gray hover:text-white transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="flex-1 overflow-y-auto py-4 space-y-4 custom-scrollbar">
+      <!-- Order Slip / Receipt -->
+      <div class="p-5 rounded-2xl bg-amber-50/95 text-void-black font-mono shadow-inner border border-amber-200">
+        <div class="text-center border-b border-dashed border-gray-400 pb-3 mb-3">
+          <h3 class="font-bold text-base tracking-widest uppercase">MIKEY'S PIZZA & INFRASTRUCTURE</h3>
+          <p class="text-[11px] text-gray-600">SOUTH CAROLINA • EST. 2021</p>
+          <p class="text-[10px] text-gray-500 mt-1">ORDER ID: #MIKEY-HIRE-2026</p>
+        </div>
+
+        <div class="space-y-1.5 text-xs">
+          <div class="flex justify-between font-bold">
+            <span>1x Systems Administrator</span>
+            <span>READY</span>
+          </div>
+          <div class="flex justify-between text-gray-700 text-[11px] pl-2">
+            <span>• Proxmox, ZFS & Linux Mastery</span>
+            <span>INCLUDED</span>
+          </div>
+          <div class="flex justify-between text-gray-700 text-[11px] pl-2">
+            <span>• Data Center Tier 1/2 Competency</span>
+            <span>INCLUDED</span>
+          </div>
+          <div class="flex justify-between text-gray-700 text-[11px] pl-2">
+            <span>• Relentless Automation Ethic</span>
+            <span>INCLUDED</span>
+          </div>
+          <div class="border-t border-dashed border-gray-400 my-2 pt-2 flex justify-between font-bold text-sm">
+            <span>TOTAL COMPENSATION:</span>
+            <span>COMPETITIVE</span>
+          </div>
+        </div>
+
+        <div class="text-center mt-3 pt-2 border-t border-dashed border-gray-400 text-[10px] text-gray-500">
+          THANK YOU FOR VISITING MIKEY.HOST!
+        </div>
+      </div>
+
+      <!-- Direct Contact Channels -->
+      <div class="space-y-2 font-mono text-xs">
+        <a href={`mailto:${personal.email}`} class="p-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-400/40 transition-all flex items-center justify-between text-cream">
+          <div class="flex items-center gap-3">
+            <span class="text-base">✉️</span>
+            <div>
+              <span class="text-[10px] text-ash-gray block uppercase">Direct Email</span>
+              <span class="font-bold">{personal.email}</span>
+            </div>
+          </div>
+          <span class="text-amber-400 text-xs">Send Message →</span>
+        </a>
+
+        {personal.social?.github && (
+          <a href={personal.social.github} target="_blank" rel="noopener noreferrer" class="p-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-400/40 transition-all flex items-center justify-between text-cream">
+            <div class="flex items-center gap-3">
+              <span class="text-base">🐙</span>
+              <div>
+                <span class="text-[10px] text-ash-gray block uppercase">GitHub</span>
+                <span class="font-bold">mikey2707</span>
+              </div>
+            </div>
+            <span class="text-amber-400 text-xs">View Code ↗</span>
+          </a>
+        )}
+
+        {personal.social?.linkedin && (
+          <a href={personal.social.linkedin} target="_blank" rel="noopener noreferrer" class="p-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-400/40 transition-all flex items-center justify-between text-cream">
+            <div class="flex items-center gap-3">
+              <span class="text-base">💼</span>
+              <div>
+                <span class="text-[10px] text-ash-gray block uppercase">LinkedIn</span>
+                <span class="font-bold">michael-chavez</span>
+              </div>
+            </div>
+            <span class="text-amber-400 text-xs">Connect ↗</span>
+          </a>
+        )}
+      </div>
+    </div>
+
+    <div class="pt-4 border-t border-white/10 flex items-center justify-between text-xs text-ash-gray font-mono">
+      <span>🍕 Delivery Guaranteed Everywhere</span>
+      <button class="close-modal-btn text-amber-400 hover:underline font-bold">Back to Pizzeria</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Setup modal management
+  const container = document.getElementById('pizza-modal-container');
+  const backdrop = document.getElementById('modal-backdrop');
+  const modals: Record<string, HTMLElement | null> = {
+    oven: document.getElementById('modal-oven'),
+    menu: document.getElementById('modal-menu'),
+    arcade: document.getElementById('modal-arcade'),
+    register: document.getElementById('modal-register')
+  };
+
+  let activeStation: string | null = null;
+
+  function openStationModal(station: string) {
+    // Suppress popup modal for menu station so user reads directly on the 3D chalkboard in-world
+    if (station === 'menu') {
+      closeAllModals(false);
+      return;
+    }
+
+    if (activeStation === station) return;
+    closeAllModals(false);
+
+    const modal = modals[station];
+    if (!modal || !container || !backdrop) return;
+
+    activeStation = station;
+    container.classList.remove('opacity-0', 'pointer-events-none');
+    container.classList.add('opacity-100', 'pointer-events-auto');
+
+    backdrop.classList.remove('hidden', 'opacity-0');
+    backdrop.classList.add('opacity-100');
+
+    modal.classList.remove('hidden', 'translate-y-6');
+    modal.classList.add('flex', 'translate-y-0');
+  }
+
+  function closeAllModals(transitionCameraBack = true) {
+    if (!container || !backdrop) return;
+
+    Object.values(modals).forEach((m) => {
+      if (m) {
+        m.classList.add('hidden', 'translate-y-6');
+        m.classList.remove('flex', 'translate-y-0');
+      }
+    });
+
+    backdrop.classList.add('opacity-0', 'hidden');
+    backdrop.classList.remove('opacity-100');
+    container.classList.add('opacity-0', 'pointer-events-none');
+    container.classList.remove('opacity-100', 'pointer-events-auto');
+
+    if (activeStation && transitionCameraBack) {
+      window.dispatchEvent(new CustomEvent('pizza-go-overview'));
+    }
+    activeStation = null;
+  }
+
+  // Close buttons
+  document.querySelectorAll('.close-modal-btn').forEach((btn) => {
+    btn.addEventListener('click', () => closeAllModals(true));
+  });
+
+  if (backdrop) {
+    backdrop.addEventListener('click', () => closeAllModals(true));
+  }
+
+  // Escape key closes modals
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && activeStation) {
+      closeAllModals(true);
+    }
+  });
+
+  // Listen to station-transition-end event to open modal after camera arrives
+  // Note: 'menu' (chalkboard) and 'arcade' (fridge to-do list) are read directly in 3D
+  window.addEventListener('station-transition-end', ((e: CustomEvent) => {
+    const station = e.detail?.station;
+    if (station && station !== 'default' && station !== 'menu' && station !== 'arcade') {
+      openStationModal(station);
+    } else if (station === 'default') {
+      closeAllModals(false);
+    }
+  }) as EventListener);
+
+  window.addEventListener('pizza-go-station', ((e: CustomEvent) => {
+    const station = e.detail?.station;
+    if (station === 'default' || station === 'menu' || station === 'arcade') {
+      closeAllModals(false);
+    }
+  }) as EventListener);
+
+  window.addEventListener('pizza-go-overview', () => {
+    closeAllModals(false);
+  });
+
+  // Explicit modal open event (e.g. from Fridge HUD or direct click)
+  window.addEventListener('pizza-open-modal', ((e: CustomEvent) => {
+    const station = e.detail?.station;
+    if (station) {
+      openStationModal(station);
+    }
+  }) as EventListener);
+
+  // Tab switching inside Menu modal
+  const tabBtns = document.querySelectorAll('.menu-tab-btn');
+  const tabContents = document.querySelectorAll('.menu-tab-content');
+
+  tabBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const targetId = btn.getAttribute('data-tab');
+      if (!targetId) return;
+
+      tabBtns.forEach((b) => {
+        b.classList.remove('active', 'bg-cyan-500/20', 'text-cyan-300', 'border-cyan-400/30');
+        b.classList.add('bg-white/5', 'text-ash-gray', 'border-white/10');
+      });
+      btn.classList.add('active', 'bg-cyan-500/20', 'text-cyan-300', 'border-cyan-400/30');
+      btn.classList.remove('bg-white/5', 'text-ash-gray', 'border-white/10');
+
+      tabContents.forEach((c) => c.classList.add('hidden'));
+      const activeContent = document.getElementById(targetId);
+      if (activeContent) activeContent.classList.remove('hidden');
+    });
+  });
+
+  // Telemetry event binding for Walk-In Fridge modal
+  window.addEventListener('pizza-telemetry-update', ((e: CustomEvent) => {
+    const data = e.detail;
+    if (!data) return;
+
+    const tempModalEl = document.getElementById('fridge-modal-temp');
+    const footerTempEl = document.getElementById('fridge-footer-temp');
+    if (tempModalEl && data.cpuTempC !== undefined) {
+      tempModalEl.textContent = `${data.cpuTempC}°C // ${data.cpuTempF}°F [TRUENAS DIE]`;
+    }
+    if (footerTempEl && data.cpuTempC !== undefined) {
+      footerTempEl.textContent = `${data.cpuTempC}°C // ${data.cpuTempF}°F`;
+    }
+
+    const cpuEl = document.getElementById('fridge-modal-cpu');
+    if (cpuEl && data.cpuUsage) {
+      cpuEl.textContent = `> TRUENAS CPU : ${data.cpuModel || 'AMD Threadripper 3970X'} • ${data.cpuUsage} LOAD`;
+    }
+
+    const ramEl = document.getElementById('fridge-modal-ram');
+    if (ramEl && data.memoryTotal) {
+      ramEl.textContent = `> SYSTEM MEMORY : ${data.memoryFree || 'Free'} / ${data.memoryTotal} (ARC CACHE: ${data.memoryZfsCache || 'ZFS'})`;
+    }
+
+    const storageEl = document.getElementById('fridge-modal-storage');
+    if (storageEl && data.totalCapacity) {
+      storageEl.textContent = `> STORAGE POOLS : ${data.poolCount || 3} ZFS POOLS (${data.totalCapacity} CAPACITY // ${data.storageUsage} USED)`;
+    }
+
+    const poolsContainer = document.getElementById('fridge-modal-pools');
+    if (poolsContainer && data.pools && Array.isArray(data.pools)) {
+      const escapeHtml = (val: unknown) =>
+        String(val ?? '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+
+      poolsContainer.innerHTML = data.pools.map((p: any) => {
+        const pct = Math.max(0, Math.min(100, parseFloat(String(p.usedPercentage ?? '0')) || 0));
+        const safePct = `${pct.toFixed(1)}%`;
+        return `
+        <div class="p-2 rounded bg-white/5 border border-white/5">
+          <div class="flex justify-between text-cream font-bold">
+            <span>${escapeHtml(p.name)}</span>
+            <span class="${p.status === 'ONLINE' ? 'text-emerald-400' : 'text-amber-400'}">${escapeHtml(p.status)}</span>
+          </div>
+          <div class="flex justify-between text-[11px] text-ash-gray mt-0.5">
+            <span>${escapeHtml(p.used)} / ${escapeHtml(p.capacity)}</span>
+            <span>${safePct}</span>
+          </div>
+          <div class="w-full bg-white/10 h-1.5 rounded-full mt-1 overflow-hidden">
+            <div class="bg-gradient-to-r from-cyan-400 to-emerald-400 h-full rounded-full" style="width: ${safePct}"></div>
+          </div>
+        </div>
+      `;
+      }).join('');
+    }
+  }) as EventListener);
+</script>

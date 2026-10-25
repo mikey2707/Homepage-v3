@@ -16,7 +16,6 @@ export const GET: APIRoute = async () => {
   // Use process.env for runtime Docker compatibility
   const REDDIT_SUBREDDITS = process.env.REDDIT_SUBREDDITS || import.meta.env.REDDIT_SUBREDDITS || '';
 
-  console.log('[Reddit] Debug - Subreddits configured:', !!REDDIT_SUBREDDITS);
 
   if (!REDDIT_SUBREDDITS) {
     return new Response(

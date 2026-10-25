@@ -14,8 +14,6 @@ export const GET: APIRoute = async ({ request }) => {
   const IMMICH_URL = process.env.IMMICH_URL || import.meta.env.IMMICH_URL || 'http://localhost:2283';
   const IMMICH_API_KEY = process.env.IMMICH_API_KEY || import.meta.env.IMMICH_API_KEY || '';
 
-  console.log('[Immich] Debug - URL:', IMMICH_URL);
-  console.log('[Immich] Debug - API Key configured:', !!IMMICH_API_KEY);
 
   if (!IMMICH_API_KEY) {
     return new Response(

@@ -1,0 +1,1033 @@
+---
+interface Props {
+  redirectUrl?: string;
+  class?: string;
+}
+
+const { redirectUrl = '/dashboard', class: className = '' } = Astro.props;
+---
+
+<div class={`fixed inset-0 w-full h-full overflow-hidden bg-[#0c0907] ${className} select-none`}>
+
+  <!-- 1. UNDERLYING SECRET ADMINISTRATIVE MAINFRAME TERMINAL -->
+  <div id="underlying-login-terminal" class="fixed inset-0 flex items-center justify-center p-3 sm:p-6 z-10 pointer-events-auto bg-[#0a080d] overflow-y-auto">
+    <!-- Ambient glow & grid backdrop -->
+    <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-electric-iris/20 via-black to-[#060408] pointer-events-none"></div>
+    <div class="absolute inset-0 opacity-15 pointer-events-none" style="background-size: 32px 32px; background-image: linear-gradient(to right, rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.06) 1px, transparent 1px);"></div>
+
+    <!-- Terminal Gateway Card -->
+    <div class="relative w-full max-w-lg my-auto p-5 sm:p-8 rounded-3xl bg-[#110e17]/95 border border-electric-iris/40 shadow-[0_0_70px_rgba(128,82,255,0.3)] backdrop-blur-2xl text-left z-20">
+      <!-- Terminal Window Bar -->
+      <div class="flex items-center justify-between pb-4 mb-6 border-b border-white/10">
+        <div class="flex items-center gap-2">
+          <span class="w-3 h-3 rounded-full bg-rose-500/90 shadow-sm shadow-rose-500/50"></span>
+          <span class="w-3 h-3 rounded-full bg-saffron-spark/90 shadow-sm shadow-saffron-spark/50"></span>
+          <span class="w-3 h-3 rounded-full bg-emerald-500/90 shadow-sm shadow-emerald-500/50"></span>
+          <span class="ml-2 font-mono text-[11px] text-ash-gray uppercase tracking-widest">~/mikey/homelab/master-gate</span>
+        </div>
+        <span class="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-electric-iris/20 text-electric-iris border border-electric-iris/40">
+          TLS 1.3 // 256-BIT
+        </span>
+      </div>
+
+      <!-- Header -->
+      <div class="mb-6">
+        <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[10px] font-mono uppercase tracking-wider mb-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>Core Cluster Online • 14 Nodes</span>
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-normal tracking-monolithic text-cream mb-1">
+          Private Homelab Gateway
+        </h2>
+        <p class="text-xs text-ash-gray font-light leading-relaxed">
+          Beneath the 100-year sourdough starter lies the private homelab mainframe. Enter master credentials to access deep virtualization, telemetry, and service controls.
+        </p>
+      </div>
+
+      <!-- Alert / Error message -->
+      <div id="tear-login-error" class="hidden mb-4 p-3.5 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs font-mono"></div>
+
+      <!-- Login Form -->
+      <form id="tear-login-form" class="space-y-4">
+        <input type="hidden" name="redirect" value={redirectUrl} />
+
+        <div>
+          <label for="tear-username" class="block text-xs font-medium uppercase tracking-label text-ash-gray mb-1.5">
+            Admin Identity
+          </label>
+          <input
+            type="text"
+            id="tear-username"
+            name="username"
+            required
+            autocomplete="username"
+            placeholder="Username"
+            class="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/10 text-white placeholder-white/20 text-sm focus:outline-none focus:border-electric-iris focus:ring-1 focus:ring-electric-iris transition-colors font-mono"
+          />
+        </div>
+
+        <div>
+          <label for="tear-password" class="block text-xs font-medium uppercase tracking-label text-ash-gray mb-1.5">
+            Master Passphrase
+          </label>
+          <input
+            type="password"
+            id="tear-password"
+            name="password"
+            required
+            autocomplete="current-password"
+            placeholder="••••••••••••"
+            class="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/10 text-white placeholder-white/20 text-sm focus:outline-none focus:border-electric-iris focus:ring-1 focus:ring-electric-iris transition-colors font-mono"
+          />
+        </div>
+
+        <button
+          type="submit"
+          id="tear-login-btn"
+          class="w-full mt-2 py-3.5 px-6 rounded-full font-medium text-sm text-white bg-gradient-to-r from-electric-iris to-purple-600 hover:opacity-95 shadow-lg shadow-electric-iris/30 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer font-mono font-bold"
+        >
+          <span id="tear-btn-text">AUTHENTICATE & UNLOCK MAINFRAME</span>
+          <svg id="tear-btn-spinner" class="hidden animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        </button>
+      </form>
+
+      <div class="mt-6 pt-4 border-t border-white/10 text-center">
+        <a href="/" class="text-xs font-mono text-ash-gray hover:text-white transition-colors">
+          ← Return to Pizzeria Overview
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. OVERLYING COMPLETE FULL-PAGE TEARABLE CLOTH CANVAS (VERLET PHYSICS) -->
+  <canvas
+    id="tearable-cloth-canvas"
+    class="fixed inset-0 w-full h-full z-20 cursor-grab active:cursor-grabbing touch-none select-none"
+  ></canvas>
+
+  <!-- 3. TOP BACK BUTTON (Innocent return to pizzeria) -->
+  <div class="fixed top-4 left-4 sm:left-8 z-30 pointer-events-none">
+    <a
+      href="/"
+      class="pointer-events-auto px-4 py-2 rounded-2xl bg-black/80 hover:bg-black text-xs font-mono text-cream border border-amber-500/30 backdrop-blur-xl shadow-2xl transition-all flex items-center gap-2 hover:scale-105 active:scale-95"
+      title="Return to 3D Pizzeria"
+    >
+      <span>🍕</span>
+      <span>← Back to Pizzeria</span>
+    </a>
+  </div>
+
+</div>
+
+<script>
+  // Verlet Physics Point with UV Texture Mapping Coordinates
+  class Point {
+    x: number;
+    y: number;
+    px: number;
+    py: number;
+    u: number;
+    v: number;
+    pinned: boolean;
+
+    constructor(x: number, y: number, u: number, v: number, pinned = false) {
+      this.x = x;
+      this.y = y;
+      this.px = x;
+      this.py = y;
+      this.u = u;
+      this.v = v;
+      this.pinned = pinned;
+    }
+
+    update(gravity: number, damping: number) {
+      if (this.pinned) return;
+      const vx = (this.x - this.px) * damping;
+      const vy = (this.y - this.py) * damping + gravity;
+      this.px = this.x;
+      this.py = this.y;
+      this.x += vx;
+      this.y += vy;
+    }
+  }
+
+  // Verlet Distance Constraint
+  class Constraint {
+    p1: Point;
+    p2: Point;
+    length: number;
+    broken: boolean = false;
+
+    constructor(p1: Point, p2: Point) {
+      this.p1 = p1;
+      this.p2 = p2;
+      const dx = p1.x - p2.x;
+      const dy = p1.y - p2.y;
+      this.length = Math.sqrt(dx * dx + dy * dy);
+    }
+
+    resolve() {
+      if (this.broken) return;
+      const dx = this.p2.x - this.p1.x;
+      const dy = this.p2.y - this.p1.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist === 0) return;
+
+      const diff = ((this.length - dist) / dist) * 0.5;
+      const offsetX = dx * diff;
+      const offsetY = dy * diff;
+
+      if (!this.p1.pinned) {
+        this.p1.x -= offsetX;
+        this.p1.y -= offsetY;
+      }
+      if (!this.p2.pinned) {
+        this.p2.x += offsetX;
+        this.p2.y += offsetY;
+      }
+    }
+  }
+
+  // Full-Page Tearable Sourdough Codex Simulation Engine
+  class FullPageTearableCloth {
+    canvas: HTMLCanvasElement;
+    ctx: CanvasRenderingContext2D;
+    parchmentBuffer: HTMLCanvasElement;
+    bufferCtx: CanvasRenderingContext2D;
+
+    cols = 28;
+    rows = 20;
+    points: Point[] = [];
+    constraints: Constraint[] = [];
+    hConstraints: Constraint[][] = [];
+    vConstraints: Constraint[][] = [];
+    initialConstraintCount = 0;
+    isDragging = false;
+    mouse = { x: 0, y: 0, px: 0, py: 0 };
+    gravity = 0.38;
+    damping = 0.96;
+    tearDistance = 38;
+    isDropped = false;
+    hasTorn = false;
+    isStopped = false;
+    settleFrames = 0;
+    rafId: number | null = null;
+    onTearProgress?: (percent: number) => void;
+    onDropped?: () => void;
+    sparks: Array<{ x: number; y: number; vx: number; vy: number; color: string; life: number }> = [];
+
+    constructor(canvas: HTMLCanvasElement) {
+      this.canvas = canvas;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Cannot get 2d context');
+      this.ctx = ctx;
+
+      // Create offscreen buffer for the full parchment manuscript graphics
+      this.parchmentBuffer = document.createElement('canvas');
+      const bCtx = this.parchmentBuffer.getContext('2d');
+      if (!bCtx) throw new Error('Cannot get buffer 2d context');
+      this.bufferCtx = bCtx;
+
+      this.init();
+      this.bindEvents();
+    }
+
+    init() {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      const dpr = window.devicePixelRatio || 1;
+
+      this.canvas.width = width * dpr;
+      this.canvas.height = height * dpr;
+      this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      // Render the complete high-res vintage sourdough codex & fun facts into buffer
+      this.renderParchmentBuffer(width, height);
+
+      // Set grid resolution based on aspect ratio
+      this.cols = Math.max(22, Math.min(36, Math.floor(width / 50)));
+      this.rows = Math.max(16, Math.min(26, Math.floor(height / 50)));
+
+      const spacingX = width / (this.cols - 1);
+      const spacingY = height / (this.rows - 1);
+
+      this.points = [];
+      this.constraints = [];
+      this.hConstraints = [];
+      this.vConstraints = [];
+
+      // Generate grid points across entire screen (pin top row)
+      for (let r = 0; r < this.rows; r++) {
+        for (let c = 0; c < this.cols; c++) {
+          const x = c * spacingX;
+          const y = r * spacingY;
+          const pinned = r === 0;
+          this.points.push(new Point(x, y, x, y, pinned));
+        }
+      }
+
+      // Generate horizontal structural constraints
+      for (let r = 0; r < this.rows; r++) {
+        this.hConstraints[r] = [];
+        for (let c = 0; c < this.cols - 1; c++) {
+          const idx = r * this.cols + c;
+          const cons = new Constraint(this.points[idx], this.points[idx + 1]);
+          this.constraints.push(cons);
+          this.hConstraints[r][c] = cons;
+        }
+      }
+
+      // Generate vertical structural constraints
+      for (let r = 0; r < this.rows - 1; r++) {
+        this.vConstraints[r] = [];
+        for (let c = 0; c < this.cols; c++) {
+          const idx = r * this.cols + c;
+          const cons = new Constraint(this.points[idx], this.points[idx + this.cols]);
+          this.constraints.push(cons);
+          this.vConstraints[r][c] = cons;
+        }
+      }
+
+      this.initialConstraintCount = this.constraints.length;
+      this.hasTorn = false;
+      this.settleFrames = 0;
+      this.wakeUp();
+    }
+
+    wakeUp() {
+      if (this.isStopped) return;
+      if (this.rafId === null) {
+        this.rafId = requestAnimationFrame(this.animate);
+      }
+    }
+
+    stop() {
+      this.isStopped = true;
+      if (this.rafId !== null) {
+        cancelAnimationFrame(this.rafId);
+        this.rafId = null;
+      }
+    }
+
+    // Render the authentic 1924 Sourdough Codex and Fun Facts document to the buffer
+    renderParchmentBuffer(width: number, height: number) {
+      this.parchmentBuffer.width = width;
+      this.parchmentBuffer.height = height;
+      const ctx = this.bufferCtx;
+
+      // 1. Aged Warm Sourdough Parchment Background
+      const bgGrad = ctx.createLinearGradient(0, 0, width, height);
+      bgGrad.addColorStop(0, '#fbf5ea');
+      bgGrad.addColorStop(0.3, '#f5e7ce');
+      bgGrad.addColorStop(0.7, '#eeddbf');
+      bgGrad.addColorStop(1, '#e3cfa8');
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, width, height);
+
+      // 2. Micro paper grain & fibers
+      ctx.fillStyle = 'rgba(120, 80, 40, 0.035)';
+      for (let i = 0; i < 6000; i++) {
+        ctx.fillRect(Math.random() * width, Math.random() * height, 2, 2);
+      }
+
+      // 3. Antique Aged Vignette around screen edges
+      const edgeGrad = ctx.createRadialGradient(
+        width / 2, height / 2, Math.min(width, height) * 0.35,
+        width / 2, height / 2, Math.max(width, height) * 0.72
+      );
+      edgeGrad.addColorStop(0, 'rgba(0,0,0,0)');
+      edgeGrad.addColorStop(0.8, 'rgba(150, 100, 50, 0.22)');
+      edgeGrad.addColorStop(1, 'rgba(90, 50, 20, 0.55)');
+      ctx.fillStyle = edgeGrad;
+      ctx.fillRect(0, 0, width, height);
+
+      // 4. Double Ornate Filigree Borders
+      const margin = Math.min(36, width * 0.03);
+      ctx.strokeStyle = '#8a252c'; // Tuscan wine red
+      ctx.lineWidth = 5;
+      ctx.strokeRect(margin, margin, width - margin * 2, height - margin * 2);
+
+      ctx.strokeStyle = '#c59b27'; // Antique gold
+      ctx.lineWidth = 2.5;
+      ctx.strokeRect(margin + 10, margin + 10, width - (margin + 10) * 2, height - (margin + 10) * 2);
+
+      // Corner heraldic flourishes
+      const drawCorner = (x: number, y: number, flipX: number, flipY: number) => {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.scale(flipX, flipY);
+        ctx.strokeStyle = '#c59b27';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(8, 36);
+        ctx.quadraticCurveTo(8, 8, 36, 8);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(14, 14, 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#8a252c';
+        ctx.fill();
+        ctx.restore();
+      };
+      drawCorner(margin + 10, margin + 10, 1, 1);
+      drawCorner(width - (margin + 10), margin + 10, -1, 1);
+      drawCorner(margin + 10, height - (margin + 10), 1, -1);
+      drawCorner(width - (margin + 10), height - (margin + 10), -1, -1);
+
+      // 5. Header: Nonna Rosa's 1924 Sourdough Almanac
+      const isNarrow = width < 960;
+      const isVeryNarrow = width < 600;
+
+      ctx.fillStyle = '#8a252c';
+      ctx.font = `bold ${isVeryNarrow ? 10 : 12}px Georgia, serif`;
+      ctx.textAlign = 'center';
+      ctx.fillText('★ CASERTA, CAMPANIA • EST. 1924 ★', width / 2, margin + (isNarrow ? 26 : 38));
+
+      ctx.fillStyle = '#2c1810';
+      const trattoriaSize = Math.max(13, Math.min(22, Math.floor(width * 0.02)));
+      ctx.font = `bold italic ${trattoriaSize}px "Playfair Display", Georgia, serif`;
+      ctx.fillText("Nonna Rosa's Wood-Fired Trattoria & Pizzeria", width / 2, margin + (isNarrow ? 50 : 70));
+
+      const titleSize = Math.max(12, Math.min(26, Math.floor(width * 0.024)));
+      ctx.font = `900 ${titleSize}px Georgia, serif`;
+      ctx.fillStyle = '#1c0e08';
+      const titleText = 'THE 100-YEAR SOURDOUGH CODEX & PIZZERIA SECRETS';
+      const maxTitleW = width - margin * 2 - 40;
+      if (ctx.measureText(titleText).width > maxTitleW) {
+        ctx.fillText('THE 100-YEAR SOURDOUGH CODEX', width / 2, margin + (isNarrow ? 72 : 98));
+        ctx.fillText('& PIZZERIA SECRETS', width / 2, margin + (isNarrow ? 90 : 122));
+      } else {
+        ctx.fillText(titleText, width / 2, margin + (isNarrow ? 76 : 106));
+      }
+
+      ctx.fillStyle = '#b8860b';
+      const specSize = Math.max(8, Math.min(11, Math.floor(width * 0.01)));
+      ctx.font = `bold ${specSize}px monospace`;
+      const specY = isNarrow ? margin + 112 : margin + 132;
+      ctx.fillText('OFFICIAL HERITAGE SPECIFICATION • SPECIALITÀ TRADIZIONALE GARANTITA (S.T.G.)', width / 2, specY);
+
+      // Header Divider Line
+      const dividerY = specY + 12;
+      ctx.strokeStyle = '#c59b27';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(margin + 20, dividerY);
+      ctx.lineTo(width - (margin + 20), dividerY);
+      ctx.stroke();
+
+      // 6. Responsive Fun Fact Cards (3 Columns if wide, stacked if narrow)
+      const isWide = width >= 960;
+      const contentTop = dividerY + 14;
+      const contentBottom = height - margin - 110;
+      const availableHeight = Math.max(160, contentBottom - contentTop);
+
+      const funFacts = [
+        {
+          icon: '🌾',
+          title: 'The 1924 Lievito Madre',
+          sub: '100-YEAR UNBROKEN MOTHER CULTURE',
+          body: 'Did you know? Our wild sourdough starter was first kneaded in Caserta, Campania in October 1924. Nurtured daily with stone-milled Italian wheat and mountain spring water for a century, its wild lactobacillus culture produces immense airy steam pockets with zero commercial yeast.'
+        },
+        {
+          icon: '🔥',
+          title: '485°C Wood-Fired Physics',
+          sub: 'THE 90-SECOND LEOPARD BAKE',
+          body: 'Why bake in only 90 seconds? At 485°C (905°F), trapped water inside the dough vaporizes instantly into boiling steam. This balloons the rim (cornicione) in 60 to 90 seconds while woodsmoke chars blistered dark leopard spots across the crust without drying the crumb.'
+        },
+        {
+          icon: '💧',
+          title: '65% Hydration & Cold Rise',
+          sub: '48-HOUR ENZYME MATURATION',
+          body: 'Per 1,000g of Tipo 00 flour, exactly 650g of ice-cold mineral water and 28g of sea salt are hand-kneaded. A 48-hour cold fermentation gently digests complex starches, resulting in a crust so light and easy to digest you could eat two whole pies.'
+        }
+      ];
+
+      const cardMargin = Math.max(12, margin);
+      const availableW = width - cardMargin * 2 - 20;
+
+      if (isWide) {
+        const colWidth = availableW / 3;
+        const cardH = Math.min(240, availableHeight - 90);
+        funFacts.forEach((fact, i) => {
+          const colX = cardMargin + 10 + i * colWidth;
+
+          // Card Background
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+          ctx.strokeStyle = '#c59b27';
+          ctx.lineWidth = 1.2;
+          ctx.fillRect(colX + 6, contentTop, colWidth - 12, cardH);
+          ctx.strokeRect(colX + 6, contentTop, colWidth - 12, cardH);
+
+          // Fact Header
+          ctx.fillStyle = '#8a252c';
+          ctx.font = '22px serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(fact.icon, colX + colWidth / 2, contentTop + 32);
+
+          ctx.fillStyle = '#1c0e08';
+          ctx.font = 'bold 15px Georgia, serif';
+          ctx.fillText(fact.title, colX + colWidth / 2, contentTop + 60);
+
+          ctx.fillStyle = '#b8860b';
+          ctx.font = 'bold 9px monospace';
+          ctx.fillText(fact.sub, colX + colWidth / 2, contentTop + 78);
+
+          // Body text wrapped
+          ctx.fillStyle = '#2c1810';
+          ctx.font = '12px/1.45 Georgia, serif';
+          ctx.textAlign = 'left';
+          this.wrapText(ctx, fact.body, colX + 18, contentTop + 102, colWidth - 36, 17);
+        });
+      } else {
+        // Narrow/Tablet viewport: 2 top facts stacked with proportional height
+        const cardH = Math.min(125, Math.floor((availableHeight - 80) / 2));
+        funFacts.slice(0, 2).forEach((fact, i) => {
+          const rowY = contentTop + i * (cardH + 8);
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+          ctx.strokeStyle = '#c59b27';
+          ctx.lineWidth = 1;
+          ctx.fillRect(cardMargin + 10, rowY, availableW, cardH);
+          ctx.strokeRect(cardMargin + 10, rowY, availableW, cardH);
+
+          ctx.fillStyle = '#1c0e08';
+          ctx.font = 'bold 13px Georgia, serif';
+          ctx.textAlign = 'left';
+          ctx.fillText(`${fact.icon} ${fact.title}`, cardMargin + 22, rowY + 24);
+
+          ctx.fillStyle = '#2c1810';
+          ctx.font = '11px/1.35 Georgia, serif';
+          this.wrapText(ctx, fact.body, cardMargin + 22, rowY + 44, availableW - 24, 15);
+        });
+      }
+
+      // 7. The Baker's Secret Note (Bottom Lore)
+      const noteY = isWide ? contentTop + 255 : contentTop + 265;
+      if (noteY + 65 < height - margin - 35) {
+        ctx.fillStyle = 'rgba(138, 37, 44, 0.08)';
+        ctx.strokeStyle = '#8a252c';
+        ctx.lineWidth = 1.5;
+        const noteW = Math.min(760, width - margin * 2 - 20);
+        const noteX = (width - noteW) / 2;
+        const noteH = isVeryNarrow ? 65 : 75;
+        ctx.fillRect(noteX, noteY, noteW, noteH);
+        ctx.strokeRect(noteX, noteY, noteW, noteH);
+
+        ctx.fillStyle = '#8a252c';
+        ctx.font = `bold ${isVeryNarrow ? 10 : 12}px Georgia, serif`;
+        ctx.textAlign = 'center';
+        ctx.fillText("📜 THE BAKER'S SECRET MAIN NOTE", width / 2, noteY + 22);
+
+        ctx.fillStyle = '#1c0e08';
+        ctx.font = `italic ${isVeryNarrow ? 10 : 12}px Georgia, serif`;
+        ctx.textAlign = 'center';
+        this.wrapText(
+          ctx,
+          "“Tradition runs on fire, but in the heart of this pizzeria, an automated network keeps every degree and packet in sync. They say if you tear beneath the parchment fiber, the maestro's control mainframe is still running...”",
+          width / 2,
+          noteY + 42,
+          noteW - 24,
+          isVeryNarrow ? 13 : 16
+        );
+      }
+
+      // 8. Crimson Wax Seal (Bottom Right)
+      const sealScale = isVeryNarrow ? 0.7 : isNarrow ? 0.85 : 1.0;
+      const sealR = 38 * sealScale;
+      const sealX = width - margin - (isVeryNarrow ? 40 : 65);
+      const sealY = height - margin - (isVeryNarrow ? 45 : 65);
+
+      // Ribbon tails
+      ctx.fillStyle = '#a82c35';
+      ctx.beginPath();
+      ctx.moveTo(sealX - 12 * sealScale, sealY + 15 * sealScale);
+      ctx.lineTo(sealX - 20 * sealScale, sealY + 50 * sealScale);
+      ctx.lineTo(sealX - 8 * sealScale, sealY + 42 * sealScale);
+      ctx.lineTo(sealX + 4 * sealScale, sealY + 50 * sealScale);
+      ctx.lineTo(sealX - 4 * sealScale, sealY + 15 * sealScale);
+      ctx.fill();
+
+      // Wax Seal
+      const waxGrad = ctx.createRadialGradient(sealX - 8, sealY - 8, 4, sealX, sealY, sealR);
+      waxGrad.addColorStop(0, '#e53935');
+      waxGrad.addColorStop(0.7, '#b71c1c');
+      waxGrad.addColorStop(1, '#5f0909');
+      ctx.fillStyle = waxGrad;
+      ctx.beginPath();
+      ctx.arc(sealX, sealY, sealR, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = '#ffd700';
+      ctx.lineWidth = 1.8 * sealScale;
+      ctx.beginPath();
+      ctx.arc(sealX, sealY, sealR * 0.8, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.fillStyle = '#ffd700';
+      ctx.font = `bold ${Math.round(11 * sealScale)}px Georgia, serif`;
+      ctx.textAlign = 'center';
+      ctx.fillText('1924', sealX, sealY - 5 * sealScale);
+      ctx.fillText('★ NAPOLI ★', sealX, sealY + 10 * sealScale);
+
+      // 9. Weathered Red Stamp (Bottom Left)
+      const stampScale = isVeryNarrow ? 0.7 : isNarrow ? 0.85 : 1.0;
+      const stampW = 180 * stampScale;
+      const stampH = 44 * stampScale;
+      const stampX = margin + (isVeryNarrow ? 50 : 85);
+      const stampY = height - margin - (isVeryNarrow ? 45 : 65);
+
+      ctx.save();
+      ctx.translate(stampX, stampY);
+      ctx.rotate(-0.12);
+      ctx.strokeStyle = 'rgba(180, 40, 40, 0.75)';
+      ctx.lineWidth = 3 * stampScale;
+      ctx.strokeRect(-stampW / 2, -stampH / 2, stampW, stampH);
+      ctx.fillStyle = 'rgba(180, 40, 40, 0.85)';
+      ctx.font = `900 ${Math.round(11 * stampScale)}px monospace`;
+      ctx.textAlign = 'center';
+      ctx.fillText('VERIFIED TRADITIONAL', 0, -3 * stampScale);
+      ctx.fillText('★ S.T.G. SPECIALITÀ ★', 0, 10 * stampScale);
+      ctx.restore();
+    }
+
+    // Helper text wrapper
+    wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, lineHeight: number) {
+      const words = text.split(' ');
+      let line = '';
+      let curY = y;
+
+      for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + ' ';
+        const metrics = ctx.measureText(testLine);
+        if (metrics.width > maxWidth && n > 0) {
+          ctx.fillText(line, x, curY);
+          line = words[n] + ' ';
+          curY += lineHeight;
+        } else {
+          line = testLine;
+        }
+      }
+      ctx.fillText(line, x, curY);
+    }
+
+    // Distance from point to line segment
+    distToSegment(px: number, py: number, x1: number, y1: number, x2: number, y2: number): number {
+      const l2 = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1);
+      if (l2 === 0) return Math.hypot(px - x1, py - y1);
+      let t = ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / l2;
+      t = Math.max(0, Math.min(1, t));
+      return Math.hypot(px - (x1 + t * (x2 - x1)), py - (y1 + t * (y2 - y1)));
+    }
+
+    bindEvents() {
+      const getPos = (e: MouseEvent | Touch) => {
+        return { x: e.clientX, y: e.clientY };
+      };
+
+      const onStart = (pos: { x: number; y: number }) => {
+        this.isDragging = true;
+        this.mouse.x = pos.x;
+        this.mouse.y = pos.y;
+        this.mouse.px = pos.x;
+        this.mouse.py = pos.y;
+        this.wakeUp();
+        this.sliceCloth();
+      };
+
+      const onMove = (pos: { x: number; y: number }) => {
+        this.mouse.px = this.mouse.x;
+        this.mouse.py = this.mouse.y;
+        this.mouse.x = pos.x;
+        this.mouse.y = pos.y;
+
+        if (this.isDragging) {
+          this.sliceCloth();
+        }
+      };
+
+      const onEnd = () => {
+        this.isDragging = false;
+      };
+
+      this.canvas.addEventListener('mousedown', (e) => onStart(getPos(e)));
+      window.addEventListener('mousemove', (e) => onMove(getPos(e)));
+      window.addEventListener('mouseup', onEnd);
+
+      this.canvas.addEventListener('touchstart', (e) => {
+        if (e.touches.length > 0) onStart(getPos(e.touches[0]));
+      }, { passive: true });
+
+      window.addEventListener('touchmove', (e) => {
+        if (e.touches.length > 0) onMove(getPos(e.touches[0]));
+      }, { passive: true });
+
+      window.addEventListener('touchend', onEnd);
+
+      this.canvas.addEventListener('dblclick', () => {
+        this.zipRip();
+      });
+
+      let resizeTimeout: any = null;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          if (!this.isDropped) {
+            this.init();
+          }
+        }, 100);
+      });
+
+      window.addEventListener('orientationchange', () => {
+        if (!this.isDropped) {
+          setTimeout(() => this.init(), 150);
+        }
+      });
+    }
+
+    // Slices constraints intersected by mouse drag
+    sliceCloth() {
+      if (this.isDropped) return;
+
+      const x1 = this.mouse.px;
+      const y1 = this.mouse.py;
+      const x2 = this.mouse.x;
+      const y2 = this.mouse.y;
+      let toreSomething = false;
+
+      for (const c of this.constraints) {
+        if (c.broken) continue;
+
+        const midX = (c.p1.x + c.p2.x) * 0.5;
+        const midY = (c.p1.y + c.p2.y) * 0.5;
+        const dist = this.distToSegment(midX, midY, x1, y1, x2, y2);
+
+        if (dist < 55) {
+          c.broken = true;
+          toreSomething = true;
+          this.emitSparks(midX, midY);
+        }
+      }
+
+      if (toreSomething) {
+        this.hasTorn = true;
+        this.wakeUp();
+        this.checkTearProgress();
+      }
+    }
+
+    emitSparks(x: number, y: number) {
+      const colors = ['#f39c12', '#f5c542', '#ffd700', '#faf0e6', '#e0c8a0'];
+      for (let i = 0; i < 4; i++) {
+        this.sparks.push({
+          x,
+          y,
+          vx: (Math.random() - 0.5) * 8,
+          vy: (Math.random() - 0.5) * 8 - 3,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          life: 1.0,
+        });
+      }
+    }
+
+    // Programmatic zipper rip down the middle
+    zipRip() {
+      if (this.isDropped) return;
+      this.hasTorn = true;
+      this.wakeUp();
+
+      const midCol = Math.floor(this.cols / 2);
+      let step = 0;
+
+      const interval = setInterval(() => {
+        if (step >= this.rows) {
+          clearInterval(interval);
+          this.dropCloth();
+          return;
+        }
+
+        // Sever constraints down the center channel
+        for (let colOffset = -1; colOffset <= 1; colOffset++) {
+          const c = midCol + colOffset;
+          if (c < 0 || c >= this.cols) continue;
+          const idx = step * this.cols + c;
+          for (const k of this.constraints) {
+            if (k.p1 === this.points[idx] || k.p2 === this.points[idx]) {
+              k.broken = true;
+              this.emitSparks(this.points[idx].x, this.points[idx].y);
+            }
+          }
+        }
+
+        this.checkTearProgress();
+        step++;
+      }, 20);
+    }
+
+    checkTearProgress() {
+      const brokenCount = this.constraints.filter((c) => c.broken).length;
+      const percent = Math.min(100, Math.round((brokenCount / (this.initialConstraintCount * 0.28)) * 100));
+
+      if (this.onTearProgress) {
+        this.onTearProgress(percent);
+      }
+
+      if (percent >= 55 && !this.isDropped) {
+        this.dropCloth();
+      }
+    }
+
+    dropCloth() {
+      if (this.isDropped) return;
+      this.isDropped = true;
+      this.gravity = 0.95;
+
+      // Unpin all points so cloth drops away with gravity and fluttering impulse
+      for (const p of this.points) {
+        p.pinned = false;
+        p.py -= Math.random() * 5;
+        p.px += (Math.random() - 0.5) * 8;
+      }
+      if (this.onDropped) {
+        this.onDropped();
+      }
+    }
+
+    // High-performance affine texture triangle mapper for HTML5 2D Canvas
+    drawTexturedTriangle(
+      ctx: CanvasRenderingContext2D,
+      img: HTMLCanvasElement,
+      x0: number, y0: number,
+      x1: number, y1: number,
+      x2: number, y2: number,
+      u0: number, v0: number,
+      u1: number, v1: number,
+      u2: number, v2: number
+    ) {
+      const delta = u0 * (v1 - v2) + u1 * (v2 - v0) + u2 * (v0 - v1);
+      if (Math.abs(delta) < 0.001) return;
+
+      const a = (x0 * (v1 - v2) + x1 * (v2 - v0) + x2 * (v0 - v1)) / delta;
+      const b = (y0 * (v1 - v2) + y1 * (v2 - v0) + y2 * (v0 - v1)) / delta;
+      const c = (x0 * (u2 - u1) + x1 * (u0 - u2) + x2 * (u1 - u0)) / delta;
+      const d = (y0 * (u2 - u1) + y1 * (u0 - u2) + y2 * (u1 - u0)) / delta;
+      const e = (x0 * (u1 * v2 - u2 * v1) + x1 * (u2 * v0 - u0 * v2) + x2 * (u0 * v1 - u1 * v0)) / delta;
+      const f = (y0 * (u1 * v2 - u2 * v1) + y1 * (u2 * v0 - u0 * v2) + y2 * (u0 * v1 - u1 * v0)) / delta;
+
+      // Expand clip boundary slightly from centroid to guarantee seamless triangle edges without gaps
+      const height = window.innerHeight;
+      if (y0 > height + 20 && y1 > height + 20 && y2 > height + 20) return;
+
+      const cx = (x0 + x1 + x2) / 3;
+      const cy = (y0 + y1 + y2) / 3;
+
+      const expand = (x: number, y: number) => {
+        const dx = x - cx;
+        const dy = y - cy;
+        const len = Math.hypot(dx, dy);
+        if (len < 0.001) return { x, y };
+        return {
+          x: x + (dx / len) * 0.75,
+          y: y + (dy / len) * 0.75,
+        };
+      };
+
+      const e0 = expand(x0, y0);
+      const e1 = expand(x1, y1);
+      const e2 = expand(x2, y2);
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(e0.x, e0.y);
+      ctx.lineTo(e1.x, e1.y);
+      ctx.lineTo(e2.x, e2.y);
+      ctx.closePath();
+      ctx.clip();
+
+      ctx.transform(a, b, c, d, e, f);
+      ctx.drawImage(img, 0, 0);
+      ctx.restore();
+    }
+
+    animate = () => {
+      if (this.isStopped) {
+        this.rafId = null;
+        return;
+      }
+
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+
+      this.ctx.clearRect(0, 0, width, height);
+
+      // Physics update: point positions & relaxation
+      for (const p of this.points) {
+        p.update(this.gravity, this.damping);
+      }
+
+      for (let iter = 0; iter < 4; iter++) {
+        for (const c of this.constraints) {
+          c.resolve();
+        }
+      }
+
+      // Render cloth mesh as genuine torn parchment textured triangles
+      this.renderCloth(width, height);
+
+      // Render sparks
+      for (let i = this.sparks.length - 1; i >= 0; i--) {
+        const s = this.sparks[i];
+        s.x += s.vx;
+        s.y += s.vy;
+        s.life -= 0.04;
+        if (s.life <= 0) {
+          this.sparks.splice(i, 1);
+        } else {
+          this.ctx.fillStyle = s.color;
+          this.ctx.globalAlpha = s.life;
+          this.ctx.beginPath();
+          this.ctx.arc(s.x, s.y, 2.5, 0, Math.PI * 2);
+          this.ctx.fill();
+          this.ctx.globalAlpha = 1;
+        }
+      }
+
+      this.settleFrames++;
+      // Pause animation loop when untouched parchment has settled so reading uses 0% CPU
+      if (!this.hasTorn && !this.isDragging && !this.isDropped && this.sparks.length === 0 && this.settleFrames > 45) {
+        this.rafId = null;
+        return;
+      }
+
+      this.rafId = requestAnimationFrame(this.animate);
+    };
+
+    // Renders the genuine torn parchment document using affine texture mapping on intact triangles
+    renderCloth(width: number, height: number) {
+      for (let r = 0; r < this.rows - 1; r++) {
+        for (let c = 0; c < this.cols - 1; c++) {
+          const idx = r * this.cols + c;
+          const p1 = this.points[idx];                  // Top-Left (r, c)
+          const p2 = this.points[idx + 1];              // Top-Right (r, c + 1)
+          const p3 = this.points[idx + this.cols + 1];  // Bottom-Right (r + 1, c + 1)
+          const p4 = this.points[idx + this.cols];      // Bottom-Left (r + 1, c)
+
+          const cTop = this.hConstraints[r]?.[c];
+          const cBottom = this.hConstraints[r + 1]?.[c];
+          const cLeft = this.vConstraints[r]?.[c];
+          const cRight = this.vConstraints[r]?.[c + 1];
+
+          // Triangle 1: Top-Left half (p1, p2, p4)
+          // Intact if its primary structural boundaries are unbroken
+          if (!cTop?.broken && !cLeft?.broken) {
+            this.drawTexturedTriangle(
+              this.ctx,
+              this.parchmentBuffer,
+              p1.x, p1.y,
+              p2.x, p2.y,
+              p4.x, p4.y,
+              p1.u, p1.v,
+              p2.u, p2.v,
+              p4.u, p4.v
+            );
+          }
+
+          // Triangle 2: Bottom-Right half (p2, p3, p4)
+          // Intact if its primary structural boundaries are unbroken
+          if (!cRight?.broken && !cBottom?.broken) {
+            this.drawTexturedTriangle(
+              this.ctx,
+              this.parchmentBuffer,
+              p2.x, p2.y,
+              p3.x, p3.y,
+              p4.x, p4.y,
+              p2.u, p2.v,
+              p3.u, p3.v,
+              p4.u, p4.v
+            );
+          }
+        }
+      }
+    }
+  }
+
+  // Initialize Component
+  function initLogin() {
+    const canvas = document.getElementById('tearable-cloth-canvas') as HTMLCanvasElement;
+    const form = document.getElementById('tear-login-form') as HTMLFormElement;
+    const errorEl = document.getElementById('tear-login-error');
+    const btnText = document.getElementById('tear-btn-text');
+    const btnSpinner = document.getElementById('tear-btn-spinner');
+    const submitBtn = document.getElementById('tear-login-btn') as HTMLButtonElement;
+
+    if (!canvas) return;
+
+    const cloth = new FullPageTearableCloth(canvas);
+
+    cloth.onDropped = () => {
+      // Fade canvas out smoothly so terminal is crisp and interactive, then halt physics loop
+      setTimeout(() => {
+        canvas.style.transition = 'opacity 0.6s ease';
+        canvas.style.opacity = '0';
+        canvas.style.pointerEvents = 'none';
+        const userField = document.getElementById('tear-username');
+        if (userField) userField.focus();
+        setTimeout(() => {
+          cloth.stop();
+        }, 650);
+      }, 1400);
+    };
+
+    // Handle AJAX Form Submission
+    if (form) {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (errorEl) errorEl.classList.add('hidden');
+        if (btnText) btnText.textContent = 'Verifying Credentials...';
+        if (btnSpinner) btnSpinner.classList.remove('hidden');
+        if (submitBtn) submitBtn.disabled = true;
+
+        const formData = new FormData(form);
+        const username = formData.get('username');
+        const password = formData.get('password');
+        const redirect = (formData.get('redirect') as string) || '/dashboard';
+
+        try {
+          const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password, redirect }),
+          });
+
+          const data = await res.json();
+
+          if (res.ok && data.success) {
+            if (btnText) btnText.textContent = 'Access Granted!';
+            const rawTarget = String(data.redirect || redirect || '/dashboard').trim();
+            const safeTarget =
+              rawTarget.startsWith('/') && !rawTarget.startsWith('//') && !rawTarget.startsWith('/\\')
+                ? rawTarget
+                : '/dashboard';
+            window.location.href = safeTarget;
+          } else {
+            throw new Error(data.error || 'Authentication failed');
+          }
+        } catch (err: any) {
+          if (errorEl) {
+            errorEl.textContent = err.message || 'Authentication error';
+            errorEl.classList.remove('hidden');
+          }
+          if (btnText) btnText.textContent = 'AUTHENTICATE & UNLOCK MAINFRAME';
+          if (btnSpinner) btnSpinner.classList.add('hidden');
+          if (submitBtn) submitBtn.disabled = false;
+        }
+      });
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initLogin);
+  } else {
+    initLogin();
+  }
+</script>

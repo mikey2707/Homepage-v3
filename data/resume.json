@@ -2,105 +2,151 @@
   "personalInfo": {
     "name": "Michael Chavez",
     "roles": [
-      "Home Lab Enthusiast",
-      "Self-hosting Enjoyer",
-      "AI Automater",
-      "Hardware Enthusiast"
+      "Data Center Technician",
+      "Home Lab & Cloud Architect",
+      "Systems Administrator",
+      "Hardware & Automation Enthusiast"
     ],
     "email": "michaelchavezm@gmail.com",
     "location": "South Carolina",
-    "bio": "Experienced techie with expertise in system administration, and media server management. Passionate about building efficient solutions, managing complex infrastructure, and automating everything in my home lab.",
+    "bio": "Experienced systems and data center technician specializing in cloud infrastructure, virtualization, media automation, and network topology. Passionate about architecting high-reliability systems, self-hosting privacy-first services, and automating everything in my home lab.",
     "social": {
       "github": "https://github.com/mikey2707",
       "linkedin": "https://www.linkedin.com/in/michael-chavez-5473a7214/"
     }
   },
+  "quickStats": [
+    { "label": "Services Hosted", "value": "35+" },
+    { "label": "Storage Pools", "value": "55.4 TiB" },
+    { "label": "Core Compute", "value": "2 Servers" },
+    { "label": "Edge & Uptime", "value": "99.99% Uptime" }
+  ],
   "projects": [
     {
-      "name": "Media Server Stack",
-      "description": "Complete media automation with Jellyfin, Sonarr, Radarr, and Jellyseerr. Automated downloads, organization, and streaming.",
+      "name": "Media Server Automation Pipeline",
+      "description": "Complete media automation stack running as native TrueNAS SCALE apps: Jellyfin, Sonarr, Radarr, Seerr, and Tdarr. Features Gluetun WireGuard VPN namespace isolation for qBittorrent, automated indexing via Prowlarr, and hardware-accelerated transcoding.",
       "tech": [
-        "Docker",
+        "TrueNAS SCALE",
         "Jellyfin",
         "Sonarr",
         "Radarr",
-        "Nginx"
+        "Seerr",
+        "Gluetun VPN",
+        "qBittorrent"
       ],
-      "link": "/services"
+      "link": "https://github.com/mikey2707"
     },
     {
-      "name": "Home Network",
-      "description": "Self-managed network infrastructure with VLANs, firewall rules, and VPN access for secure remote management.",
+      "name": "Enterprise Gateway & Edge Defense",
+      "description": "Perimeter network powered by UniFi Dream Machine Pro ('Zeus') and UniFi U7 Lite ('Hermes'). Features Cloudflare Strict SSL with wildcard proxying (*.mikey.host), AdGuard Home DNS sinkhole, CrowdSec intrusion prevention, and Wazuh SIEM threat monitoring.",
       "tech": [
-        "pfSense",
-        "UniFi",
-        "WireGuard",
-        "VLAN"
-      ]
+        "UniFi UDM-Pro",
+        "Cloudflare Edge",
+        "Nginx Proxy Manager",
+        "CrowdSec",
+        "Wazuh SIEM",
+        "AdGuard Home"
+      ],
+      "link": "https://github.com/mikey2707"
     },
     {
-      "name": "Virtualization Cluster",
-      "description": "Proxmox-based virtualization environment running VMs and containers for various services and experiments.",
+      "name": "Proxmox Virtualization Hypervisor",
+      "description": "Standalone Proxmox VE 9.0.5 hypervisor (pve01) hosting mission-critical Linux VMs and LXCs: 23-container Docker edge (docker1) managed through Portainer, Hermes Agent control node (clanker), Wazuh SIEM, and Crafty Minecraft LXC.",
       "tech": [
-        "Proxmox",
-        "LXC",
+        "Proxmox VE 9",
         "KVM",
-        "ZFS"
-      ]
+        "LXC",
+        "Portainer",
+        "Docker",
+        "Debian"
+      ],
+      "link": "https://github.com/mikey2707"
     },
     {
-      "name": "Monitoring Stack",
-      "description": "Comprehensive monitoring and alerting system for all home lab services with dashboards and notifications.",
+      "name": "High-Density TrueNAS SCALE Storage Server",
+      "description": "Enterprise-grade storage server powered by AMD Threadripper 3970X (32 cores / 64 threads) and 256 GB RAM. Manages multi-terabyte ZFS storage pools (Vault, Library, SSD-Locker) with automated scrubs, ARC cache tuning, and encrypted offsite snapshots.",
       "tech": [
-        "Grafana",
-        "Prometheus",
-        "Uptime Kuma"
-      ]
+        "TrueNAS SCALE",
+        "AMD Threadripper",
+        "ZFS Pools",
+        "256GB ECC RAM",
+        "NFS/SMB",
+        "Rclone"
+      ],
+      "link": "https://github.com/mikey2707"
     },
     {
-      "name": "AI & Automation",
-      "description": "Local AI models and automation workflows for smart home control and personal productivity.",
+      "name": "Smart Home & Autonomous Control Node",
+      "description": "Decentralized home automation and telemetry node running Home Assistant integrated with environment sensors, alongside the Hermes Agent autonomous control node (clanker) for infrastructure monitoring.",
       "tech": [
         "Home Assistant",
-        "n8n",
-        "Ollama",
+        "Hermes Agent",
+        "MQTT",
+        "REST APIs",
         "Python"
-      ]
+      ],
+      "link": "https://github.com/mikey2707"
     },
     {
-      "name": "Storage Server",
-      "description": "Network attached storage with redundancy, snapshots, and automated backups for all important data.",
+      "name": "Full-Stack Security Operations & SIEM",
+      "description": "Centralized SIEM monitoring with Wazuh Manager (VM 104) and CrowdSec IPS analyzing live ingress logs, providing real-time telemetry, automated threat banning, and SSL/DNS health checks.",
       "tech": [
-        "TrueNAS",
-        "ZFS",
-        "Restic",
-        "Rclone"
-      ]
+        "Wazuh SIEM",
+        "CrowdSec",
+        "Cloudflare API",
+        "Portainer",
+        "Systemd"
+      ],
+      "link": "https://github.com/mikey2707"
     }
   ],
   "skillCategories": [
     {
-      "name": "DevOps & Cloud",
-      "icon": "cloud",
+      "name": "Virtualization & Storage",
+      "icon": "server",
       "skills": [
-        "Docker",
-        "Kubernetes",
-        "Terraform",
-        "Ansible",
-        "CI/CD",
-        "Google Cloud"
+        "TrueNAS SCALE 25.04",
+        "Proxmox VE 9.0.5",
+        "ZFS Pools (Vault/Library/SSD)",
+        "AMD Threadripper 3970X",
+        "Debian / Ubuntu Linux",
+        "KVM & LXC Architecture"
       ]
     },
     {
-      "name": "Infrastructure",
-      "icon": "server",
+      "name": "Containers & Orchestration",
+      "icon": "cloud",
       "skills": [
-        "Proxmox",
-        "TrueNAS",
-        "pfSense",
-        "Nginx",
-        "Linux",
-        "Networking"
+        "Docker & Compose Stacks",
+        "Portainer CE",
+        "Nginx Proxy Manager",
+        "Authentik SSO",
+        "Cloudflare Edge & Wildcard DNS",
+        "Google Cloud Platform (GCP)"
+      ]
+    },
+    {
+      "name": "Networking & Security",
+      "icon": "network",
+      "skills": [
+        "UniFi Dream Machine Pro ('Zeus')",
+        "UniFi U7 Lite ('Hermes')",
+        "CrowdSec Intrusion Prevention",
+        "Wazuh SIEM Architecture",
+        "AdGuard Home DNS Sinkhole",
+        "WireGuard & Gluetun VPN"
+      ]
+    },
+    {
+      "name": "Media & Homelab Applications",
+      "icon": "code",
+      "skills": [
+        "Jellyfin Media Server",
+        "Sonarr, Radarr & Prowlarr",
+        "Seerr / Jellyseerr",
+        "qBittorrent (VPN Namespace)",
+        "Tdarr Transcoding",
+        "Home Assistant"
       ]
     }
   ],
@@ -109,55 +155,65 @@
       "title": "Data Center Technician 2",
       "company": "Google",
       "period": "2025 - Present",
-      "description": "Maintain Google Cloud server operation. In the hardware and networking operations.",
+      "description": "Maintain Google Cloud server operations across mission-critical hardware, fiber network topologies, and global scale infrastructure.",
       "tech": [
-        "Fiber",
-        "Hardware",
-        "GSO"
+        "Google Cloud",
+        "Fiber Optics",
+        "Server Hardware",
+        "GSO Infrastructure",
+        "High Availability"
       ]
     },
     {
       "title": "Level 2 Support Engineer",
       "company": "Dyopath",
       "period": "2024 - 2025",
-      "description": "Provided Tier-3 support and SME input to internal and external customers while explaining technical concepts in clear terms to assist non-technical users.",
+      "description": "Provided Tier-3 support and subject-matter expert input to internal and external enterprise customers, resolving complex infrastructure tickets and explaining advanced technical concepts in clear terms.",
       "tech": [
-        "Intune",
+        "Microsoft Intune",
         "ServiceNow",
-        "Powershell"
+        "PowerShell",
+        "Active Directory",
+        "Windows Server"
       ]
     },
     {
       "title": "Network Administrator - Consultant",
       "company": "PrePaidIQ",
       "period": "2022 - 2024",
-      "description": "Managed Active Directory (AD), Entra ID, DHCP, and DNS configurations, along with administering Windows Server infrastructure to ensure secure and reliable network services.",
+      "description": "Architected and managed Active Directory (AD), Entra ID, DHCP, and DNS configurations, alongside enterprise Windows Server infrastructure to ensure 99.9% uptime and secure multi-site communication.",
       "tech": [
-        "DHCP",
-        "Ubiquiti",
-        "DNS"
+        "Ubiquiti UniFi",
+        "DHCP & DNS",
+        "Active Directory",
+        "Entra ID",
+        "Network Routing"
       ]
     },
     {
       "title": "R&D Technician",
       "company": "Corsair",
       "period": "2023 - 2024",
-      "description": "Identified opportunities for process optimization in validation activities, improving testing turnaround time and reducing costs while developing and executing validation protocols for computer components. Collected and analyzed test data, documented results, and collaborated with product development teams to provide feedback on design improvements and potential issues.",
+      "description": "Developed and executed rigorous validation protocols for high-performance computer hardware components. Collected diagnostic telemetry, optimized QA testing cycles, and collaborated directly with engineering teams to resolve component bottlenecks.",
       "tech": [
-        "CPU",
-        "GPU",
-        "RAM"
+        "Hardware Validation",
+        "CPU & GPU Architectures",
+        "DDR4/DDR5 Memory",
+        "Thermal Benchmarking",
+        "Telemetry Logging"
       ]
     },
     {
       "title": "Product Support Specialist",
       "company": "Corsair",
       "period": "2021 - 2023",
-      "description": "Collaborated with Assemblers and Integrators to support end-user service requests, provided technical specifications, and maintained composure while applying de-escalation techniques in challenging customer situations. Operated and maintained an Epilog Laser machine and LogoJet UV printer, performed QA assessments, identified hardware issues using diagnostic tools, disassembled computer systems for troubleshooting, and documented repairs and replacements for budgeting purposes.",
+      "description": "Collaborated with hardware assemblers and system engineers to troubleshoot complex tier-2 hardware and firmware issues. Operated industrial QA machinery, performed deep component diagnostics, and authored standard operating procedures (SOPs).",
       "tech": [
-        "Epilog Laser",
+        "Hardware Diagnostics",
+        "Epilog Laser QA",
         "UV Printer",
-        "SoP"
+        "Technical Documentation",
+        "SOP Development"
       ]
     }
   ],
@@ -166,12 +222,12 @@
       "degree": "Bachelor of Science in Information Technology",
       "institution": "Florida International University",
       "period": "2018 - 2023",
-      "details": "Focus on networking engineering and infrastructure topology"
+      "details": "Specialization in Network Engineering, Cloud Computing, and Infrastructure Architecture"
     }
   ],
   "certifications": [
     {
-      "name": "CompTIA A+",
+      "name": "CompTIA A+ Certified",
       "issuer": "CompTIA",
       "date": "2024"
     }

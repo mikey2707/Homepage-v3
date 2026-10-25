@@ -1,0 +1,603 @@
+---
+// PizzaHUD: Preloader, Floating Station Switcher, Safe Audio Controls, and Hover Tooltips
+---
+
+<!-- 1. PRELOADER (Jesse Zhou Style Adapted for Pizza) -->
+<div id="pizza-preloader" class="fixed inset-0 z-50 bg-[#120b08] flex flex-col items-center justify-center transition-opacity duration-700 select-none">
+  <!-- Glowing oven hearth background blur -->
+  <div class="absolute w-96 h-96 rounded-full bg-gradient-to-tr from-tangerine-dream/20 to-red-600/10 blur-3xl pointer-events-none"></div>
+
+  <div class="relative z-10 flex flex-col items-center text-center max-w-sm px-6">
+    <!-- Animated Pizza Slice / Fire Icon -->
+    <div class="relative mb-6">
+      <div class="text-7xl animate-bounce">🍕</div>
+      <div class="absolute -bottom-2 inset-x-0 flex justify-center gap-1.5 opacity-80">
+        <span class="w-2 h-2 rounded-full bg-tangerine-dream animate-ping"></span>
+        <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+        <span class="w-2 h-2 rounded-full bg-red-500 animate-ping delay-100"></span>
+      </div>
+    </div>
+
+    <h1 class="text-3xl font-black text-cream tracking-wide font-serif mb-2">
+      Mikey's Pizzeria
+    </h1>
+    <p class="text-xs font-mono text-ash-gray uppercase tracking-widest mb-6">
+      Wood-Fired Infrastructure & Portfolio
+    </p>
+
+    <!-- Baking progress bar -->
+    <div class="w-full h-2 rounded-full bg-white/10 overflow-hidden mb-3 p-0.5 border border-white/10">
+      <div id="baking-progress-bar" class="h-full bg-gradient-to-r from-tangerine-dream via-amber-400 to-red-500 rounded-full transition-all duration-150" style="width: 12%;"></div>
+    </div>
+
+    <div class="flex items-center justify-between w-full text-xs font-mono text-ash-gray mb-8">
+      <span>PREHEATING STONE OVEN 450°C</span>
+      <span id="baking-progress-text" class="text-tangerine-dream font-bold">12%</span>
+    </div>
+
+    <!-- Enter Pizzeria Button (shown when 100%) -->
+    <button id="enter-pizzeria-btn" class="hidden px-8 py-3.5 rounded-2xl bg-gradient-to-r from-tangerine-dream to-amber-500 text-void-black font-mono font-black text-sm tracking-wider uppercase shadow-xl hover:scale-105 active:scale-95 transition-all">
+      ENTER PIZZERIA 🍕
+    </button>
+  </div>
+</div>
+
+<!-- 2. FLOATING TOP HUD -->
+<header class="fixed top-4 inset-x-4 md:inset-x-8 z-30 flex items-center justify-between pointer-events-none">
+  <!-- Brand Badge -->
+  <div class="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-void-black/70 border border-white/10 backdrop-blur-md pointer-events-auto shadow-lg">
+    <span class="text-xl">🍕</span>
+    <div>
+      <div class="flex items-center gap-2">
+        <span class="text-xs font-black text-cream tracking-wider font-mono">MIKEY'S PIZZA</span>
+        <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          OPEN
+        </span>
+      </div>
+      <span class="text-[10px] text-ash-gray font-mono block">Artisanal 3D Homelab Diorama</span>
+    </div>
+  </div>
+
+  <!-- Actions (Lighting Mode & Audio) -->
+  <div class="flex items-center gap-2 pointer-events-auto">
+    <!-- Lighting Mode Toggle (Cozy Warm vs Late-Night Dark Mode) -->
+    <button id="lighting-toggle-btn" class="px-3.5 py-2 rounded-xl bg-void-black/70 hover:bg-void-black border border-white/10 backdrop-blur-md text-xs font-mono text-ash-gray hover:text-cream transition-all flex items-center gap-1.5" title="Toggle Pizzeria Lighting (Cozy Warm vs Late-Night Dark Mode)">
+      <span id="lighting-icon">☀️</span>
+      <span id="lighting-label" class="hidden sm:inline">LIGHT: COZY</span>
+    </button>
+
+    <!-- Safe HTML5 Audio Toggle -->
+    <button id="audio-toggle-btn" class="px-3.5 py-2 rounded-xl bg-void-black/70 hover:bg-void-black border border-white/10 backdrop-blur-md text-xs font-mono text-ash-gray hover:text-cream transition-all flex items-center gap-1.5" title="Toggle Pizzeria Lo-Fi Music (Completely Safe Single HTML5 Audio)">
+      <span id="audio-icon">🔇</span>
+      <span id="audio-label" class="hidden sm:inline">MUSIC: OFF</span>
+    </button>
+  </div>
+</header>
+
+<!-- 3A. IN-WORLD CHALKBOARD BAR (Active ONLY when viewing Menu) -->
+<div id="chalkboard-hud-bar" class="fixed bottom-3 sm:bottom-6 inset-x-2 sm:inset-x-4 flex flex-col items-center z-50 pointer-events-none transition-all duration-300 opacity-0 translate-y-4 hidden">
+  <div class="flex items-center gap-1 sm:gap-1.5 p-1.5 sm:p-2 rounded-2xl bg-[#121714]/95 border-2 border-[#e0a96d]/80 backdrop-blur-xl shadow-2xl pointer-events-auto max-w-[calc(100vw-1rem)] overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-mono font-bold text-[#e0a96d] border-r border-white/10 mr-1 hidden sm:flex">
+      <span>📋</span>
+      <span>CHALKBOARD:</span>
+    </div>
+
+    <button class="chalk-page-btn active px-2.5 sm:px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all bg-[#e0a96d] text-void-black shadow-md whitespace-nowrap" data-page="0">
+      ⭐ 1. Specials
+    </button>
+    <button class="chalk-page-btn px-2.5 sm:px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all bg-white/5 text-ash-gray hover:text-white hover:bg-white/10 whitespace-nowrap" data-page="1">
+      💼 2. Experience
+    </button>
+    <button class="chalk-page-btn px-2.5 sm:px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all bg-white/5 text-ash-gray hover:text-white hover:bg-white/10 whitespace-nowrap" data-page="2">
+      🧀 3. Ingredients
+    </button>
+    <button class="chalk-page-btn px-2.5 sm:px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all bg-white/5 text-ash-gray hover:text-white hover:bg-white/10 whitespace-nowrap" data-page="3">
+      📜 4. Education
+    </button>
+
+    <div class="h-5 w-px bg-white/15 mx-1 hidden sm:block"></div>
+
+    <button id="chalk-exit-btn" class="px-2.5 sm:px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all bg-red-500/20 text-red-300 hover:bg-red-500/30 border border-red-500/40 whitespace-nowrap flex items-center gap-1 shadow-md hover:scale-105 active:scale-95" title="Return to pizzeria overview (Esc)">
+      <span>✕</span>
+      <span>Exit Menu</span>
+    </button>
+  </div>
+  <div class="text-[10px] font-mono text-[#fceabb]/80 mt-1.5 tracking-wider hidden sm:block bg-black/60 px-3 py-0.5 rounded-full border border-white/5">
+    💡 Use [A / D] or [← / →] arrows or [1-4] to flip chalk pages • [Esc] to exit back to pizzeria
+  </div>
+</div>
+
+<!-- 3B. IN-WORLD FRIDGE BAR (Active ONLY when viewing Fridge) -->
+<div id="fridge-hud-bar" class="fixed bottom-3 sm:bottom-6 inset-x-2 sm:inset-x-4 flex flex-col items-center z-50 pointer-events-none transition-all duration-300 opacity-0 translate-y-4 hidden">
+  <div class="flex items-center gap-1.5 sm:gap-2 p-1.5 sm:p-2 rounded-2xl bg-[#0c1418]/95 border-2 border-cyan-400/80 backdrop-blur-xl shadow-2xl pointer-events-auto max-w-[calc(100vw-1rem)] overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-mono font-bold text-cyan-300 border-r border-white/10 mr-1 hidden sm:flex">
+      <span>🧊</span>
+      <span>WALK-IN FRIDGE (<span id="fridge-hud-temp">38.2°C // 100.8°F</span>):</span>
+    </div>
+
+    <button id="fridge-open-modal-btn" class="px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 border border-cyan-400/40 whitespace-nowrap flex items-center gap-1.5 shadow-md">
+      <span>📊</span>
+      <span>Open Telemetry Modal</span>
+    </button>
+
+    <div class="h-5 w-px bg-white/15 mx-1 hidden sm:block"></div>
+
+    <button id="fridge-exit-btn" class="px-2.5 sm:px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all bg-red-500/20 text-red-300 hover:bg-red-500/30 border border-red-500/40 whitespace-nowrap flex items-center gap-1 shadow-md hover:scale-105 active:scale-95" title="Return to pizzeria overview (Esc)">
+      <span>✕</span>
+      <span>Exit Fridge</span>
+    </button>
+  </div>
+  <div class="text-[10px] font-mono text-cyan-200/80 mt-1.5 tracking-wider hidden sm:block bg-black/60 px-3 py-0.5 rounded-full border border-white/5">
+    💡 Inspect pinned to-do list & live TrueNAS thermals • [Esc] to exit back to pizzeria
+  </div>
+</div>
+
+<!-- 3C. IN-WORLD OVEN BAR (Active ONLY when viewing Oven) -->
+<div id="oven-hud-bar" class="fixed bottom-3 sm:bottom-6 inset-x-2 sm:inset-x-4 flex flex-col items-center z-50 pointer-events-none transition-all duration-300 opacity-0 translate-y-4 hidden">
+  <div class="flex items-center gap-1.5 sm:gap-2 p-1.5 sm:p-2 rounded-2xl bg-[#1a0f0a]/95 border-2 border-tangerine-dream/80 backdrop-blur-xl shadow-2xl pointer-events-auto max-w-[calc(100vw-1rem)] overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-mono font-bold text-tangerine-dream border-r border-white/10 mr-1 hidden sm:flex">
+      <span>🔥</span>
+      <span>WOOD-FIRED OVEN (450°C):</span>
+    </div>
+
+    <button id="oven-open-modal-btn" class="px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all bg-tangerine-dream/20 text-tangerine-dream hover:bg-tangerine-dream/30 border border-tangerine-dream/40 whitespace-nowrap flex items-center gap-1.5 shadow-md">
+      <span>🍕</span>
+      <span>Open Projects Modal</span>
+    </button>
+
+    <div class="h-5 w-px bg-white/15 mx-1 hidden sm:block"></div>
+
+    <button id="oven-exit-btn" class="px-2.5 sm:px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all bg-red-500/20 text-red-300 hover:bg-red-500/30 border border-red-500/40 whitespace-nowrap flex items-center gap-1 shadow-md hover:scale-105 active:scale-95" title="Return to pizzeria overview (Esc)">
+      <span>✕</span>
+      <span>Exit Oven</span>
+    </button>
+  </div>
+  <div class="text-[10px] font-mono text-amber-200/80 mt-1.5 tracking-wider hidden sm:block bg-black/60 px-3 py-0.5 rounded-full border border-white/5">
+    💡 Wood-fired projects & artisanal deployments • [Esc] to exit back to pizzeria
+  </div>
+</div>
+
+<!-- 3D. IN-WORLD CASHIER BAR (Active ONLY when viewing Cashier) -->
+<div id="register-hud-bar" class="fixed bottom-3 sm:bottom-6 inset-x-2 sm:inset-x-4 flex flex-col items-center z-50 pointer-events-none transition-all duration-300 opacity-0 translate-y-4 hidden">
+  <div class="flex items-center gap-1.5 sm:gap-2 p-1.5 sm:p-2 rounded-2xl bg-[#161208]/95 border-2 border-amber-400/80 backdrop-blur-xl shadow-2xl pointer-events-auto max-w-[calc(100vw-1rem)] overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-mono font-bold text-amber-300 border-r border-white/10 mr-1 hidden sm:flex">
+      <span>🧾</span>
+      <span>CASHIER & TAKEOUT:</span>
+    </div>
+
+    <button id="register-open-modal-btn" class="px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 border border-amber-400/40 whitespace-nowrap flex items-center gap-1.5 shadow-md">
+      <span>📝</span>
+      <span>Place Order Slip / Contact</span>
+    </button>
+
+    <div class="h-5 w-px bg-white/15 mx-1 hidden sm:block"></div>
+
+    <button id="register-exit-btn" class="px-2.5 sm:px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all bg-red-500/20 text-red-300 hover:bg-red-500/30 border border-red-500/40 whitespace-nowrap flex items-center gap-1 shadow-md hover:scale-105 active:scale-95" title="Return to pizzeria overview (Esc)">
+      <span>✕</span>
+      <span>Exit Cashier</span>
+    </button>
+  </div>
+  <div class="text-[10px] font-mono text-amber-200/80 mt-1.5 tracking-wider hidden sm:block bg-black/60 px-3 py-0.5 rounded-full border border-white/5">
+    💡 Order Michael for your engineering team • [Esc] to exit back to pizzeria
+  </div>
+</div>
+
+<!-- 4. FLOATING BOTTOM STATION SWITCHER PILL (Active ONLY in Overview Free Mode) -->
+<nav id="home-station-nav" class="fixed bottom-3 sm:bottom-6 inset-x-2 sm:inset-x-4 flex flex-col items-center gap-1.5 sm:gap-2 z-50 pointer-events-none transition-all duration-300">
+  <div class="flex items-center gap-1 sm:gap-2 p-1.5 sm:p-2 rounded-2xl bg-[#0c0a09]/90 border border-white/20 backdrop-blur-xl shadow-2xl pointer-events-auto max-w-[calc(100vw-1rem)] sm:max-w-full overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+    <button class="station-pill-btn active px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-mono font-bold transition-all flex items-center gap-1 sm:gap-1.5 bg-white/15 text-cream border border-white/20 whitespace-nowrap" data-station="default">
+      <span>🏠</span>
+      <span>Overview</span>
+    </button>
+
+    <button class="station-pill-btn px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-mono font-bold transition-all flex items-center gap-1 sm:gap-1.5 text-ash-gray hover:text-cream hover:bg-white/10 whitespace-nowrap" data-station="oven">
+      <span>🔥</span>
+      <span>Oven<span class="hidden md:inline"> (Projects)</span></span>
+    </button>
+
+    <button class="station-pill-btn px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-mono font-bold transition-all flex items-center gap-1 sm:gap-1.5 text-ash-gray hover:text-cream hover:bg-white/10 whitespace-nowrap" data-station="menu">
+      <span>📋</span>
+      <span>Menu<span class="hidden md:inline"> (Resume)</span></span>
+    </button>
+
+    <button class="station-pill-btn px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-mono font-bold transition-all flex items-center gap-1 sm:gap-1.5 text-ash-gray hover:text-cream hover:bg-white/10 whitespace-nowrap" data-station="arcade">
+      <span>🧊</span>
+      <span>Fridge<span class="hidden md:inline"> (Homelab)</span></span>
+    </button>
+
+    <button class="station-pill-btn px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-mono font-bold transition-all flex items-center gap-1 sm:gap-1.5 text-ash-gray hover:text-cream hover:bg-white/10 whitespace-nowrap" data-station="register">
+      <span>🧾</span>
+      <span>Cashier<span class="hidden md:inline"> (Contact)</span></span>
+    </button>
+  </div>
+
+  <!-- Camera Controls Hint (Only in default overview) -->
+  <div class="hidden lg:flex items-center gap-2 px-3 py-1 rounded-full bg-void-black/70 border border-white/10 backdrop-blur-md text-[11px] font-mono text-ash-gray shadow-lg pointer-events-none">
+    <span class="inline-flex items-center gap-1 text-cream font-bold">
+      <kbd class="px-1.5 py-0.5 rounded bg-white/10 border border-white/20 text-[10px]">W</kbd>
+      <kbd class="px-1.5 py-0.5 rounded bg-white/10 border border-white/20 text-[10px]">A</kbd>
+      <kbd class="px-1.5 py-0.5 rounded bg-white/10 border border-white/20 text-[10px]">S</kbd>
+      <kbd class="px-1.5 py-0.5 rounded bg-white/10 border border-white/20 text-[10px]">D</kbd>
+      <span class="text-xs text-ash-gray font-normal ml-0.5">Walk</span>
+    </span>
+    <span class="text-white/20">•</span>
+    <span class="text-cream">Left Click + Drag <span class="text-ash-gray font-normal">Look</span></span>
+    <span class="text-white/20">•</span>
+    <span class="text-cream">Scroll <span class="text-ash-gray font-normal">Zoom</span></span>
+  </div>
+</nav>
+
+<!-- 4. FLOATING 3D HOVER TOOLTIP -->
+<div id="pizza-hover-tooltip" class="fixed pointer-events-none z-40 hidden transition-opacity duration-150 transform -translate-x-1/2 -translate-y-12 select-none">
+  <div id="tooltip-card" class="px-2.5 py-1.5 rounded-lg bg-[#0c0a09]/92 border border-white/20 backdrop-blur-md shadow-xl text-center max-w-[220px]">
+    <div id="tooltip-title" class="text-[11px] font-mono font-bold text-cream tracking-tight whitespace-nowrap"></div>
+    <div id="tooltip-sub" class="text-[9.5px] font-mono text-ash-gray/90 tracking-tight whitespace-nowrap mt-0.5"></div>
+  </div>
+</div>
+
+<!-- SAFE HTML5 AUDIO ELEMENT (No Web Audio API nodes, completely isolated single instance) -->
+<audio id="pizzeria-lofi-audio" loop preload="none">
+  <!-- Calm royalty-free cafe ambiance/guitar stream -->
+  <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3" type="audio/mpeg" />
+</audio>
+
+<script>
+  // 1. Preloader simulation
+  const preloader = document.getElementById('pizza-preloader');
+  const progressBar = document.getElementById('baking-progress-bar');
+  const progressText = document.getElementById('baking-progress-text');
+  const enterBtn = document.getElementById('enter-pizzeria-btn');
+
+  let progress = 15;
+  const progressInterval = setInterval(() => {
+    progress += Math.floor(Math.random() * 18) + 8;
+    if (progress >= 100) {
+      progress = 100;
+      clearInterval(progressInterval);
+      if (progressBar && progressText && enterBtn) {
+        progressBar.style.width = '100%';
+        progressText.textContent = '100% READY!';
+        enterBtn.classList.remove('hidden');
+        enterBtn.classList.add('animate-pulse');
+      }
+    } else {
+      if (progressBar && progressText) {
+        progressBar.style.width = `${progress}%`;
+        progressText.textContent = `${progress}%`;
+      }
+    }
+  }, 120);
+
+  // Enter button click
+  if (enterBtn && preloader) {
+    enterBtn.addEventListener('click', () => {
+      preloader.classList.add('opacity-0', 'pointer-events-none');
+      setTimeout(() => {
+        preloader.remove();
+      }, 700);
+
+      // Trigger Three.js Camera Intro Pan
+      window.dispatchEvent(new CustomEvent('pizza-start-intro'));
+    });
+  }
+
+  // 2. Station Buttons & Dedicated HUD Bars Controller
+  const homeStationNav = document.getElementById('home-station-nav');
+  const stationBtns = document.querySelectorAll('.station-pill-btn');
+
+  const chalkboardHudBar = document.getElementById('chalkboard-hud-bar');
+  const chalkBtns = document.querySelectorAll('.chalk-page-btn');
+  const chalkExitBtn = document.getElementById('chalk-exit-btn');
+
+  const fridgeHudBar = document.getElementById('fridge-hud-bar');
+  const fridgeOpenModalBtn = document.getElementById('fridge-open-modal-btn');
+  const fridgeExitBtn = document.getElementById('fridge-exit-btn');
+
+  const ovenHudBar = document.getElementById('oven-hud-bar');
+  const ovenOpenModalBtn = document.getElementById('oven-open-modal-btn');
+  const ovenExitBtn = document.getElementById('oven-exit-btn');
+
+  const registerHudBar = document.getElementById('register-hud-bar');
+  const registerOpenModalBtn = document.getElementById('register-open-modal-btn');
+  const registerExitBtn = document.getElementById('register-exit-btn');
+
+  let currentStation = 'default';
+  let currentChalkPage = 0;
+
+  function setChalkPage(pageIndex: number) {
+    currentChalkPage = Math.max(0, Math.min(3, pageIndex));
+    chalkBtns.forEach((btn) => {
+      const p = parseInt(btn.getAttribute('data-page') || '0', 10);
+      if (p === currentChalkPage) {
+        btn.classList.add('active', 'bg-[#e0a96d]', 'text-void-black', 'shadow-md');
+        btn.classList.remove('bg-white/5', 'text-ash-gray', 'hover:bg-white/10');
+      } else {
+        btn.classList.remove('active', 'bg-[#e0a96d]', 'text-void-black', 'shadow-md');
+        btn.classList.add('bg-white/5', 'text-ash-gray', 'hover:bg-white/10');
+      }
+    });
+
+    window.dispatchEvent(new CustomEvent('pizza-chalkboard-page', { detail: { page: currentChalkPage } }));
+  }
+
+  chalkBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const page = parseInt(btn.getAttribute('data-page') || '0', 10);
+      setChalkPage(page);
+    });
+  });
+
+  // Modal Triggers
+  fridgeOpenModalBtn?.addEventListener('click', () => {
+    window.dispatchEvent(new CustomEvent('pizza-open-modal', { detail: { station: 'arcade' } }));
+  });
+  ovenOpenModalBtn?.addEventListener('click', () => {
+    window.dispatchEvent(new CustomEvent('pizza-open-modal', { detail: { station: 'oven' } }));
+  });
+  registerOpenModalBtn?.addEventListener('click', () => {
+    window.dispatchEvent(new CustomEvent('pizza-open-modal', { detail: { station: 'register' } }));
+  });
+
+  // Station Exit Buttons (Return to overview free mode)
+  const exitToOverview = () => {
+    window.dispatchEvent(new CustomEvent('pizza-go-overview'));
+  };
+  chalkExitBtn?.addEventListener('click', exitToOverview);
+  fridgeExitBtn?.addEventListener('click', exitToOverview);
+  ovenExitBtn?.addEventListener('click', exitToOverview);
+  registerExitBtn?.addEventListener('click', exitToOverview);
+
+  // Helper to show/hide specific HUD bars with smooth animation
+  function toggleBar(bar: HTMLElement | null, show: boolean) {
+    if (!bar) return;
+    if (show) {
+      bar.classList.remove('hidden');
+      requestAnimationFrame(() => {
+        bar.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+        bar.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
+      });
+    } else {
+      bar.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
+      bar.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
+      setTimeout(() => {
+        if (bar.classList.contains('opacity-0')) {
+          bar.classList.add('hidden');
+        }
+      }, 300);
+    }
+  }
+
+  function updateActivePill(station: string) {
+    currentStation = station;
+
+    // Update active highlight on home station pill buttons
+    stationBtns.forEach((btn) => {
+      const btnStation = btn.getAttribute('data-station');
+      if (btnStation === station) {
+        btn.classList.add('active', 'bg-white/15', 'text-cream', 'border', 'border-white/20');
+        btn.classList.remove('text-ash-gray', 'hover:bg-white/10');
+      } else {
+        btn.classList.remove('active', 'bg-white/15', 'text-cream', 'border', 'border-white/20');
+        btn.classList.add('text-ash-gray', 'hover:bg-white/10');
+      }
+    });
+
+    // 1. Show original home bar ONLY in overview free mode ('default')
+    toggleBar(homeStationNav, station === 'default');
+
+    // 2. Show ONLY the dedicated bar for the selected station
+    toggleBar(chalkboardHudBar, station === 'menu');
+    toggleBar(fridgeHudBar, station === 'arcade');
+    toggleBar(ovenHudBar, station === 'oven');
+    toggleBar(registerHudBar, station === 'register');
+  }
+
+  stationBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const station = btn.getAttribute('data-station');
+      if (!station) return;
+      updateActivePill(station);
+      window.dispatchEvent(new CustomEvent('pizza-go-station', { detail: { station } }));
+    });
+  });
+
+  window.addEventListener('station-transition-start', ((e: CustomEvent) => {
+    if (e.detail?.station) {
+      updateActivePill(e.detail.station);
+    }
+  }) as EventListener);
+
+  window.addEventListener('pizza-station-select', ((e: CustomEvent) => {
+    if (e.detail?.station) {
+      updateActivePill(e.detail.station);
+    }
+  }) as EventListener);
+
+  window.addEventListener('pizza-go-overview', () => {
+    updateActivePill('default');
+    window.dispatchEvent(new CustomEvent('pizza-go-station', { detail: { station: 'default' } }));
+  });
+
+  // Keyboard navigation: locked into stations, navigate chalkboard pages, Esc exits
+  window.addEventListener('keydown', (e) => {
+    // Escape always leaves any active station/menu and returns to free mode
+    if (e.key === 'Escape' && currentStation !== 'default') {
+      e.preventDefault();
+      window.dispatchEvent(new CustomEvent('pizza-go-overview'));
+      return;
+    }
+
+    // In Menu: WASD or Arrow keys flip chalkboard pages cleanly without camera movement
+    if (currentStation === 'menu') {
+      if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') {
+        e.preventDefault();
+        setChalkPage((currentChalkPage + 1) % 4);
+      } else if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') {
+        e.preventDefault();
+        setChalkPage((currentChalkPage - 1 + 4) % 4);
+      } else if (e.key === 'ArrowDown' || e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        setChalkPage((currentChalkPage + 1) % 4);
+      } else if (e.key === 'ArrowUp' || e.key.toLowerCase() === 'w') {
+        e.preventDefault();
+        setChalkPage((currentChalkPage - 1 + 4) % 4);
+      } else if (['1', '2', '3', '4'].includes(e.key)) {
+        e.preventDefault();
+        setChalkPage(parseInt(e.key, 10) - 1);
+      }
+    }
+  });
+
+  // 3. Floating 3D Hover Tooltip
+  const tooltip = document.getElementById('pizza-hover-tooltip');
+  const tooltipCard = document.getElementById('tooltip-card');
+  const tooltipTitle = document.getElementById('tooltip-title');
+  const tooltipSub = document.getElementById('tooltip-sub');
+
+  const hideTooltip = () => {
+    if (!tooltip) return;
+    tooltip.classList.add('hidden');
+    tooltip.classList.remove('opacity-100');
+  };
+
+  const positionTooltip = (x: number, y: number) => {
+    if (!tooltip) return;
+    const clampX = Math.max(110, Math.min(window.innerWidth - 110, x));
+    const clampY = Math.max(45, y);
+    tooltip.style.left = `${clampX}px`;
+    tooltip.style.top = `${clampY}px`;
+  };
+
+  window.addEventListener('pizza-station-hover', ((e: CustomEvent) => {
+    if (!tooltip || !tooltipTitle || !tooltipSub) return;
+    const { title, subtitle, color, x, y } = e.detail || {};
+
+    tooltipTitle.textContent = title;
+    tooltipTitle.style.color = color || '#fff';
+    tooltipSub.textContent = subtitle;
+
+    if (tooltipCard && color) {
+      tooltipCard.style.borderColor = `${color}77`;
+    }
+
+    positionTooltip(x, y);
+    tooltip.classList.remove('hidden');
+    tooltip.classList.add('opacity-100');
+  }) as EventListener);
+
+  window.addEventListener('pizza-station-hover-move', ((e: CustomEvent) => {
+    if (!tooltip || tooltip.classList.contains('hidden')) return;
+    const { x, y } = e.detail || {};
+    if (typeof x === 'number' && typeof y === 'number') {
+      positionTooltip(x, y);
+    }
+  }) as EventListener);
+
+  window.addEventListener('pizza-station-unhover', hideTooltip);
+  window.addEventListener('pizza-station-select', hideTooltip);
+  window.addEventListener('station-transition-start', hideTooltip);
+  window.addEventListener('pizza-open-modal', hideTooltip);
+  window.addEventListener('pizza-go-station', hideTooltip);
+  window.addEventListener('pizza-go-overview', hideTooltip);
+  window.addEventListener('mousedown', hideTooltip);
+  window.addEventListener('touchstart', hideTooltip);
+  document.addEventListener('mouseleave', hideTooltip);
+  window.addEventListener('blur', hideTooltip);
+
+  // 4A. Lighting Mode Toggle Controller (Cozy Warm vs Late-Night Dark Mode)
+  const lightingBtn = document.getElementById('lighting-toggle-btn');
+  const lightingIcon = document.getElementById('lighting-icon');
+  const lightingLabel = document.getElementById('lighting-label');
+
+  let isDarkMode = false;
+  try {
+    isDarkMode = localStorage.getItem('pizza-lighting-mode') === 'dark';
+  } catch {
+    // ignore
+  }
+
+  function applyLightingUI(dark: boolean) {
+    if (!lightingBtn || !lightingIcon || !lightingLabel) return;
+    if (dark) {
+      lightingIcon.textContent = '🌙';
+      lightingLabel.textContent = 'MODE: DARK';
+      lightingBtn.classList.add('text-indigo-300', 'border-indigo-400/40');
+    } else {
+      lightingIcon.textContent = '☀️';
+      lightingLabel.textContent = 'LIGHT: COZY';
+      lightingBtn.classList.remove('text-indigo-300', 'border-indigo-400/40');
+    }
+  }
+
+  applyLightingUI(isDarkMode);
+
+  if (lightingBtn) {
+    lightingBtn.addEventListener('click', () => {
+      isDarkMode = !isDarkMode;
+      applyLightingUI(isDarkMode);
+      try {
+        localStorage.setItem('pizza-lighting-mode', isDarkMode ? 'dark' : 'cozy');
+      } catch {
+        // ignore
+      }
+      window.dispatchEvent(new CustomEvent('pizza-lighting-mode', { detail: { dark: isDarkMode } }));
+    });
+  }
+
+  // 4B. Safe Single-Instance HTML5 Audio Controller
+  const audio = document.getElementById('pizzeria-lofi-audio') as HTMLAudioElement | null;
+  const audioBtn = document.getElementById('audio-toggle-btn');
+  const audioIcon = document.getElementById('audio-icon');
+  const audioLabel = document.getElementById('audio-label');
+
+  let isPlaying = false;
+
+  if (audioBtn && audio && audioIcon && audioLabel) {
+    audio.volume = 0.25; // Gentle cafe volume
+
+    audioBtn.addEventListener('click', async () => {
+      try {
+        if (!isPlaying) {
+          await audio.play();
+          isPlaying = true;
+          audioIcon.textContent = '🔊';
+          audioLabel.textContent = 'MUSIC: ON';
+          audioBtn.classList.add('text-tangerine-dream', 'border-tangerine-dream/40');
+        } else {
+          audio.pause();
+          isPlaying = false;
+          audioIcon.textContent = '🔇';
+          audioLabel.textContent = 'MUSIC: OFF';
+          audioBtn.classList.remove('text-tangerine-dream', 'border-tangerine-dream/40');
+        }
+      } catch (err) {
+        console.warn('Audio play request failed or blocked:', err);
+      }
+    });
+  }
+
+  // 5. Live TrueNAS Telemetry Polling (Every 30 seconds, paused when tab is hidden)
+  async function fetchTrueNASTelemetry() {
+    if (document.hidden) return;
+    try {
+      const res = await fetch('/api/truenas');
+      if (res.ok) {
+        const data = await res.json();
+        const tempEl = document.getElementById('fridge-hud-temp');
+        if (tempEl && data.cpuTempC !== undefined && data.cpuTempF !== undefined) {
+          tempEl.textContent = `${data.cpuTempC}°C // ${data.cpuTempF}°F`;
+        }
+        window.dispatchEvent(new CustomEvent('pizza-telemetry-update', { detail: data }));
+      }
+    } catch (e) {
+      console.warn('TrueNAS telemetry fetch error:', e);
+    }
+  }
+
+  fetchTrueNASTelemetry();
+  setInterval(fetchTrueNASTelemetry, 30000);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) fetchTrueNASTelemetry();
+  });
+</script>

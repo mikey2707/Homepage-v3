@@ -20,7 +20,6 @@ export const GET: APIRoute = async () => {
   // Use process.env for runtime Docker compatibility
   const YOUTUBE_CHANNEL_IDS = process.env.YOUTUBE_CHANNEL_IDS || import.meta.env.YOUTUBE_CHANNEL_IDS || '';
 
-  console.log('[YouTube] Debug - Channel IDs configured:', !!YOUTUBE_CHANNEL_IDS);
 
   if (!YOUTUBE_CHANNEL_IDS) {
     return new Response(

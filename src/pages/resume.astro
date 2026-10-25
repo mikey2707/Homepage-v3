@@ -1,19 +1,20 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
-import ThemeSelector from '../components/ThemeSelector.astro';
-import ProjectsSection from '../components/resume/ProjectsSection.astro';
-import SkillsSection from '../components/resume/SkillsSection.astro';
-import ExperienceTimeline from '../components/resume/ExperienceTimeline.astro';
-import EducationSection from '../components/resume/EducationSection.astro';
 import { getResumeData } from '../lib/data';
 
-// Load resume data from data/resume.json
 const resumeData = getResumeData();
 
-// Fallback values if data file is missing
 const personalInfo = resumeData?.personalInfo || {
-  name: "Your Name",
+  name: "Michael Chavez",
+  roles: ["Data Center Technician", "Home Lab Enthusiast", "Infrastructure Architect"],
+  email: "michaelchavezm@gmail.com",
+  location: "South Carolina",
+  bio: "Experienced systems and data center technician specializing in cloud infrastructure, virtualization, media automation, and network topology.",
+  social: {
+    github: "https://github.com/mikey2707",
+    linkedin: "https://www.linkedin.com/in/michael-chavez-5473a7214/"
+  }
 };
 
 const projects = resumeData?.projects || [];
@@ -21,88 +22,235 @@ const skillCategories = resumeData?.skillCategories || [];
 const experience = resumeData?.experience || [];
 const education = resumeData?.education || [];
 const certifications = resumeData?.certifications || [];
+const quickStats = resumeData?.quickStats || [];
 ---
 
-<Layout title={`Resume - ${personalInfo.name}`}>
+<Layout title={`Resume & Credentials - ${personalInfo.name} | Mikey's Pizzeria & Homelab`}>
   <Navigation />
-  <ThemeSelector />
 
-  <main class="pt-20 pb-20 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto">
-      <!-- Page Header -->
-      <header class="text-center mb-12 fade-in-section fade-in-up">
-        <h1 class="text-4xl font-bold mb-2" style="color: var(--theme-primary);">
-          Resume
-        </h1>
-        <p class="text-sm" style="color: var(--theme-text); opacity: 0.6;">
-          Projects, Skills & Experience
-        </p>
+  <main class="min-h-screen bg-[#0c0a09] text-white pt-28 pb-24 px-4 sm:px-6 lg:px-8 selection:bg-tangerine-dream selection:text-white">
+    <div class="max-w-5xl mx-auto space-y-16">
+      
+      <!-- HERO HEADER: Chef's Master Menu -->
+      <header class="p-8 sm:p-12 rounded-3xl bg-[#141210] border border-amber-500/30 relative overflow-hidden shadow-2xl">
+        <!-- Ambient Warm Oven Glow -->
+        <div class="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-tangerine-dream/10 blur-3xl pointer-events-none"></div>
+
+        <div class="relative z-10 space-y-6 text-left">
+          <div class="flex flex-wrap items-center gap-3">
+            <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-tangerine-dream/15 border border-tangerine-dream/30 text-tangerine-dream text-xs font-mono font-bold uppercase tracking-wider">
+              <span>🍕</span>
+              <span>CHEF'S CREDENTIALS // SYSTEMS ARCHITECT</span>
+            </span>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>99.99% HOMELAB UPTIME</span>
+            </span>
+          </div>
+
+          <h1 class="text-4xl sm:text-6xl font-black text-cream tracking-tight font-serif">
+            {personalInfo.name}
+          </h1>
+
+          <div class="flex flex-wrap gap-2 text-sm font-mono text-cyan-400">
+            {personalInfo.roles.map((r, i) => (
+              <span class="inline-flex items-center">
+                <span>{r}</span>
+                {i < personalInfo.roles.length - 1 && <span class="mx-2 text-ash-gray">•</span>}
+              </span>
+            ))}
+          </div>
+
+          <p class="text-base sm:text-lg text-ash-gray font-light max-w-3xl leading-relaxed">
+            {personalInfo.bio}
+          </p>
+
+          <!-- Quick Stats Matrix -->
+          {quickStats.length > 0 && (
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+              {quickStats.map((stat) => (
+                <div class="p-4 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-amber-500/30 transition-colors">
+                  <div class="text-2xl sm:text-3xl font-black text-cream font-mono">{stat.value}</div>
+                  <div class="text-[11px] text-ash-gray font-mono uppercase tracking-wider mt-1">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <!-- Actions -->
+          <div class="flex flex-wrap items-center gap-3 pt-4 border-t border-white/10">
+            <a
+              href="/"
+              class="px-6 py-3 rounded-2xl bg-tangerine-dream hover:bg-amber-500 text-void-black text-xs font-mono font-bold tracking-wider uppercase transition-all flex items-center gap-2 shadow-lg"
+            >
+              <span>🍕</span>
+              <span>Explore 3D Pizza Parlor</span>
+            </a>
+            <button
+              onclick="window.print()"
+              class="px-5 py-3 rounded-2xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 text-ash-gray hover:text-white text-xs font-mono transition-all"
+              title="Print official document"
+            >
+              📄 Print Menu / PDF
+            </button>
+          </div>
+        </div>
       </header>
 
-      <!-- Projects Section -->
-      <ProjectsSection projects={projects} />
+      <!-- SECTION 1: CULINARY CAREER // PROFESSIONAL EXPERIENCE -->
+      <section class="space-y-6">
+        <div class="flex items-center gap-3 pb-3 border-b border-white/10">
+          <span class="text-2xl p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">📋</span>
+          <div>
+            <h2 class="text-2xl sm:text-3xl font-black text-cream font-serif">Culinary Career // Experience</h2>
+            <p class="text-xs font-mono text-cyan-400 uppercase tracking-wider">Enterprise Data Centers & Cloud Systems Operations</p>
+          </div>
+        </div>
 
-      <!-- Skills Section -->
-      <SkillsSection categories={skillCategories} />
+        <div class="space-y-4">
+          {experience.map((exp) => (
+            <div class="p-6 sm:p-8 rounded-3xl bg-[#141210] border border-white/10 hover:border-cyan-400/40 transition-all group">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                <div>
+                  <h3 class="text-xl font-bold text-cream group-hover:text-cyan-300 transition-colors">
+                    {exp.title}
+                  </h3>
+                  <p class="text-sm font-mono text-cyan-400/90">{exp.company}</p>
+                </div>
+                <span class="px-3 py-1 rounded-full text-xs font-mono font-bold bg-white/10 text-cyan-300 border border-white/10 w-fit">
+                  {exp.period}
+                </span>
+              </div>
+              <p class="text-sm text-ash-gray leading-relaxed mb-4">{exp.description}</p>
+              {exp.tech && exp.tech.length > 0 && (
+                <div class="flex flex-wrap gap-1.5">
+                  {exp.tech.map((t) => (
+                    <span class="px-2.5 py-1 rounded-lg text-xs font-mono bg-white/5 text-cyan-200 border border-white/10">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
 
-      <!-- Experience Timeline -->
-      <ExperienceTimeline experiences={experience} />
+      <!-- SECTION 2: CHEF'S SPECIALS // PROJECTS HOT OFF THE PEEL -->
+      <section class="space-y-6">
+        <div class="flex items-center gap-3 pb-3 border-b border-white/10">
+          <span class="text-2xl p-2 rounded-xl bg-tangerine-dream/10 border border-tangerine-dream/30 text-tangerine-dream">🔥</span>
+          <div>
+            <h2 class="text-2xl sm:text-3xl font-black text-cream font-serif">Chef's Specials // Projects</h2>
+            <p class="text-xs font-mono text-tangerine-dream uppercase tracking-wider">Fresh Systems Hot Off The Stone Peel</p>
+          </div>
+        </div>
 
-      <!-- Education Section -->
-      <EducationSection
-        education={education}
-        certifications={certifications.length > 0 ? certifications : undefined}
-      />
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {projects.map((proj, idx) => (
+            <div class="p-6 rounded-3xl bg-[#141210] border border-white/10 hover:border-tangerine-dream/40 transition-all flex flex-col justify-between group">
+              <div>
+                <div class="flex items-center justify-between gap-2 mb-2">
+                  <span class="text-xs font-mono font-bold text-tangerine-dream">RECIPE #{idx + 1}</span>
+                  <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-tangerine-dream/20 text-tangerine-dream border border-tangerine-dream/30">
+                    HOT SLICE
+                  </span>
+                </div>
+                <h3 class="text-lg font-bold text-cream group-hover:text-amber-400 transition-colors mb-2">
+                  {proj.name}
+                </h3>
+                <p class="text-xs text-ash-gray leading-relaxed mb-4">{proj.description}</p>
+              </div>
+
+              <div>
+                <div class="flex flex-wrap gap-1.5 mb-4">
+                  {proj.tech.map((t) => (
+                    <span class="px-2 py-0.5 rounded-md text-[11px] font-mono bg-white/5 text-cream border border-white/10">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+                <a href={proj.link || personalInfo.social?.github || "https://github.com/mikey2707"} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-tangerine-dream hover:text-amber-400 transition-colors">
+                  <span>View Project Specs</span>
+                  <span>↗</span>
+                </a>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- SECTION 3: HOUSE INGREDIENTS // TECHNICAL SKILLS -->
+      <section class="space-y-6">
+        <div class="flex items-center gap-3 pb-3 border-b border-white/10">
+          <span class="text-2xl p-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400">🧀</span>
+          <div>
+            <h2 class="text-2xl sm:text-3xl font-black text-cream font-serif">House Ingredients // Skills</h2>
+            <p class="text-xs font-mono text-amber-400 uppercase tracking-wider">Artisanal Toppings & Infrastructure Capabilities</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {skillCategories.map((cat) => (
+            <div class="p-6 rounded-3xl bg-[#141210] border border-white/10">
+              <h3 class="text-sm font-mono font-bold text-amber-300 uppercase tracking-wider mb-4 flex items-center gap-2">
+                <span>▸</span>
+                <span>{cat.name}</span>
+              </h3>
+              <div class="flex flex-wrap gap-2">
+                {cat.skills.map((skill) => (
+                  <span class="px-3 py-1.5 rounded-xl text-xs font-mono bg-white/5 hover:bg-white/10 text-cream border border-white/10 transition-colors">
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- SECTION 4: SECRET RECIPES // EDUCATION & CERTIFICATIONS -->
+      <section class="space-y-6">
+        <div class="flex items-center gap-3 pb-3 border-b border-white/10">
+          <span class="text-2xl p-2 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-400">📜</span>
+          <div>
+            <h2 class="text-2xl sm:text-3xl font-black text-cream font-serif">Secret Recipes // Education & Certs</h2>
+            <p class="text-xs font-mono text-purple-400 uppercase tracking-wider">Formal Degrees & Verified Industry Badges</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {education.map((edu) => (
+            <div class="p-6 rounded-3xl bg-[#141210] border border-white/10">
+              <span class="text-xs font-mono text-purple-400 font-bold block mb-1">BACHELOR DEGREE</span>
+              <h3 class="text-base font-bold text-cream">{edu.degree}</h3>
+              <p class="text-xs text-ash-gray font-mono mt-1">{edu.institution} • {edu.period}</p>
+              <p class="text-xs text-ash-gray mt-2">{edu.details}</p>
+            </div>
+          ))}
+
+          {certifications.map((cert) => (
+            <div class="p-6 rounded-3xl bg-[#141210] border border-white/10">
+              <span class="text-xs font-mono text-purple-400 font-bold block mb-1">CERTIFIED CREDENTIAL</span>
+              <h3 class="text-base font-bold text-cream">{cert.name}</h3>
+              <p class="text-xs text-ash-gray font-mono mt-1">{cert.issuer} • Issued {cert.date}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- FOOTER -->
+      <footer class="pt-12 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-ash-gray">
+        <div class="flex items-center gap-2">
+          <span>🍕</span>
+          <span>Mikey's Pizzeria & Homelab • South Carolina</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <a href="/" class="hover:text-cream text-tangerine-dream font-bold">Back to 3D Parlor ↗</a>
+          <a href={`mailto:${personalInfo.email}`} class="hover:text-cream">Contact Michael ↗</a>
+        </div>
+      </footer>
+
     </div>
   </main>
-
-  <script>
-    // Intersection Observer for scroll-triggered animations
-    document.addEventListener('DOMContentLoaded', () => {
-      const observerOptions = {
-        threshold: 0.15,
-        rootMargin: '0px 0px -100px 0px'
-      };
-
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-
-            const children = entry.target.querySelectorAll('.fade-in-section:not(.visible)');
-            children.forEach((child, index) => {
-              const staggerClass = Array.from(child.classList).find(cls => cls.startsWith('stagger-'));
-              let delay = 0;
-
-              if (staggerClass) {
-                const staggerNum = parseInt(staggerClass.split('-')[1]);
-                delay = staggerNum * 100;
-              } else {
-                delay = index * 80;
-              }
-
-              setTimeout(() => {
-                child.classList.add('visible');
-              }, delay);
-            });
-
-            observer.unobserve(entry.target);
-          }
-        });
-      }, observerOptions);
-
-      const animatedElements = document.querySelectorAll('.fade-in-section');
-      animatedElements.forEach(element => {
-        observer.observe(element);
-      });
-
-      // Animate header immediately on load
-      const headerElements = document.querySelectorAll('header .fade-in-section');
-      headerElements.forEach((element, index) => {
-        setTimeout(() => {
-          element.classList.add('visible');
-        }, index * 150);
-      });
-    });
-  </script>
 </Layout>

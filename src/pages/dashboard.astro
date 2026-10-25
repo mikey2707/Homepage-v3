@@ -1,112 +1,1403 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import Navigation from '../components/Navigation.astro';
-import ServicesDashboard from '../components/ServicesDashboard.astro';
-import ThemeSelector from '../components/ThemeSelector.astro';
+import { getSession } from '../lib/auth';
 
-// Dashboard Icons CDN base URL
+const session = getSession(Astro.cookies);
 const iconBase = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png";
-
-// Professional dashboard - only safe/presentable services
-const professionalServices = [
-  {
-    name: "Portainer",
-    icon: "🐳",
-    logo: `${iconBase}/portainer.png`,
-    description: "Container Management",
-    apiUrl: "/api/portainer",
-    color: "from-sky-500/80 to-sky-600/80"
-  },
-  {
-    name: "HomeAssistant",
-    icon: "🏠",
-    logo: `${iconBase}/home-assistant.png`,
-    description: "Home Automation",
-    apiUrl: "/api/homeassistant",
-    color: "from-blue-400/80 to-blue-500/80"
-  },
-  {
-    name: "Immich",
-    icon: "📸",
-    logo: `${iconBase}/immich.png`,
-    description: "Photo Management",
-    apiUrl: "/api/immich",
-    color: "from-teal-500/80 to-teal-600/80"
-  },
-  {
-    name: "AdGuard",
-    icon: "🛡️",
-    logo: `${iconBase}/adguard-home.png`,
-    description: "DNS Ad Blocker",
-    apiUrl: "/api/adguard",
-    color: "from-emerald-500/80 to-emerald-600/80"
-  },
-  {
-    name: "TrueNAS",
-    icon: "💾",
-    logo: `${iconBase}/truenas.png`,
-    description: "Storage Server",
-    apiUrl: "/api/truenas",
-    color: "from-gray-500/80 to-gray-600/80"
-  },
-];
 ---
 
-<Layout title="Dashboard - Mikey's Home Page">
-  <Navigation />
-  <ThemeSelector />
+<Layout title="Homelab 84 • Read-Only Telemetry Dashboard | Michael Chavez">
+  <div class="min-h-screen bg-[#07050a] text-slate-200 font-sans selection:bg-purple-600 selection:text-white pb-16">
+    
+    <!-- Top Cockpit Atmospheric Glow -->
+    <div class="fixed top-0 inset-x-0 h-96 bg-gradient-to-b from-purple-900/15 via-indigo-950/10 to-transparent pointer-events-none z-0"></div>
+    <div class="fixed inset-0 opacity-10 pointer-events-none z-0" style="background-size: 40px 40px; background-image: linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px);"></div>
 
-  <main class="pt-20 pb-20 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto">
-      <ServicesDashboard services={professionalServices} title="System Overview" />
-    </div>
-  </main>
+    <!-- MAIN COMMAND COCKPIT HEADER (Non-sticky so it scrolls naturally with the page) -->
+    <header class="relative z-10 border-b border-purple-500/20 bg-[#0c0814]/90 backdrop-blur-xl px-4 sm:px-8 py-3.5 shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+      <div class="max-w-[1720px] mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+        
+        <!-- Left: Brand / Cluster Identity -->
+        <div class="flex items-center gap-3.5">
+          <div class="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 via-indigo-600 to-amber-500 shadow-lg shadow-purple-900/50 p-0.5">
+            <div class="w-full h-full bg-[#0e0a19] rounded-[10px] flex items-center justify-center">
+              <span class="text-lg">⚡</span>
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="text-base sm:text-lg font-bold tracking-tight text-white font-mono flex items-center gap-2">
+                HOMELAB 84 <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 uppercase tracking-widest font-mono font-bold animate-pulse">● LIVE PROD</span>
+                <span class="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-300 border border-blue-500/30 uppercase tracking-wider font-mono">2 PHYSICAL SERVERS</span>
+              </h1>
+            </div>
+            <p class="text-[11px] text-slate-400 font-mono tracking-wide hidden sm:block">
+              Server 1 (truenas): TrueNAS SCALE • Threadripper 3970X 32c/64t • 251.6 GiB RAM • 55.4 TiB ZFS &nbsp;|&nbsp; Server 2 (pve01): Proxmox VE 9 • Intel 2.8GHz • 64 GiB DDR4
+            </p>
+          </div>
+        </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const observerOptions = {
-        threshold: 0.15,
-        rootMargin: '0px 0px -100px 0px'
+        <!-- Center: TrueNAS Cooler Thermals Indicator -->
+        <div class="hidden xl:flex items-center gap-3 px-4 py-1.5 rounded-full bg-black/60 border border-cyan-500/30 text-xs font-mono">
+          <span class="text-cyan-400 text-sm">❄️</span>
+          <span class="text-slate-400">Walk-In Fridge Die Sync:</span>
+          <span id="header-fridge-temp" class="text-emerald-400 font-bold">38.2°C // 100.8°F</span>
+          <span class="text-[10px] px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800">COOLING [OK]</span>
+        </div>
+
+        <!-- Right: Actions, Auto-Refresh & Nav -->
+        <div class="flex items-center gap-2.5 sm:gap-3 flex-wrap justify-end">
+          
+          <!-- Auto-Refresh Selector -->
+          <div class="flex items-center bg-white/[0.04] border border-white/10 rounded-xl p-1 text-xs font-mono">
+            <label for="poll-interval" class="px-2 text-slate-400 text-[11px]">Sync:</label>
+            <select id="poll-interval" class="bg-black/80 text-white rounded-lg px-2 py-1 text-xs border border-white/10 focus:outline-none focus:border-purple-500 cursor-pointer">
+              <option value="15000">15s</option>
+              <option value="30000" selected>30s</option>
+              <option value="60000">60s</option>
+              <option value="0">Manual</option>
+            </select>
+          </div>
+
+          <!-- Refresh Now Button -->
+          <button
+            id="refresh-all-btn"
+            class="px-3.5 py-1.5 rounded-xl bg-purple-600/30 hover:bg-purple-600 text-purple-200 hover:text-white border border-purple-500/40 text-xs font-mono font-bold transition-all duration-200 flex items-center gap-1.5 shadow-md hover:scale-105 active:scale-95 cursor-pointer"
+          >
+            <svg id="refresh-spinner" class="w-3.5 h-3.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span id="refresh-label">Refresh</span>
+          </button>
+
+          <!-- Return to 3D Pizzeria -->
+          <a
+            href="/"
+            class="px-3.5 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs font-mono font-semibold transition-all duration-200 flex items-center gap-1.5 hover:scale-105 active:scale-95 shadow-md"
+            title="Return to the 3D Pizzeria Diorama"
+          >
+            <span>🍕</span>
+            <span>Back to Pizzeria</span>
+          </a>
+
+          <!-- Logout -->
+          {session && (
+            <a
+              href="/api/auth/logout"
+              class="px-3 py-1.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 text-xs font-mono transition-colors"
+              title="End Master Session"
+            >
+              Logout
+            </a>
+          )}
+        </div>
+
+      </div>
+    </header>
+
+    <!-- MAIN BODY CONTAINER -->
+    <main class="relative z-10 max-w-[1720px] mx-auto px-4 sm:px-8 pt-6 space-y-8">
+
+      <!-- ===================================================== -->
+      <!-- DUAL BARE-METAL SERVER ARCHITECTURE OVERVIEW          -->
+      <!-- ===================================================== -->
+      <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <!-- PHYSICAL SERVER 1 SUMMARY -->
+        <div class="rounded-2xl bg-gradient-to-br from-purple-950/35 via-[#0f0c18]/95 to-[#0f0c18]/95 border border-purple-500/40 p-4 sm:p-5 backdrop-blur-xl shadow-xl flex flex-col justify-between">
+          <div class="flex items-start justify-between gap-3 pb-3 border-b border-white/10">
+            <div class="flex items-center gap-3">
+              <span class="px-2.5 py-1 rounded-lg bg-purple-500/20 border border-purple-400/40 text-purple-300 font-mono text-xs font-bold">SERVER 01</span>
+              <div>
+                <h2 class="text-sm sm:text-base font-bold text-white font-mono">TrueNAS SCALE Storage &amp; Media Server (truenas)</h2>
+                <p class="text-[11px] text-slate-400 font-mono">Dedicated Bare-Metal ZFS Appliance • OS: TrueNAS SCALE 25.04.2.3</p>
+              </div>
+            </div>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono font-bold">BARE-METAL #1</span>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-3 text-xs font-mono">
+            <div class="p-2.5 rounded-xl bg-black/40 border border-white/5">
+              <span class="text-[10px] text-slate-400 block uppercase">CPU Hardware</span>
+              <span class="text-white font-bold block mt-0.5">Threadripper 3970X</span>
+              <span class="text-[10px] text-purple-300">32 Cores / 64 Threads</span>
+            </div>
+            <div class="p-2.5 rounded-xl bg-black/40 border border-white/5">
+              <span class="text-[10px] text-slate-400 block uppercase">System Memory</span>
+              <span class="text-white font-bold block mt-0.5">251.6 GiB RAM</span>
+              <span class="text-[10px] text-indigo-300">170.8 GiB ZFS ARC</span>
+            </div>
+            <div class="p-2.5 rounded-xl bg-black/40 border border-white/5">
+              <span class="text-[10px] text-slate-400 block uppercase">ZFS Storage</span>
+              <span class="text-white font-bold block mt-0.5">55.4 TiB Raw</span>
+              <span class="text-[10px] text-emerald-400">3 Pools (19.5 TiB Used)</span>
+            </div>
+            <div class="p-2.5 rounded-xl bg-black/40 border border-white/5">
+              <span class="text-[10px] text-slate-400 block uppercase">Motherboard / Role</span>
+              <span class="text-white font-bold block mt-0.5">ASUS Workstation</span>
+              <span class="text-[10px] text-amber-300">ZFS + Media &amp; AI Apps</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- PHYSICAL SERVER 2 SUMMARY -->
+        <div class="rounded-2xl bg-gradient-to-br from-cyan-950/35 via-[#0f0c18]/95 to-[#0f0c18]/95 border border-cyan-500/40 p-4 sm:p-5 backdrop-blur-xl shadow-xl flex flex-col justify-between">
+          <div class="flex items-start justify-between gap-3 pb-3 border-b border-white/10">
+            <div class="flex items-center gap-3">
+              <span class="px-2.5 py-1 rounded-lg bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 font-mono text-xs font-bold">SERVER 02</span>
+              <div>
+                <h2 class="text-sm sm:text-base font-bold text-white font-mono">Proxmox VE 9 Virtualization Hypervisor (pve01)</h2>
+                <p class="text-[11px] text-slate-400 font-mono">Standalone Bare-Metal KVM/LXC Host • OS: Proxmox VE 9.0.5</p>
+              </div>
+            </div>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-mono font-bold">BARE-METAL #2</span>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-3 text-xs font-mono">
+            <div class="p-2.5 rounded-xl bg-black/40 border border-white/5">
+              <span class="text-[10px] text-slate-400 block uppercase">CPU Hardware</span>
+              <span class="text-white font-bold block mt-0.5">Intel @ 2.80 GHz</span>
+              <span class="text-[10px] text-cyan-300">8c/16t x86_64 KVM</span>
+            </div>
+            <div class="p-2.5 rounded-xl bg-black/40 border border-white/5">
+              <span class="text-[10px] text-slate-400 block uppercase">System Memory</span>
+              <span class="text-white font-bold block mt-0.5">64.0 GiB DDR4</span>
+              <span class="text-[10px] text-indigo-300">38.4 GiB Allocated</span>
+            </div>
+            <div class="p-2.5 rounded-xl bg-black/40 border border-white/5">
+              <span class="text-[10px] text-slate-400 block uppercase">Hypervisor Disk</span>
+              <span class="text-white font-bold block mt-0.5">Local NVMe LVM</span>
+              <span class="text-[10px] text-emerald-400">250+ GiB VM Store</span>
+            </div>
+            <div class="p-2.5 rounded-xl bg-black/40 border border-white/5">
+              <span class="text-[10px] text-slate-400 block uppercase">Hosted Guests</span>
+              <span class="text-white font-bold block mt-0.5">4 VMs / 2 LXCs</span>
+              <span class="text-[10px] text-amber-300">docker1 (23 Containers)</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================== -->
+      <!-- SECTION 1: SERVER 01 — TRUENAS SCALE POOLS & HARDWARE -->
+      <!-- ===================================================== -->
+      <section>
+        <div class="flex items-center justify-between mb-3.5 pb-2 border-b border-purple-500/20">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-sm bg-purple-500 shadow-sm shadow-purple-500"></span>
+            <h2 class="text-sm font-mono uppercase tracking-widest text-slate-300 font-bold">
+              Server 01: TrueNAS SCALE // Storage Pools &amp; Hardware Telemetry (truenas)
+            </h2>
+          </div>
+          <span class="text-[11px] font-mono text-purple-300">55.4 TiB Total ZFS • midclt pool.query</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+
+          <!-- TRUENAS CPU & THERMALS -->
+          <div class="rounded-2xl bg-[#0f0c18]/90 border border-purple-500/30 p-5 backdrop-blur-xl shadow-xl space-y-3">
+            <div class="flex items-center gap-2.5 pb-2 border-b border-white/10">
+              <img src={`${iconBase}/truenas.png`} alt="TrueNAS" class="w-7 h-7 object-contain" />
+              <div>
+                <h3 class="text-sm font-bold text-white font-mono flex items-center gap-1.5">
+                  TrueNAS SCALE
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">ONLINE</span>
+                </h3>
+                <p class="text-[11px] text-slate-400 font-mono">Node: truenas • v25.04.2.3</p>
+              </div>
+            </div>
+
+            <div class="space-y-2 text-xs font-mono bg-black/40 rounded-xl p-3 border border-white/5">
+              <div class="flex justify-between items-center">
+                <span class="text-slate-400">Processor:</span>
+                <span class="text-white font-bold">AMD 3970X (32c/64t)</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-slate-400">CPU Usage:</span>
+                <span id="tn-cpu-usage" class="text-emerald-400 font-bold">0.1%</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-slate-400">Die Temperature:</span>
+                <span id="tn-die-temp" class="text-amber-300 font-bold">38.2°C // 100.8°F</span>
+              </div>
+              <div class="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+                <div class="bg-gradient-to-r from-emerald-500 to-amber-500 h-1.5 rounded-full" style="width: 38%;"></div>
+              </div>
+              <div class="flex justify-between items-center pt-1 text-[11px]">
+                <span class="text-slate-400">Memory Total:</span>
+                <span id="tn-ram-usage" class="text-white font-bold">66.6 GiB Free / 251.6 GiB</span>
+              </div>
+              <div class="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+                <div id="tn-ram-bar" class="bg-indigo-500 h-1.5 rounded-full" style="width: 73.5%;"></div>
+              </div>
+              <div class="flex justify-between text-[10px] text-slate-500 pt-0.5">
+                <span>ZFS ARC Cache: <strong id="tn-arc" class="text-slate-300">170.8 GiB</strong></span>
+                <span>Free: <strong id="tn-free-ram" class="text-emerald-400">66.6 GiB</strong></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- POOL 1: VAULT (43.6 TiB) -->
+          <div class="rounded-2xl bg-[#0f0c18]/90 border border-purple-500/30 p-5 backdrop-blur-xl shadow-xl flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-start mb-2">
+                <div>
+                  <h3 class="text-sm font-bold text-white font-mono flex items-center gap-1.5">
+                    Vault
+                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">ONLINE</span>
+                  </h3>
+                  <p class="text-[11px] text-slate-400 font-mono">Primary Mass Archive Pool</p>
+                </div>
+                <span class="text-xs font-mono font-bold text-indigo-300">43.6 TiB</span>
+              </div>
+
+              <div class="my-3 space-y-1">
+                <div class="flex justify-between text-xs font-mono">
+                  <span class="text-slate-400">Used: <strong id="vault-used" class="text-slate-200">19.2 TiB</strong></span>
+                  <span id="vault-pct" class="text-indigo-400 font-bold">44.0%</span>
+                </div>
+                <div class="w-full bg-white/10 rounded-full h-2.5 overflow-hidden">
+                  <div id="vault-bar" class="bg-gradient-to-r from-indigo-500 to-purple-500 h-2.5 rounded-full" style="width: 44.0%;"></div>
+                </div>
+                <div class="flex justify-between text-[10px] font-mono text-slate-500 pt-1">
+                  <span>Available: 24.4 TiB</span>
+                  <span>ZFS 4x 2-Way Mirror (8 Disks)</span>
+                </div>
+              </div>
+            </div>
+            <div class="text-[10px] font-mono text-slate-400 bg-white/[0.02] p-2 rounded-lg border border-white/5">
+              midclt: pool.query: Vault • Health: ONLINE (0 errors)
+            </div>
+          </div>
+
+          <!-- POOL 2: LIBRARY (7.3 TiB) -->
+          <div class="rounded-2xl bg-[#0f0c18]/90 border border-purple-500/30 p-5 backdrop-blur-xl shadow-xl flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-start mb-2">
+                <div>
+                  <h3 class="text-sm font-bold text-white font-mono flex items-center gap-1.5">
+                    Library
+                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">ONLINE</span>
+                  </h3>
+                  <p class="text-[11px] text-slate-400 font-mono">Media & Streaming Staging</p>
+                </div>
+                <span class="text-xs font-mono font-bold text-purple-300">7.3 TiB</span>
+              </div>
+
+              <div class="my-3 space-y-1">
+                <div class="flex justify-between text-xs font-mono">
+                  <span class="text-slate-400">Used: <strong id="lib-used" class="text-slate-200">201.2 GiB</strong></span>
+                  <span id="lib-pct" class="text-purple-400 font-bold">2.7%</span>
+                </div>
+                <div class="w-full bg-white/10 rounded-full h-2.5 overflow-hidden">
+                  <div id="lib-bar" class="bg-gradient-to-r from-purple-500 to-pink-500 h-2.5 rounded-full" style="width: 2.7%;"></div>
+                </div>
+                <div class="flex justify-between text-[10px] font-mono text-slate-500 pt-1">
+                  <span>Available: 7.1 TiB</span>
+                  <span>High-Bandwidth Media Staging</span>
+                </div>
+              </div>
+            </div>
+            <div class="text-[10px] font-mono text-slate-400 bg-white/[0.02] p-2 rounded-lg border border-white/5">
+              midclt: pool.query: Library • Health: ONLINE (0 errors)
+            </div>
+          </div>
+
+          <!-- POOL 3: SSD-LOCKER (4.5 TiB) -->
+          <div class="rounded-2xl bg-[#0f0c18]/90 border border-purple-500/30 p-5 backdrop-blur-xl shadow-xl flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-start mb-2">
+                <div>
+                  <h3 class="text-sm font-bold text-white font-mono flex items-center gap-1.5">
+                    SSD-Locker
+                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">ONLINE</span>
+                  </h3>
+                  <p class="text-[11px] text-slate-400 font-mono">NVMe High-IOPS Scratch & VMs</p>
+                </div>
+                <span class="text-xs font-mono font-bold text-amber-300">4.5 TiB</span>
+              </div>
+
+              <div class="my-3 space-y-1">
+                <div class="flex justify-between text-xs font-mono">
+                  <span class="text-slate-400">Used: <strong id="ssd-used" class="text-slate-200">88.5 GiB</strong></span>
+                  <span id="ssd-pct" class="text-amber-400 font-bold">1.9%</span>
+                </div>
+                <div class="w-full bg-white/10 rounded-full h-2.5 overflow-hidden">
+                  <div id="ssd-bar" class="bg-gradient-to-r from-amber-500 to-emerald-500 h-2.5 rounded-full" style="width: 1.9%;"></div>
+                </div>
+                <div class="flex justify-between text-[10px] font-mono text-slate-500 pt-1">
+                  <span>Available: 4.4 TiB</span>
+                  <span>All-Flash NVMe Array</span>
+                </div>
+              </div>
+            </div>
+            <div class="text-[10px] font-mono text-slate-400 bg-white/[0.02] p-2 rounded-lg border border-white/5">
+              midclt: pool.query: SSD-Locker • Health: ONLINE (0 errors)
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ===================================================== -->
+      <!-- SECTION 2: LIVE MEDIA ACTIVITY (Jellyfin & qBittorrent) -->
+      <!-- ===================================================== -->
+      <section>
+        <div class="flex items-center justify-between mb-3.5 pb-2 border-b border-indigo-500/20">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-sm bg-indigo-500 shadow-sm shadow-indigo-500"></span>
+            <h2 class="text-sm font-mono uppercase tracking-widest text-slate-300 font-bold">
+              Live Stream & Torrent Activity // Jellyfin + qBittorrent (VPN Egress)
+            </h2>
+          </div>
+          <span class="text-[11px] font-mono text-indigo-300">Real-Time Sessions & Bandwidth</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+          <!-- JELLYFIN ACTIVE STREAMS & LIBRARY -->
+          <div class="rounded-2xl bg-[#0f0c18]/90 border border-indigo-500/30 p-5 backdrop-blur-xl shadow-xl flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-3 pb-2 border-b border-white/10">
+                <div class="flex items-center gap-2.5">
+                  <img src={`${iconBase}/jellyfin.png`} alt="Jellyfin" class="w-7 h-7 object-contain" />
+                  <div>
+                    <h3 class="text-sm font-bold text-white font-mono flex items-center gap-1.5">
+                      Jellyfin Media Server
+                      <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">ONLINE</span>
+                    </h3>
+                    <p class="text-[11px] text-slate-400 font-mono">Port :30013 • TrueNAS App</p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <span id="jf-active-badge" class="px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-xs font-mono font-bold">
+                    0 Active Streams
+                  </span>
+                </div>
+              </div>
+
+              <!-- Quick Library Counts -->
+              <div class="grid grid-cols-3 gap-2 text-center text-xs font-mono mb-3">
+                <div class="p-2 rounded-xl bg-white/[0.03] border border-white/5">
+                  <span class="text-[10px] text-slate-400 block uppercase">Movies</span>
+                  <span id="jf-movies-count" class="text-base font-bold text-white">806</span>
+                </div>
+                <div class="p-2 rounded-xl bg-white/[0.03] border border-white/5">
+                  <span class="text-[10px] text-slate-400 block uppercase">TV Series</span>
+                  <span id="jf-series-count" class="text-base font-bold text-white">192</span>
+                </div>
+                <div class="p-2 rounded-xl bg-white/[0.03] border border-white/5">
+                  <span class="text-[10px] text-slate-400 block uppercase">Episodes</span>
+                  <span id="jf-episodes-count" class="text-base font-bold text-white">16,217</span>
+                </div>
+              </div>
+
+              <!-- Specific Active Stream Sessions List -->
+              <div class="space-y-1.5 text-xs font-mono">
+                <span class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold block">Current Playback Sessions (/Sessions)</span>
+                <div id="jf-viewers-list" class="space-y-2">
+                  <div class="p-3 rounded-xl bg-black/40 border border-white/5 text-slate-500 text-center">
+                    No active streams at the moment
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-3 pt-2 border-t border-white/10 flex justify-between text-[10px] font-mono text-slate-500">
+              <span>Hardware Acceleration: NVENC / QuickSync</span>
+              <span>Audio: Pass-through</span>
+            </div>
+          </div>
+
+          <!-- QBITTORRENT DOWNLOADS & VPN TUNNEL -->
+          <div class="rounded-2xl bg-[#0f0c18]/90 border border-indigo-500/30 p-5 backdrop-blur-xl shadow-xl flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-3 pb-2 border-b border-white/10">
+                <div class="flex items-center gap-2.5">
+                  <img src={`${iconBase}/qbittorrent.png`} alt="qBittorrent" class="w-7 h-7 object-contain" />
+                  <div>
+                    <h3 class="text-sm font-bold text-white font-mono flex items-center gap-1.5">
+                      qBittorrent
+                      <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">ONLINE</span>
+                    </h3>
+                    <p class="text-[11px] text-slate-400 font-mono">Port :8080 • Gluetun Namespace</p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-mono font-bold">
+                    🔒 WIREGUARD VPN OK
+                  </span>
+                </div>
+              </div>
+
+              <!-- Bandwidth Gauges -->
+              <div class="grid grid-cols-3 gap-2 text-center text-xs font-mono mb-3">
+                <div class="p-2 rounded-xl bg-white/[0.03] border border-white/5">
+                  <span class="text-[10px] text-slate-400 block uppercase">Download Speed</span>
+                  <span id="qbt-down-speed" class="text-base font-bold text-cyan-400">0 B/s</span>
+                </div>
+                <div class="p-2 rounded-xl bg-white/[0.03] border border-white/5">
+                  <span class="text-[10px] text-slate-400 block uppercase">Upload Speed</span>
+                  <span id="qbt-up-speed" class="text-base font-bold text-purple-400">0 B/s</span>
+                </div>
+                <div class="p-2 rounded-xl bg-white/[0.03] border border-white/5">
+                  <span class="text-[10px] text-slate-400 block uppercase">Total Torrents</span>
+                  <span id="qbt-total-count" class="text-base font-bold text-white">2 Active</span>
+                </div>
+              </div>
+
+              <!-- Active Torrents Breakdown -->
+              <div class="space-y-1.5 text-xs font-mono">
+                <span class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold block">Active Torrents (/api/v2/torrents/info)</span>
+                <div id="qbt-torrents-list" class="space-y-2">
+                  
+                  <div class="p-2.5 rounded-xl bg-black/40 border border-white/5 space-y-1">
+                    <div class="flex justify-between items-center text-slate-300 font-medium truncate">
+                      <span class="truncate max-w-[280px]" title="Mayor of Kingstown S02E08-09 1080p HEVC WEBDL EAC3 ITA ENG G66">Mayor of Kingstown S02E08-09</span>
+                      <span class="text-emerald-400 text-[10px] px-1.5 py-0.2 rounded bg-emerald-500/15">SEEDING</span>
+                    </div>
+                    <div class="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+                      <div class="bg-emerald-400 h-1.5 rounded-full" style="width: 100%;"></div>
+                    </div>
+                    <div class="flex justify-between text-[10px] text-slate-500">
+                      <span>100.0% • 4.96 GB</span>
+                      <span>↑ 0 B/s</span>
+                    </div>
+                  </div>
+
+                  <div class="p-2.5 rounded-xl bg-black/40 border border-white/5 space-y-1">
+                    <div class="flex justify-between items-center text-slate-300 font-medium truncate">
+                      <span class="truncate max-w-[280px]" title="[ToonsHub] Black Clover S02E04 1080p CR WEB-DL AAC2.0 H.264">[ToonsHub] Black Clover S02E04</span>
+                      <span class="text-emerald-400 text-[10px] px-1.5 py-0.2 rounded bg-emerald-500/15">SEEDING</span>
+                    </div>
+                    <div class="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+                      <div class="bg-emerald-400 h-1.5 rounded-full" style="width: 100%;"></div>
+                    </div>
+                    <div class="flex justify-between text-[10px] text-slate-500">
+                      <span>100.0% • 1.80 GB</span>
+                      <span>↑ 0 B/s</span>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-3 pt-2 border-t border-white/10 flex justify-between text-[10px] font-mono text-slate-500">
+              <span>Egress: ProtonVPN WireGuard Tunnel</span>
+              <span>IP Leak Protection: Active</span>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ===================================================== -->
+      <!-- SECTION 3: AUTOMATION & MEDIA PIPELINE (Sonarr, Radarr, Seerr) -->
+      <!-- ===================================================== -->
+      <section>
+        <div class="flex items-center justify-between mb-3.5 pb-2 border-b border-purple-500/20">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-sm bg-amber-500 shadow-sm shadow-amber-500"></span>
+            <h2 class="text-sm font-mono uppercase tracking-widest text-slate-300 font-bold">
+              Automated Acquisition Pipeline // Read-Only Status
+            </h2>
+          </div>
+          <span class="text-[11px] font-mono text-amber-300">Sonarr • Radarr • Jellyseerr • Prowlarr • Tdarr</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+
+          <!-- SONARR -->
+          <div class="rounded-xl bg-[#0f0c18]/90 border border-white/10 p-4 space-y-2 text-xs font-mono">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <img src={`${iconBase}/sonarr.png`} alt="Sonarr" class="w-6 h-6 object-contain" />
+                <span class="font-bold text-white">Sonarr</span>
+              </div>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">ONLINE</span>
+            </div>
+            <div class="space-y-1 bg-black/40 p-2.5 rounded-lg border border-white/5">
+              <div class="flex justify-between">
+                <span class="text-slate-400">Series:</span>
+                <span id="sonarr-series" class="text-white font-bold">188 Monitored</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400">Queue:</span>
+                <span id="sonarr-queue" class="text-amber-400 font-bold">3 Fetching</span>
+              </div>
+              <div class="flex justify-between text-[10px] text-slate-500">
+                <span>Port: :30113</span>
+                <span>API v3</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- RADARR -->
+          <div class="rounded-xl bg-[#0f0c18]/90 border border-white/10 p-4 space-y-2 text-xs font-mono">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <img src={`${iconBase}/radarr.png`} alt="Radarr" class="w-6 h-6 object-contain" />
+                <span class="font-bold text-white">Radarr</span>
+              </div>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">ONLINE</span>
+            </div>
+            <div class="space-y-1 bg-black/40 p-2.5 rounded-lg border border-white/5">
+              <div class="flex justify-between">
+                <span class="text-slate-400">Movies:</span>
+                <span id="radarr-movies" class="text-white font-bold">791 Films</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400">Queue:</span>
+                <span id="radarr-queue" class="text-emerald-400 font-bold">0 Active</span>
+              </div>
+              <div class="flex justify-between text-[10px] text-slate-500">
+                <span>Port: :30025</span>
+                <span>API v3</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- JELLYSEERR -->
+          <div class="rounded-xl bg-[#0f0c18]/90 border border-white/10 p-4 space-y-2 text-xs font-mono">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <img src={`${iconBase}/jellyseerr.png`} alt="Jellyseerr" class="w-6 h-6 object-contain" />
+                <span class="font-bold text-white">Jellyseerr</span>
+              </div>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">ONLINE</span>
+            </div>
+            <div class="space-y-1 bg-black/40 p-2.5 rounded-lg border border-white/5">
+              <div class="flex justify-between">
+                <span class="text-slate-400">Pending:</span>
+                <span id="seerr-pending" class="text-amber-400 font-bold">1 Request</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400">Approved:</span>
+                <span id="seerr-approved" class="text-emerald-400 font-bold">17 Done</span>
+              </div>
+              <div class="flex justify-between text-[10px] text-slate-500">
+                <span>Port: :30042</span>
+                <span>Webhook Active</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- PROWLARR -->
+          <div class="rounded-xl bg-[#0f0c18]/90 border border-white/10 p-4 space-y-2 text-xs font-mono">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <img src={`${iconBase}/prowlarr.png`} alt="Prowlarr" class="w-6 h-6 object-contain" />
+                <span class="font-bold text-white">Prowlarr</span>
+              </div>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">ONLINE</span>
+            </div>
+            <div class="space-y-1 bg-black/40 p-2.5 rounded-lg border border-white/5">
+              <div class="flex justify-between">
+                <span class="text-slate-400">Indexers:</span>
+                <span class="text-white font-bold">18 Healthy</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400">Failed:</span>
+                <span class="text-emerald-400 font-bold">0 Failing</span>
+              </div>
+              <div class="flex justify-between text-[10px] text-slate-500">
+                <span>Port: :9696</span>
+                <span>FlareSolverr OK</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- TDARR -->
+          <div class="rounded-xl bg-[#0f0c18]/90 border border-white/10 p-4 space-y-2 text-xs font-mono">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <img src={`${iconBase}/tdarr.png`} alt="Tdarr" class="w-6 h-6 object-contain" />
+                <span class="font-bold text-white">Tdarr</span>
+              </div>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">ONLINE</span>
+            </div>
+            <div class="space-y-1 bg-black/40 p-2.5 rounded-lg border border-white/5">
+              <div class="flex justify-between">
+                <span class="text-slate-400">NVENC Node:</span>
+                <span class="text-purple-300 font-bold">Active</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400">Saved Space:</span>
+                <span class="text-emerald-400 font-bold">~4.8 TiB</span>
+              </div>
+              <div class="flex justify-between text-[10px] text-slate-500">
+                <span>Port: :30088</span>
+                <span>AV1 / HEVC</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ===================================================== -->
+      <!-- SECTION 4: SERVER 02 — PROXMOX VE 9 & DOCKER1 EDGE    -->
+      <!-- ===================================================== -->
+      <section>
+        <div class="flex items-center justify-between mb-3.5 pb-2 border-b border-purple-500/20">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-sm bg-cyan-500 shadow-sm shadow-cyan-500"></span>
+            <h2 class="text-sm font-mono uppercase tracking-widest text-slate-300 font-bold">
+              Server 02: Proxmox VE 9 Hypervisor (pve01) &amp; Docker1 Microservices
+            </h2>
+          </div>
+          <span class="text-[11px] font-mono text-cyan-300">Standalone Bare-Metal Host (pve01) • Docker1 • AdGuard DNS</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+          <!-- PROXMOX VE 9.0.5 (pve01) -->
+          <div class="rounded-2xl bg-[#0f0c18]/90 border border-purple-500/30 p-5 backdrop-blur-xl shadow-xl space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-white/10">
+              <div class="flex items-center gap-2.5">
+                <img src={`${iconBase}/proxmox.png`} alt="Proxmox" class="w-7 h-7 object-contain" />
+                <div>
+                  <h3 class="text-sm font-bold text-white font-mono flex items-center gap-1.5">
+                    Proxmox VE 9 (pve01)
+                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">ONLINE</span>
+                  </h3>
+                  <p class="text-[11px] text-slate-400 font-mono">Port :8006 • Separate Bare-Metal Host</p>
+                </div>
+              </div>
+              <span id="pve-guests-badge" class="text-xs font-mono font-bold text-cyan-400">
+                4 VMs / 2 LXCs
+              </span>
+            </div>
+
+            <div class="space-y-2 text-xs font-mono bg-black/40 rounded-xl p-3 border border-white/5">
+              <div class="flex justify-between items-center">
+                <span class="text-slate-400">Host Processor:</span>
+                <span class="text-white font-bold">Intel x86_64 @ 2.80 GHz</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-slate-400">Hypervisor CPU Load:</span>
+                <span id="pve-cpu-val" class="text-emerald-400 font-bold">8.4%</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-slate-400">Physical DDR4 RAM:</span>
+                <span id="pve-ram-val" class="text-white font-bold">38.4 GiB / 64.0 GiB</span>
+              </div>
+              <div class="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+                <div class="bg-indigo-500 h-1.5 rounded-full" style="width: 60%;"></div>
+              </div>
+            </div>
+
+            <!-- Guest List -->
+            <div class="space-y-1 text-[11px] font-mono">
+              <span class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold block">Managed Guests on pve01 (/api2/json)</span>
+              <div class="space-y-1">
+                <div class="flex items-center justify-between p-1.5 rounded bg-white/[0.02] border border-white/5">
+                  <span class="text-slate-200">100 docker1 (8 vCPU • 15 GiB)</span>
+                  <span class="text-[10px] px-1.5 py-0.2 rounded bg-blue-500/20 text-blue-300">VM • Running</span>
+                </div>
+                <div class="flex items-center justify-between p-1.5 rounded bg-white/[0.02] border border-white/5">
+                  <span class="text-slate-200">103 clanker (Hermes Agent • 8 GiB)</span>
+                  <span class="text-[10px] px-1.5 py-0.2 rounded bg-blue-500/20 text-blue-300">VM • Running</span>
+                </div>
+                <div class="flex items-center justify-between p-1.5 rounded bg-white/[0.02] border border-white/5">
+                  <span class="text-slate-200">105 loldata (Analytics • 8 GiB)</span>
+                  <span class="text-[10px] px-1.5 py-0.2 rounded bg-blue-500/20 text-blue-300">VM • Running</span>
+                </div>
+                <div class="flex items-center justify-between p-1.5 rounded bg-white/[0.02] border border-white/5">
+                  <span class="text-slate-200">101 crafty-controller (8 GiB)</span>
+                  <span class="text-[10px] px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300">LXC • Running</span>
+                </div>
+                <div class="flex items-center justify-between p-1.5 rounded bg-white/[0.02] border border-white/5">
+                  <span class="text-slate-400">104 wazuh (SIEM Manager • 8 GiB)</span>
+                  <span class="text-[10px] px-1.5 py-0.2 rounded bg-slate-500/20 text-slate-400">VM • Standby</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- DOCKER1 / PORTAINER -->
+          <div class="rounded-2xl bg-[#0f0c18]/90 border border-purple-500/30 p-5 backdrop-blur-xl shadow-xl space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-white/10">
+              <div class="flex items-center gap-2.5">
+                <img src={`${iconBase}/portainer.png`} alt="Portainer" class="w-7 h-7 object-contain" />
+                <div>
+                  <h3 class="text-sm font-bold text-white font-mono flex items-center gap-1.5">
+                    docker1 Node
+                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">ONLINE</span>
+                  </h3>
+                  <p class="text-[11px] text-slate-400 font-mono">VM 100 • Portainer :9000</p>
+                </div>
+              </div>
+              <span class="text-xs font-mono font-bold text-emerald-400">
+                23 Active
+              </span>
+            </div>
+
+            <div class="space-y-2 text-xs font-mono bg-black/40 rounded-xl p-3 border border-white/5">
+              <div class="flex justify-between items-center">
+                <span class="text-slate-400">Total Containers:</span>
+                <span id="docker-total-count" class="text-white font-bold">23 Active / 0 Stopped</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-slate-400">Docker Engine:</span>
+                <span class="text-white font-bold">v27.3.1 CE</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-slate-400">Health Checks:</span>
+                <span class="text-emerald-400 font-bold">All 23 Healthy</span>
+              </div>
+            </div>
+
+            <div class="space-y-1 text-[11px] font-mono">
+              <span class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold block">Key Stack Endpoints</span>
+              <div class="grid grid-cols-2 gap-1.5 text-[10px]">
+                <div class="p-1.5 rounded bg-white/[0.02] border border-white/5 truncate">
+                  <span class="text-emerald-400">●</span> NPM (:81)
+                </div>
+                <div class="p-1.5 rounded bg-white/[0.02] border border-white/5 truncate">
+                  <span class="text-emerald-400">●</span> AdGuard (:3000)
+                </div>
+                <div class="p-1.5 rounded bg-white/[0.02] border border-white/5 truncate">
+                  <span class="text-emerald-400">●</span> CrowdSec (:8087)
+                </div>
+                <div class="p-1.5 rounded bg-white/[0.02] border border-white/5 truncate">
+                  <span class="text-emerald-400">●</span> Portainer (:9000)
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ADGUARD HOME DNS -->
+          <div class="rounded-2xl bg-[#0f0c18]/90 border border-purple-500/30 p-5 backdrop-blur-xl shadow-xl space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-white/10">
+              <div class="flex items-center gap-2.5">
+                <img src={`${iconBase}/adguard-home.png`} alt="AdGuard" class="w-7 h-7 object-contain" />
+                <div>
+                  <h3 class="text-sm font-bold text-white font-mono flex items-center gap-1.5">
+                    AdGuard Home DNS
+                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">ONLINE</span>
+                  </h3>
+                  <p class="text-[11px] text-slate-400 font-mono">docker1 • DNS Sinkhole</p>
+                </div>
+              </div>
+              <span class="text-xs font-mono font-bold text-emerald-400">
+                ACTIVE
+              </span>
+            </div>
+
+            <div class="space-y-2 text-xs font-mono bg-black/40 rounded-xl p-3 border border-white/5">
+              <div class="flex justify-between items-center">
+                <span class="text-slate-400">24h DNS Queries:</span>
+                <span id="adg-queries" class="text-white font-bold">148,290</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-slate-400">Blocked Ads & Trackers:</span>
+                <span id="adg-blocked" class="text-emerald-400 font-bold">36,812</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-slate-400">Blocking Ratio:</span>
+                <span id="adg-ratio" class="text-emerald-300 font-bold">24.8%</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-slate-400">Processing Latency:</span>
+                <span id="adg-latency" class="text-cyan-300 font-bold">3.2 ms</span>
+              </div>
+            </div>
+
+            <div class="text-[10px] font-mono text-slate-400 bg-white/[0.02] p-2 rounded-lg border border-white/5">
+              DNS Protection: ENABLED • Upstream: Cloudflare + Quad9 DoH
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ===================================================== -->
+      <!-- SECTION 5: WAZUH SIEM & EDGE TOP REQUESTING IPS       -->
+      <!-- ===================================================== -->
+      <section>
+        <div class="flex items-center justify-between mb-3.5 pb-2 border-b border-rose-500/20">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-sm bg-rose-500 shadow-sm shadow-rose-500"></span>
+            <h2 class="text-sm font-mono uppercase tracking-widest text-slate-300 font-bold">
+              Wazuh SIEM &amp; Edge Ingress Logs // Top Requesting IPs &amp; Threat Telemetry
+            </h2>
+          </div>
+          <span class="text-[11px] font-mono text-rose-300">Wazuh Agent • CrowdSec IPS • NPM Access Logs (*.mikey.host)</span>
+        </div>
+
+        <!-- Summary Metrics Row -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-4 font-mono">
+          <div class="rounded-xl bg-[#0f0c18]/90 border border-rose-500/25 p-3.5 flex items-center justify-between">
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase block">Total Tracked Requests</span>
+              <span id="wz-total-requests" class="text-lg font-bold text-white">93,842</span>
+            </div>
+            <span class="text-xs px-2 py-1 rounded bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">INGRESS</span>
+          </div>
+          <div class="rounded-xl bg-[#0f0c18]/90 border border-rose-500/25 p-3.5 flex items-center justify-between">
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase block">Unique External IPs</span>
+              <span id="wz-unique-ips" class="text-lg font-bold text-cyan-300">1,428</span>
+            </div>
+            <span class="text-xs px-2 py-1 rounded bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">TRACKED</span>
+          </div>
+          <div class="rounded-xl bg-[#0f0c18]/90 border border-rose-500/25 p-3.5 flex items-center justify-between">
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase block">Active SIEM / IPS Bans</span>
+              <span id="wz-active-bans" class="text-lg font-bold text-rose-400">6 Banned</span>
+            </div>
+            <span class="text-xs px-2 py-1 rounded bg-rose-500/15 text-rose-300 border border-rose-500/30">BLOCKED</span>
+          </div>
+          <div class="rounded-xl bg-[#0f0c18]/90 border border-rose-500/25 p-3.5 flex items-center justify-between">
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase block">Wazuh Collector Node</span>
+              <span class="text-xs font-bold text-emerald-400 block mt-0.5">docker1 Edge Active</span>
+            </div>
+            <span class="text-[10px] px-2 py-1 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">LIVE LOGS</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <!-- LEFT: TOP REQUESTING IPS BY VOLUME -->
+          <div class="rounded-2xl bg-[#0f0c18]/90 border border-indigo-500/30 p-5 backdrop-blur-xl shadow-xl flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between pb-3 mb-3 border-b border-white/10">
+                <div>
+                  <h3 class="text-sm font-bold text-white font-mono flex items-center gap-2">
+                    <span>📊</span> Top Requesting External IPs
+                  </h3>
+                  <p class="text-[11px] text-slate-400 font-mono">Aggregated by client IP across *.mikey.host ingress logs</p>
+                </div>
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                  SORTED BY REQUESTS
+                </span>
+              </div>
+
+              <div id="wz-top-ips-list" class="space-y-2 font-mono text-xs">
+                <div class="p-2.5 rounded-xl bg-black/40 border border-white/5">
+                  <div class="flex items-center justify-between mb-1">
+                    <div class="flex items-center gap-2">
+                      <span class="text-white font-bold">50.172.91.26</span>
+                      <span class="text-[10px] px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300">jelly.mikey.host</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="text-[10px] text-emerald-400">200 OK</span>
+                      <span class="text-indigo-300 font-bold">46,493 reqs</span>
+                    </div>
+                  </div>
+                  <div class="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+                    <div class="bg-gradient-to-r from-indigo-500 to-purple-500 h-1.5 rounded-full" style="width: 100%;"></div>
+                  </div>
+                </div>
+
+                <div class="p-2.5 rounded-xl bg-black/40 border border-white/5">
+                  <div class="flex items-center justify-between mb-1">
+                    <div class="flex items-center gap-2">
+                      <span class="text-white font-bold">75.0.196.173</span>
+                      <span class="text-[10px] px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300">jelly.mikey.host</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="text-[10px] text-cyan-400">101 WS</span>
+                      <span class="text-indigo-300 font-bold">8,374 reqs</span>
+                    </div>
+                  </div>
+                  <div class="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+                    <div class="bg-gradient-to-r from-indigo-500 to-purple-500 h-1.5 rounded-full" style="width: 18%;"></div>
+                  </div>
+                </div>
+
+                <div class="p-2.5 rounded-xl bg-black/40 border border-white/5">
+                  <div class="flex items-center justify-between mb-1">
+                    <div class="flex items-center gap-2">
+                      <span class="text-white font-bold">73.228.165.188</span>
+                      <span class="text-[10px] px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300">jelly.mikey.host</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="text-[10px] text-cyan-400">101 WS</span>
+                      <span class="text-indigo-300 font-bold">8,195 reqs</span>
+                    </div>
+                  </div>
+                  <div class="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+                    <div class="bg-gradient-to-r from-indigo-500 to-purple-500 h-1.5 rounded-full" style="width: 17.6%;"></div>
+                  </div>
+                </div>
+
+                <div class="p-2.5 rounded-xl bg-black/40 border border-white/5">
+                  <div class="flex items-center justify-between mb-1">
+                    <div class="flex items-center gap-2">
+                      <span class="text-white font-bold">98.124.93.134</span>
+                      <span class="text-[10px] px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300">gym.mikey.host</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="text-[10px] text-emerald-400">200 OK</span>
+                      <span class="text-indigo-300 font-bold">7,052 reqs</span>
+                    </div>
+                  </div>
+                  <div class="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+                    <div class="bg-gradient-to-r from-indigo-500 to-purple-500 h-1.5 rounded-full" style="width: 15.2%;"></div>
+                  </div>
+                </div>
+
+                <div class="p-2.5 rounded-xl bg-black/40 border border-white/5">
+                  <div class="flex items-center justify-between mb-1">
+                    <div class="flex items-center gap-2">
+                      <span class="text-white font-bold">170.52.182.241</span>
+                      <span class="text-[10px] px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300">jelly.mikey.host</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="text-[10px] text-emerald-400">200 OK</span>
+                      <span class="text-indigo-300 font-bold">4,492 reqs</span>
+                    </div>
+                  </div>
+                  <div class="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+                    <div class="bg-gradient-to-r from-indigo-500 to-purple-500 h-1.5 rounded-full" style="width: 9.7%;"></div>
+                  </div>
+                </div>
+
+                <div class="p-2.5 rounded-xl bg-black/40 border border-white/5">
+                  <div class="flex items-center justify-between mb-1">
+                    <div class="flex items-center gap-2">
+                      <span class="text-white font-bold">136.110.22.7</span>
+                      <span class="text-[10px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300">portainer.mikey.host</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="text-[10px] text-amber-400">404 Scan</span>
+                      <span class="text-indigo-300 font-bold">1,504 reqs</span>
+                    </div>
+                  </div>
+                  <div class="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+                    <div class="bg-gradient-to-r from-amber-500 to-rose-500 h-1.5 rounded-full" style="width: 5.0%;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-3 pt-2 border-t border-white/10 flex justify-between text-[10px] font-mono text-slate-500">
+              <span>Source: docker1:/data/logs/proxy-host-*_access.log</span>
+              <span>Filter: External Public IPs</span>
+            </div>
+          </div>
+
+          <!-- RIGHT: WAZUH SIEM & CROWDSEC INTRUSION ALERTS -->
+          <div class="rounded-2xl bg-[#0f0c18]/90 border border-rose-500/30 p-5 backdrop-blur-xl shadow-xl flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between pb-3 mb-3 border-b border-white/10">
+                <div>
+                  <h3 class="text-sm font-bold text-white font-mono flex items-center gap-2">
+                    <span>🛡️</span> Wazuh SIEM &amp; CrowdSec Threat Alerts
+                  </h3>
+                  <p class="text-[11px] text-slate-400 font-mono">Intrusion detection rules &amp; banned attacker IPs</p>
+                </div>
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                  IPS ENFORCING
+                </span>
+              </div>
+
+              <div id="wz-alerts-list" class="space-y-2 font-mono text-xs">
+                <div class="p-2.5 rounded-xl bg-black/40 border border-rose-500/20 flex items-center justify-between">
+                  <div class="space-y-0.5">
+                    <div class="flex items-center gap-2">
+                      <span class="text-rose-300 font-bold">103.91.65.178</span>
+                      <span class="text-[10px] px-1.5 py-0.2 rounded bg-white/10 text-slate-300">MY • Gigabit Hosting</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400">Rule: <span class="text-amber-300">http-cve-2021-42013</span></p>
+                  </div>
+                  <span class="text-[10px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold">BANNED</span>
+                </div>
+
+                <div class="p-2.5 rounded-xl bg-black/40 border border-rose-500/20 flex items-center justify-between">
+                  <div class="space-y-0.5">
+                    <div class="flex items-center gap-2">
+                      <span class="text-rose-300 font-bold">47.245.110.93</span>
+                      <span class="text-[10px] px-1.5 py-0.2 rounded bg-white/10 text-slate-300">SG • Alibaba Cloud</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400">Rule: <span class="text-amber-300">http-cve-probing</span></p>
+                  </div>
+                  <span class="text-[10px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold">BANNED</span>
+                </div>
+
+                <div class="p-2.5 rounded-xl bg-black/40 border border-rose-500/20 flex items-center justify-between">
+                  <div class="space-y-0.5">
+                    <div class="flex items-center gap-2">
+                      <span class="text-rose-300 font-bold">46.151.178.15</span>
+                      <span class="text-[10px] px-1.5 py-0.2 rounded bg-white/10 text-slate-300">NL • Sino Worldwide</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400">Rule: <span class="text-amber-300">http-sensitive-files</span></p>
+                  </div>
+                  <span class="text-[10px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold">BANNED</span>
+                </div>
+
+                <div class="p-2.5 rounded-xl bg-black/40 border border-rose-500/20 flex items-center justify-between">
+                  <div class="space-y-0.5">
+                    <div class="flex items-center gap-2">
+                      <span class="text-rose-300 font-bold">45.156.87.150</span>
+                      <span class="text-[10px] px-1.5 py-0.2 rounded bg-white/10 text-slate-300">NL • Pfcloud UG</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400">Rule: <span class="text-amber-300">http-probing</span></p>
+                  </div>
+                  <span class="text-[10px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold">BANNED</span>
+                </div>
+
+                <div class="p-2.5 rounded-xl bg-black/40 border border-rose-500/20 flex items-center justify-between">
+                  <div class="space-y-0.5">
+                    <div class="flex items-center gap-2">
+                      <span class="text-rose-300 font-bold">79.124.58.82</span>
+                      <span class="text-[10px] px-1.5 py-0.2 rounded bg-white/10 text-slate-300">BG • Tamatiya EOOD</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400">Rule: <span class="text-amber-300">http-crawl-non_statics</span></p>
+                  </div>
+                  <span class="text-[10px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold">BANNED</span>
+                </div>
+
+                <div class="p-2.5 rounded-xl bg-black/40 border border-rose-500/20 flex items-center justify-between">
+                  <div class="space-y-0.5">
+                    <div class="flex items-center gap-2">
+                      <span class="text-rose-300 font-bold">35.247.64.110</span>
+                      <span class="text-[10px] px-1.5 py-0.2 rounded bg-white/10 text-slate-300">US • Google Cloud</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400">Rule: <span class="text-amber-300">http-probing</span></p>
+                  </div>
+                  <span class="text-[10px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold">BANNED</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-3 pt-2 border-t border-white/10 flex justify-between text-[10px] font-mono text-slate-500">
+              <span>Wazuh Manager: VM 104 (pve01) • CrowdSec LAPI: :8087</span>
+              <span>Zero-Trust Edge Active</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</Layout>
+
+<script>
+  // Dashboard Live Read-Only Polling Engine
+  let pollTimer: any = null;
+
+  function escapeHtml(val: unknown): string {
+    return String(val ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  async function updateTelemetry() {
+    const spinner = document.getElementById('refresh-spinner');
+    const label = document.getElementById('refresh-label');
+
+    if (spinner) spinner.classList.add('animate-spin');
+    if (label) label.textContent = 'Syncing...';
+
+    try {
+      const fetchJson = async (url: string) => {
+        const res = await fetch(url);
+        return res.ok ? res.json() : null;
       };
 
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
+      // Fetch all 9 telemetry endpoints in parallel to eliminate sequential waterfall delays
+      const [tn, jf, qbt, s, r, js, pve, adg, wz] = await Promise.all([
+        fetchJson('/api/truenas').catch(() => null),
+        fetchJson('/api/jellyfin').catch(() => null),
+        fetchJson('/api/qbittorrent').catch(() => null),
+        fetchJson('/api/sonarr').catch(() => null),
+        fetchJson('/api/radarr').catch(() => null),
+        fetchJson('/api/jellyseerr').catch(() => null),
+        fetchJson('/api/proxmox').catch(() => null),
+        fetchJson('/api/adguard').catch(() => null),
+        fetchJson('/api/wazuh').catch(() => null),
+      ]);
 
-            const children = entry.target.querySelectorAll('.fade-in-section:not(.visible)');
-            children.forEach((child, index) => {
-              const staggerClass = Array.from(child.classList).find(cls => cls.startsWith('stagger-'));
-              let delay = 0;
+      // 1. Update TrueNAS Telemetry
+      if (tn) {
+        // Header Cooler Temp
+        const headerFridge = document.getElementById('header-fridge-temp');
+        if (headerFridge && tn.cpuTempC) {
+          headerFridge.textContent = `${tn.cpuTempC.toFixed(1)}°C // ${tn.cpuTempF.toFixed(1)}°F`;
+        }
 
-              if (staggerClass) {
-                const staggerNum = parseInt(staggerClass.split('-')[1]);
-                delay = staggerNum * 100;
-              } else {
-                delay = index * 80;
-              }
+        // TrueNAS Die Temp
+        const dieTemp = document.getElementById('tn-die-temp');
+        if (dieTemp && tn.cpuTempC) {
+          dieTemp.textContent = `${tn.cpuTempC.toFixed(1)}°C // ${tn.cpuTempF.toFixed(1)}°F`;
+        }
 
-              setTimeout(() => {
-                child.classList.add('visible');
-              }, delay);
-            });
+        // TrueNAS CPU
+        const cpuEl = document.getElementById('tn-cpu-usage');
+        if (cpuEl && tn.cpuUsage) cpuEl.textContent = tn.cpuUsage;
 
-            observer.unobserve(entry.target);
+        // TrueNAS RAM
+        const ramEl = document.getElementById('tn-ram-usage');
+        if (ramEl && tn.memoryUsed) {
+          ramEl.textContent = `${tn.memoryUsed || '68.0 GiB'} / ${tn.memoryTotal || '256.0 GiB'}`;
+        }
+        const ramBar = document.getElementById('tn-ram-bar');
+        if (ramBar && tn.memoryUsageNum) {
+          ramBar.style.width = `${tn.memoryUsageNum}%`;
+        }
+
+        // ARC Cache
+        const arcEl = document.getElementById('tn-arc');
+        if (arcEl && tn.memoryZfsCache) arcEl.textContent = tn.memoryZfsCache;
+
+        // Pools
+        if (tn.pools && Array.isArray(tn.pools)) {
+          for (const pool of tn.pools) {
+            if (pool.name === 'Vault') {
+              const u = document.getElementById('vault-used');
+              const p = document.getElementById('vault-pct');
+              const b = document.getElementById('vault-bar');
+              if (u) u.textContent = pool.used;
+              if (p) p.textContent = pool.usedPercentage;
+              if (b) b.style.width = pool.usedPercentage;
+            } else if (pool.name === 'Library') {
+              const u = document.getElementById('lib-used');
+              const p = document.getElementById('lib-pct');
+              const b = document.getElementById('lib-bar');
+              if (u) u.textContent = pool.used;
+              if (p) p.textContent = pool.usedPercentage;
+              if (b) b.style.width = pool.usedPercentage;
+            } else if (pool.name === 'SSD-Locker') {
+              const u = document.getElementById('ssd-used');
+              const p = document.getElementById('ssd-pct');
+              const b = document.getElementById('ssd-bar');
+              if (u) u.textContent = pool.used;
+              if (p) p.textContent = pool.usedPercentage;
+              if (b) b.style.width = pool.usedPercentage;
+            }
           }
-        });
-      }, observerOptions);
+        }
+      }
 
-      const animatedElements = document.querySelectorAll('.fade-in-section');
-      animatedElements.forEach(element => {
-        observer.observe(element);
-      });
+      // 2. Update Jellyfin Activity
+      if (jf) {
+        const mEl = document.getElementById('jf-movies-count');
+        const sEl = document.getElementById('jf-series-count');
+        const eEl = document.getElementById('jf-episodes-count');
+        const badge = document.getElementById('jf-active-badge');
+        const list = document.getElementById('jf-viewers-list');
 
-      const heroElements = document.querySelectorAll('.fade-in-section');
-      heroElements.forEach((element, index) => {
-        setTimeout(() => {
-          element.classList.add('visible');
-        }, index * 150);
-      });
+        if (mEl && jf.movieCount) mEl.textContent = jf.movieCount.toLocaleString();
+        if (sEl && jf.seriesCount) sEl.textContent = jf.seriesCount.toLocaleString();
+        if (eEl && jf.episodeCount) eEl.textContent = jf.episodeCount.toLocaleString();
+        if (badge && jf.activeStreams !== undefined) {
+          badge.textContent = `${jf.activeStreams} Active Stream${jf.activeStreams === 1 ? '' : 's'}`;
+        }
+
+        if (list && jf.viewers && Array.isArray(jf.viewers)) {
+          if (jf.viewers.length === 0) {
+            list.innerHTML = `<div class="p-3 rounded-xl bg-black/40 border border-white/5 text-slate-500 text-center">No active streams at the moment</div>`;
+          } else {
+            list.innerHTML = jf.viewers.map((v: any) => `
+              <div class="p-3 rounded-xl bg-black/40 border border-white/5 flex items-center justify-between">
+                <div class="space-y-0.5">
+                  <div class="flex items-center gap-2">
+                    <span class="text-indigo-400 font-bold">${escapeHtml(v.user || 'User')}</span>
+                    <span class="text-[10px] px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-300">${escapeHtml(v.type || 'DirectPlay')}</span>
+                  </div>
+                  <p class="text-slate-200 font-semibold">${escapeHtml(v.content || 'Streaming Content')}</p>
+                  <p class="text-[10px] text-slate-500">${escapeHtml(v.client || 'Client')} • ${escapeHtml(v.deviceName || 'Device')}</p>
+                </div>
+                <span class="text-emerald-400 text-xs animate-pulse font-mono">PLAYING ▶</span>
+              </div>
+            `).join('');
+          }
+        }
+      }
+
+      // 3. Update qBittorrent Activity
+      if (qbt) {
+        const dEl = document.getElementById('qbt-down-speed');
+        const uEl = document.getElementById('qbt-up-speed');
+        const tEl = document.getElementById('qbt-total-count');
+        const list = document.getElementById('qbt-torrents-list');
+
+        const fmt = (bytes: number) => {
+          if (!bytes || bytes === 0) return '0 B/s';
+          const k = 1024;
+          const sizes = ['B/s', 'KB/s', 'MB/s', 'GB/s'];
+          const i = Math.floor(Math.log(bytes) / Math.log(k));
+          return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`;
+        };
+
+        if (dEl && qbt.downloadSpeed !== undefined) dEl.textContent = fmt(qbt.downloadSpeed);
+        if (uEl && qbt.uploadSpeed !== undefined) uEl.textContent = fmt(qbt.uploadSpeed);
+        if (tEl && qbt.torrentCount !== undefined) tEl.textContent = `${qbt.torrentCount} Active`;
+
+        if (list && qbt.activeTorrents && Array.isArray(qbt.activeTorrents)) {
+          list.innerHTML = qbt.activeTorrents.map((t: any) => {
+            const isDown = t.state === 'downloading' || (t.progress && t.progress !== '100.0%');
+            const stateClass = isDown ? 'text-cyan-400 bg-cyan-500/15' : 'text-emerald-400 bg-emerald-500/15';
+            const barClass = isDown ? 'bg-cyan-400' : 'bg-emerald-400';
+            const stateLabel = isDown ? 'DOWNLOADING' : 'SEEDING';
+            const speedText = isDown ? `↓ ${fmt(t.dlspeed)}` : `↑ ${fmt(t.upspeed)}`;
+            const safeName = escapeHtml(t.name);
+            const pctNum = Math.max(0, Math.min(100, parseFloat(String(t.progress ?? '100')) || 100));
+            const safeProgress = `${pctNum.toFixed(1)}%`;
+            return `
+              <div class="p-2.5 rounded-xl bg-black/40 border border-white/5 space-y-1">
+                <div class="flex justify-between items-center text-slate-300 font-medium truncate">
+                  <span class="truncate max-w-[280px]" title="${safeName}">${safeName}</span>
+                  <span class="${stateClass} text-[10px] px-1.5 py-0.2 rounded">${stateLabel}</span>
+                </div>
+                <div class="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+                  <div class="${barClass} h-1.5 rounded-full" style="width: ${safeProgress};"></div>
+                </div>
+                <div class="flex justify-between text-[10px] text-slate-500">
+                  <span>${safeProgress}</span>
+                  <span>${escapeHtml(speedText)}</span>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+
+      // 4. Update Arr Stack (Sonarr, Radarr, Seerr)
+      if (s) {
+        const sEl = document.getElementById('sonarr-series');
+        const qEl = document.getElementById('sonarr-queue');
+        if (sEl && s.seriesCount) sEl.textContent = `${s.seriesCount} Monitored`;
+        if (qEl && s.queueCount !== undefined) qEl.textContent = `${s.queueCount} Active`;
+      }
+
+      if (r) {
+        const mEl = document.getElementById('radarr-movies');
+        const qEl = document.getElementById('radarr-queue');
+        if (mEl && r.movieCount) mEl.textContent = `${r.movieCount} Films`;
+        if (qEl && r.queueCount !== undefined) qEl.textContent = `${r.queueCount} Active`;
+      }
+
+      if (js) {
+        const pEl = document.getElementById('seerr-pending');
+        const aEl = document.getElementById('seerr-approved');
+        if (pEl && js.pendingRequests !== undefined) pEl.textContent = `${js.pendingRequests} Requests`;
+        if (aEl && js.approvedRequests !== undefined) aEl.textContent = `${js.approvedRequests} Done`;
+      }
+
+      // 5. Update Proxmox & AdGuard
+      if (pve) {
+        const cpuEl = document.getElementById('pve-cpu-val');
+        const ramEl = document.getElementById('pve-ram-val');
+        if (cpuEl && pve.cpuUsage) cpuEl.textContent = pve.cpuUsage;
+        if (ramEl && pve.memoryUsed) ramEl.textContent = `${pve.memoryUsed} / ${pve.memoryTotal}`;
+      }
+
+      if (adg) {
+        const qEl = document.getElementById('adg-queries');
+        const bEl = document.getElementById('adg-blocked');
+        const rEl = document.getElementById('adg-ratio');
+        const lEl = document.getElementById('adg-latency');
+        if (qEl && adg.dnsQueries) qEl.textContent = adg.dnsQueries.toLocaleString();
+        if (bEl && adg.blockedQueries) bEl.textContent = adg.blockedQueries.toLocaleString();
+        if (rEl && adg.blockRate) rEl.textContent = adg.blockRate;
+        if (lEl && adg.avgProcessingTime) lEl.textContent = adg.avgProcessingTime;
+      }
+
+      // 6. Update Wazuh SIEM & Edge Ingress Top IPs
+      if (wz) {
+        const totalEl = document.getElementById('wz-total-requests');
+        const uniqueEl = document.getElementById('wz-unique-ips');
+        const bansEl = document.getElementById('wz-active-bans');
+        const topIpsList = document.getElementById('wz-top-ips-list');
+        const alertsList = document.getElementById('wz-alerts-list');
+
+        if (totalEl && wz.totalRequests) totalEl.textContent = Number(wz.totalRequests).toLocaleString();
+        if (uniqueEl && wz.uniqueIps) uniqueEl.textContent = Number(wz.uniqueIps).toLocaleString();
+        if (bansEl && wz.activeBans !== undefined) bansEl.textContent = `${wz.activeBans} Banned`;
+
+        if (topIpsList && Array.isArray(wz.topIps) && wz.topIps.length > 0) {
+          const maxReq = Math.max(...wz.topIps.map((item: any) => Number(item.requests) || 1), 1);
+          topIpsList.innerHTML = wz.topIps.slice(0, 6).map((item: any) => {
+            const reqNum = Number(item.requests) || 0;
+            const pct = Math.max(4, Math.min(100, (reqNum / maxReq) * 100)).toFixed(1);
+            const statusStr = String(item.status || '200');
+            const isWarn = statusStr.includes('404') || statusStr.includes('444') || statusStr.includes('403');
+            const statusColor = isWarn ? 'text-amber-400' : statusStr.includes('101') ? 'text-cyan-400' : 'text-emerald-400';
+            const barGrad = isWarn ? 'from-amber-500 to-rose-500' : 'from-indigo-500 to-purple-500';
+            return `
+              <div class="p-2.5 rounded-xl bg-black/40 border border-white/5">
+                <div class="flex items-center justify-between mb-1">
+                  <div class="flex items-center gap-2">
+                    <span class="text-white font-bold">${escapeHtml(item.ip)}</span>
+                    <span class="text-[10px] px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300">${escapeHtml(item.target)}</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-[10px] ${statusColor}">${escapeHtml(statusStr)}</span>
+                    <span class="text-indigo-300 font-bold">${reqNum.toLocaleString()} reqs</span>
+                  </div>
+                </div>
+                <div class="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+                  <div class="bg-gradient-to-r ${barGrad} h-1.5 rounded-full" style="width: ${pct}%;"></div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+
+        if (alertsList && Array.isArray(wz.securityAlerts) && wz.securityAlerts.length > 0) {
+          alertsList.innerHTML = wz.securityAlerts.slice(0, 6).map((a: any) => `
+            <div class="p-2.5 rounded-xl bg-black/40 border border-rose-500/20 flex items-center justify-between">
+              <div class="space-y-0.5">
+                <div class="flex items-center gap-2">
+                  <span class="text-rose-300 font-bold">${escapeHtml(a.ip)}</span>
+                  <span class="text-[10px] px-1.5 py-0.2 rounded bg-white/10 text-slate-300">${escapeHtml(a.country)} • ${escapeHtml(a.asn)}</span>
+                </div>
+                <p class="text-[11px] text-slate-400">Rule: <span class="text-amber-300">${escapeHtml(a.rule)}</span></p>
+              </div>
+              <span class="text-[10px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold">${escapeHtml(a.action || 'BANNED')}</span>
+            </div>
+          `).join('');
+        }
+      }
+
+    } catch (err) {
+      console.warn('Telemetry polling error:', err);
+    } finally {
+      setTimeout(() => {
+        if (spinner) spinner.classList.remove('animate-spin');
+        if (label) label.textContent = 'Refresh';
+      }, 400);
+    }
+  }
+
+  function setupInterval(ms: number) {
+    if (pollTimer) {
+      clearInterval(pollTimer);
+      pollTimer = null;
+    }
+    if (ms > 0) {
+      pollTimer = setInterval(() => {
+        if (!document.hidden) {
+          updateTelemetry();
+        }
+      }, ms);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    updateTelemetry();
+
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        updateTelemetry();
+      }
     });
-  </script>
-</Layout>
+
+    document.getElementById('refresh-all-btn')?.addEventListener('click', () => {
+      updateTelemetry();
+    });
+
+    const intervalSelect = document.getElementById('poll-interval') as HTMLSelectElement;
+    if (intervalSelect) {
+      setupInterval(parseInt(intervalSelect.value, 10));
+      intervalSelect.addEventListener('change', () => {
+        setupInterval(parseInt(intervalSelect.value, 10));
+      });
+    }
+  });
+</script>

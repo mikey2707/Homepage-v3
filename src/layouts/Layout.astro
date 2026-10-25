@@ -17,27 +17,49 @@ const { title, description = "Mikey's Home Page" } = Astro.props;
     <meta name="generator" content={Astro.generator} />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <title>{title}</title>
   </head>
-  <body class="min-h-screen transition-colors duration-200" style="background-color: var(--theme-bg); color: var(--theme-text);">
+  <body class="min-h-screen bg-black text-white selection:bg-electric-iris selection:text-white" style="background-color: var(--theme-bg); color: var(--theme-text);">
     <slot />
   </body>
 </html>
 
 <style is:global>
+  :root {
+    --theme-bg: #000000;
+    --theme-text: #ffffff;
+    --theme-primary: #8052ff;
+    --theme-primary-hover: #6f3ee8;
+    --theme-primary-bg: rgba(128, 82, 255, 0.15);
+    --theme-accent: #ffb829;
+    --theme-accent-bg: rgba(255, 184, 41, 0.12);
+    --theme-muted: #9a9a9a;
+    --theme-subtle: #bdbdbd;
+    --theme-card: rgba(255, 255, 255, 0.02);
+    --theme-card-glass: rgba(255, 255, 255, 0.03);
+    --theme-border: rgba(255, 255, 255, 0.08);
+    --theme-border-glass: rgba(255, 255, 255, 0.08);
+    --theme-glow: rgba(128, 82, 255, 0.25);
+  }
+
   html {
+    background-color: #000000;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
     scroll-behavior: smooth;
-    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11', 'ss01';
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Space Grotesk', system-ui, sans-serif;
-    font-weight: 600;
-    letter-spacing: -0.02em;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 400;
+    letter-spacing: -0.04em;
+  }
+
+  body {
+    font-weight: 300;
   }
 
   /* Smooth scroll with offset for fixed navigation */
