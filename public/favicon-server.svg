@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="srvBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#140d26"/>
+      <stop offset="100%" stop-color="#07050d"/>
+    </linearGradient>
+    <linearGradient id="bladeBorder" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#9333ea"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+  </defs>
+  <!-- Cyber Server Badge -->
+  <rect width="100" height="100" rx="22" fill="url(#srvBg)" stroke="url(#bladeBorder)" stroke-width="4"/>
+  <!-- Server 01 Blade (Top) -->
+  <rect x="16" y="18" width="68" height="20" rx="5" fill="#18122b" stroke="#7c3aed" stroke-width="2"/>
+  <circle cx="26" cy="28" r="3.5" fill="#10b981"/>
+  <circle cx="36" cy="28" r="3.5" fill="#06b6d4"/>
+  <rect x="50" y="25" width="26" height="6" rx="2" fill="#334155"/>
+  <!-- Server 02 Blade (Middle) -->
+  <rect x="16" y="43" width="68" height="20" rx="5" fill="#18122b" stroke="#06b6d4" stroke-width="2"/>
+  <circle cx="26" cy="53" r="3.5" fill="#10b981"/>
+  <circle cx="36" cy="53" r="3.5" fill="#a855f7"/>
+  <rect x="50" y="50" width="26" height="6" rx="2" fill="#334155"/>
+  <!-- Terminal Prompt Bar (Bottom) -->
+  <rect x="16" y="68" width="68" height="16" rx="4" fill="#090712" stroke="#334155" stroke-width="1.5"/>
+  <path d="M 23 73 L 29 76 L 23 79" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="33" y1="79" x2="43" y2="79" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round"/>
+</svg>
