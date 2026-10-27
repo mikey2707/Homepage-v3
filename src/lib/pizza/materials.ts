@@ -1501,251 +1501,223 @@ export function createFridgeTodoListTexture(): THREE.CanvasTexture {
 }
 
 // -------------------------------------------------------------
-// RIGHT WALL ARTWORK TEXTURES (3 Pictures for the Framed Art)
+// RIGHT WALL ARTWORK TEXTURES (3 Pizzeria-Themed Quick-Link Frames)
+// 1. Jellyfin (https://jelly.mikey.host)
+// 2. Jellyseerr (https://jellyseerr.mikey.host)
+// 3. Tools (https://tools.mikey.host)
 // -------------------------------------------------------------
 
-// 1. Technical Architectural Blueprint: Neapolitan Oven & 42U Homelab Rack
+// Helper to draw rounded triangle path for Jellyfin / Play icons
+function drawRoundedTriangle(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  size: number,
+  cornerRadius: number
+) {
+  const h = size * Math.sqrt(3) * 0.5;
+  const pts = [
+    { x: cx, y: cy - h * 0.62 },
+    { x: cx + size * 0.55, y: cy + h * 0.38 },
+    { x: cx - size * 0.55, y: cy + h * 0.38 },
+  ];
+  ctx.beginPath();
+  for (let i = 0; i < 3; i++) {
+    const p0 = pts[i];
+    const p1 = pts[(i + 1) % 3];
+    const p2 = pts[(i + 2) % 3];
+    const mx = (p0.x + p1.x) / 2;
+    const my = (p0.y + p1.y) / 2;
+    if (i === 0) ctx.moveTo(mx, my);
+    ctx.arcTo(p1.x, p1.y, p2.x, p2.y, cornerRadius);
+  }
+  ctx.closePath();
+}
+
+// 1. Frame 1 (Left): Jellyfin Pizzeria Cinema Blueprint ("CINEMA FORNO // JELLY.MIKEY.HOST")
 export function createWallArtBlueprintTexture(): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = 768;
   canvas.height = 1024;
   const ctx = canvas.getContext('2d')!;
 
-  // Blueprint navy background
-  ctx.fillStyle = '#0c2238';
+  // Deep Twilight Cinema / Blueprint Indigo Background
+  const bgGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  bgGrad.addColorStop(0, '#0b132b');
+  bgGrad.addColorStop(0.5, '#131b3a');
+  bgGrad.addColorStop(1, '#090d1e');
+  ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Fine blueprint grid
-  ctx.strokeStyle = '#14385c';
+  // Subtle architectural grid
+  ctx.strokeStyle = 'rgba(0, 164, 220, 0.10)';
   ctx.lineWidth = 1;
-  for (let x = 0; x <= canvas.width; x += 24) {
+  for (let x = 0; x <= canvas.width; x += 32) {
     ctx.beginPath();
     ctx.moveTo(x, 0);
     ctx.lineTo(x, canvas.height);
     ctx.stroke();
   }
-  for (let y = 0; y <= canvas.height; y += 24) {
+  for (let y = 0; y <= canvas.height; y += 32) {
     ctx.beginPath();
     ctx.moveTo(0, y);
     ctx.lineTo(canvas.width, y);
     ctx.stroke();
   }
 
-  // Major blueprint grid
-  ctx.strokeStyle = '#1d5182';
-  ctx.lineWidth = 1.5;
-  for (let x = 0; x <= canvas.width; x += 96) {
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, canvas.height);
-    ctx.stroke();
-  }
-  for (let y = 0; y <= canvas.height; y += 96) {
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(canvas.width, y);
-    ctx.stroke();
-  }
-
-  // Double white drafting border
-  ctx.strokeStyle = '#64b5f6';
-  ctx.lineWidth = 4;
+  // Ornate Pizzeria Poster Double Border (Purple-Cyan Jellyfin Accent + Warm Gold)
+  ctx.strokeStyle = '#00a4dc';
+  ctx.lineWidth = 5;
   ctx.strokeRect(36, 36, canvas.width - 72, canvas.height - 72);
-  ctx.strokeStyle = '#2196f3';
-  ctx.lineWidth = 1.5;
-  ctx.strokeRect(46, 46, canvas.width - 92, canvas.height - 92);
+  ctx.strokeStyle = '#aa5cc3';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(48, 48, canvas.width - 96, canvas.height - 96);
 
-  // Corner registration ticks
-  [[46, 46], [canvas.width - 46, 46], [46, canvas.height - 46], [canvas.width - 46, canvas.height - 46]].forEach(([cx, cy]) => {
-    ctx.strokeStyle = '#90caf9';
-    ctx.beginPath();
-    ctx.arc(cx, cy, 14, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(cx - 20, cy);
-    ctx.lineTo(cx + 20, cy);
-    ctx.moveTo(cx, cy - 20);
-    ctx.lineTo(cx, cy + 20);
-    ctx.stroke();
-  });
-
-  // Header Title Block
-  ctx.fillStyle = '#e3f2fd';
-  ctx.font = 'bold 28px monospace';
+  // Top Pizzeria Cinema Banner
+  ctx.fillStyle = '#ffd54f';
+  ctx.font = 'bold 20px Georgia, serif';
   ctx.textAlign = 'center';
-  ctx.fillText('TECHNICAL SPECIFICATION // FIG. 84', canvas.width / 2, 90);
+  ctx.fillText('★ TEATRO DELLA VERA PIZZA NAPOLETANA ★', canvas.width / 2, 92);
 
-  ctx.font = 'bold 16px monospace';
-  ctx.fillStyle = '#90caf9';
-  ctx.fillText('FORNO NAPOLETANO (450°C) & 42U BARE-METAL CLUSTER', canvas.width / 2, 118);
-  ctx.fillText('PATENT NO. US-1984-PZ • ARCHITECT: MICHAEL CHAVEZ', canvas.width / 2, 142);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '900 54px Georgia, serif';
+  ctx.fillText('JELLYFIN', canvas.width / 2, 152);
 
-  ctx.strokeStyle = '#64b5f6';
+  ctx.fillStyle = '#72d6ff';
+  ctx.font = 'bold 20px monospace';
+  ctx.fillText('WOOD-FIRED 4K CINEMA & STREAMING LOUNGE', canvas.width / 2, 186);
+
+  ctx.strokeStyle = 'rgba(170, 92, 195, 0.5)';
   ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.moveTo(60, 160);
-  ctx.lineTo(canvas.width - 60, 160);
+  ctx.moveTo(70, 208);
+  ctx.lineTo(canvas.width - 70, 208);
   ctx.stroke();
 
-  // DRAWING 1: Pizza Dome Oven Architectural Cross-Section (Top Half)
-  const ovenCenterX = canvas.width / 2;
-  const ovenCenterY = 320;
+  // Centerpiece: Iconic Jellyfin Logo Blended with a Wood-Fired Pizza Pan & Film Reel
+  const cx = canvas.width / 2;
+  const cy = 475;
 
-  // Oven Dome Arch
-  ctx.strokeStyle = '#ffffff';
-  ctx.lineWidth = 3;
+  // Ambient purple/cyan glow halo
+  const glow = ctx.createRadialGradient(cx, cy, 40, cx, cy, 230);
+  glow.addColorStop(0, 'rgba(170, 92, 195, 0.42)');
+  glow.addColorStop(0.55, 'rgba(0, 164, 220, 0.18)');
+  glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+  ctx.fillStyle = glow;
   ctx.beginPath();
-  ctx.arc(ovenCenterX, ovenCenterY, 150, Math.PI, 0);
-  ctx.stroke();
+  ctx.arc(cx, cy, 230, 0, Math.PI * 2);
+  ctx.fill();
 
-  // Inner Dome
-  ctx.strokeStyle = '#90caf9';
-  ctx.lineWidth = 2;
+  // Outer Cinema Film Reel / Pizza Pan Ring
+  ctx.strokeStyle = '#e0a96d';
+  ctx.lineWidth = 6;
   ctx.beginPath();
-  ctx.arc(ovenCenterX, ovenCenterY, 125, Math.PI, 0);
+  ctx.arc(cx, cy, 185, 0, Math.PI * 2);
   ctx.stroke();
 
-  // Voussoir brick wedges
-  for (let a = Math.PI; a <= 2 * Math.PI; a += Math.PI / 12) {
-    const x1 = ovenCenterX + 125 * Math.cos(a);
-    const y1 = ovenCenterY + 125 * Math.sin(a);
-    const x2 = ovenCenterX + 150 * Math.cos(a);
-    const y2 = ovenCenterY + 150 * Math.sin(a);
+  // Film Sprocket Holes around perimeter
+  ctx.fillStyle = '#ffd54f';
+  for (let a = 0; a < Math.PI * 2; a += Math.PI / 12) {
+    const sx = cx + 172 * Math.cos(a);
+    const sy = cy + 172 * Math.sin(a);
     ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
+    ctx.arc(sx, sy, 4, 0, Math.PI * 2);
+    ctx.fill();
   }
 
-  // Stone Hearth Floor Slab
-  ctx.fillStyle = 'rgba(100, 181, 246, 0.15)';
-  ctx.fillRect(ovenCenterX - 180, ovenCenterY, 360, 32);
-  ctx.strokeStyle = '#ffffff';
-  ctx.strokeRect(ovenCenterX - 180, ovenCenterY, 360, 32);
+  // Official Jellyfin Gradient (`#aa5cc3` purple to `#00a4dc` cyan)
+  const jfGrad = ctx.createLinearGradient(cx - 120, cy - 130, cx + 120, cy + 130);
+  jfGrad.addColorStop(0, '#aa5cc3');
+  jfGrad.addColorStop(1, '#00a4dc');
 
-  // Oven Mouth Arch
-  ctx.strokeStyle = '#64b5f6';
-  ctx.lineWidth = 2.5;
-  ctx.beginPath();
-  ctx.arc(ovenCenterX, ovenCenterY, 70, Math.PI, 0);
-  ctx.stroke();
+  // Outer Jellyfin Rounded Triangle Ring
+  ctx.save();
+  drawRoundedTriangle(ctx, cx, cy + 15, 255, 42);
+  ctx.fillStyle = jfGrad;
+  ctx.fill();
 
-  // Chimney Exhaust Flue
-  ctx.strokeRect(ovenCenterX - 28, ovenCenterY - 210, 56, 70);
-  ctx.strokeStyle = '#90caf9';
-  // Flue arrows
-  ctx.beginPath();
-  ctx.moveTo(ovenCenterX, ovenCenterY - 140);
-  ctx.lineTo(ovenCenterX, ovenCenterY - 200);
-  ctx.lineTo(ovenCenterX - 8, ovenCenterY - 185);
-  ctx.moveTo(ovenCenterX, ovenCenterY - 200);
-  ctx.lineTo(ovenCenterX + 8, ovenCenterY - 185);
-  ctx.stroke();
+  // Cutout middle of outer triangle to form the Jellyfin outer loop
+  drawRoundedTriangle(ctx, cx, cy + 15, 165, 28);
+  ctx.fillStyle = '#111936';
+  ctx.fill();
 
-  // Oven Callouts
-  ctx.fillStyle = '#64b5f6';
-  ctx.font = 'bold 13px monospace';
-  ctx.textAlign = 'left';
-  ctx.fillText('◄ REFRACTORY CLAY DOME (VESUVIAN VOLCANIC ASH)', 70, 240);
-  ctx.fillText('◄ BISCOTTO STONE HEARTH (450°C BALANCED FLOOR)', 70, 375);
-  ctx.textAlign = 'right';
-  ctx.fillText('FLUE DRAFT (NATURAL DRAW) ►', canvas.width - 70, 230);
-  ctx.fillText('90-SEC NEAPOLITAN BAKE ►', canvas.width - 70, 375);
+  // Inner Jellyfin Solid Core Rounded Triangle (like a slice of pizza!)
+  drawRoundedTriangle(ctx, cx, cy + 15, 92, 16);
+  ctx.fillStyle = jfGrad;
+  ctx.fill();
+  ctx.restore();
 
-  ctx.strokeStyle = '#64b5f6';
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.moveTo(60, 420);
-  ctx.lineTo(canvas.width - 60, 420);
-  ctx.stroke();
-
-  // DRAWING 2: 42U Server Rack Schematic (Bottom Half)
-  const rackX = 220;
-  const rackY = 460;
-  const rackW = 328;
-  const rackH = 430;
-
-  // Outer Rack Frame
-  ctx.strokeStyle = '#ffffff';
-  ctx.lineWidth = 3;
-  ctx.strokeRect(rackX, rackY, rackW, rackH);
-
-  // Vertical 19" Rails
-  ctx.strokeStyle = '#64b5f6';
-  ctx.lineWidth = 1.5;
-  ctx.strokeRect(rackX + 24, rackY + 16, rackW - 48, rackH - 32);
-
-  // Rack U units (caddies & chassis)
-  const chassis = [
-    { name: '1U UNIFI DREAM MACHINE PRO (ZEUS)', color: 'rgba(33, 150, 243, 0.3)', h: 32 },
-    { name: '2U PROXMOX VE 9 HYPERVISOR (PVE01)', color: 'rgba(76, 175, 80, 0.25)', h: 56 },
-    { name: '4U TRUENAS THREADRIPPER 3970X (256GB)', color: 'rgba(255, 152, 0, 0.25)', h: 96 },
-    { name: '1U 10GbE FIBER SFP+ / SWITCHING', color: 'rgba(156, 39, 176, 0.25)', h: 32 },
-    { name: '2U CYBERPOWER PURE SINE WAVE UPS', color: 'rgba(96, 125, 139, 0.25)', h: 56 }
-  ];
-
-  let currentChassisY = rackY + 28;
-  chassis.forEach((item) => {
-    ctx.fillStyle = item.color;
-    ctx.fillRect(rackX + 30, currentChassisY, rackW - 60, item.h);
-    ctx.strokeStyle = '#90caf9';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(rackX + 30, currentChassisY, rackW - 60, item.h);
-
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 11px monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText(item.name, rackX + rackW / 2, currentChassisY + item.h / 2 + 4);
-
-    currentChassisY += item.h + 8;
+  // Subtle pepperoni accents inside the inner slice
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+  [
+    [cx, cy - 2],
+    [cx - 14, cy + 24],
+    [cx + 15, cy + 26],
+  ].forEach(([px, py]) => {
+    ctx.beginPath();
+    ctx.arc(px, py, 6, 0, Math.PI * 2);
+    ctx.fill();
   });
 
-  // Rack Callouts
-  ctx.fillStyle = '#64b5f6';
-  ctx.font = 'bold 12px monospace';
-  ctx.textAlign = 'left';
-  ctx.fillText('◄ 10GbE FIBER SFP+', 70, 500);
-  ctx.fillText('◄ LIVE LXC/VM HA', 70, 560);
-  ctx.fillText('◄ ZFS RESILIENT POOL', 70, 680);
+  // Pizzeria Cinema Specs Box
+  ctx.fillStyle = 'rgba(10, 16, 36, 0.85)';
+  ctx.fillRect(68, 700, canvas.width - 136, 135);
+  ctx.strokeStyle = '#00a4dc';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(68, 700, canvas.width - 136, 135);
 
-  ctx.textAlign = 'right';
-  ctx.fillText('EIA-310-D 19" STANDARD ►', canvas.width - 70, 500);
-  ctx.fillText('ZERO TRUST SEGREGATION ►', canvas.width - 70, 680);
-  ctx.fillText('BATTERY BACKUP PROTECT ►', canvas.width - 70, 780);
-
-  // Bottom Title Block & Stamp
-  ctx.strokeRect(canvas.width - 290, canvas.height - 100, 230, 50);
-  ctx.fillStyle = '#e3f2fd';
-  ctx.font = 'bold 13px monospace';
+  ctx.fillStyle = '#ffd54f';
+  ctx.font = 'bold 20px Georgia, serif';
   ctx.textAlign = 'center';
-  ctx.fillText('STATUS: APPROVED / HEALTHY', canvas.width - 175, canvas.height - 78);
-  ctx.fillStyle = '#64b5f6';
-  ctx.font = '10px monospace';
-  ctx.fillText('REVISION 3.4 • PROD CLUSTER', canvas.width - 175, canvas.height - 60);
+  ctx.fillText('🍕 STASERA AL CINEMA • TONIGHT’S FEATURE MENU 🎬', canvas.width / 2, 738);
+
+  ctx.fillStyle = '#e3f2fd';
+  ctx.font = 'bold 18px monospace';
+  ctx.fillText('800+ MOVIES  •  190+ SERIES  •  16,000+ EPISODES', canvas.width / 2, 775);
+  ctx.fillStyle = '#90caf9';
+  ctx.font = '16px monospace';
+  ctx.fillText('DIRECT PLAY 4K HDR • HARDWARE NVENC TRANSCODING', canvas.width / 2, 810);
+
+  // Bottom Interactive Quick-Link Callout Button
+  const btnGrad = ctx.createLinearGradient(68, 865, canvas.width - 68, 865);
+  btnGrad.addColorStop(0, '#aa5cc3');
+  btnGrad.addColorStop(1, '#00a4dc');
+  ctx.fillStyle = btnGrad;
+  ctx.fillRect(68, 865, canvas.width - 136, 78);
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 2.5;
+  ctx.strokeRect(68, 865, canvas.width - 136, 78);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 24px monospace';
+  ctx.fillText('▶ CLICK TO LAUNCH JELLYFIN', canvas.width / 2, 902);
+  ctx.fillStyle = '#fff59d';
+  ctx.font = 'bold 16px monospace';
+  ctx.fillText('HTTPS://JELLY.MIKEY.HOST', canvas.width / 2, 928);
 
   const texture = new THREE.CanvasTexture(canvas);
   return texture;
 }
 
-// 2. Vintage Italian Certificate: Associazione Vera Pizza Napoletana
+// 2. Frame 2 (Center): Jellyseerr Pizzeria Sommelier & Request Concierge ("JELLYSEERR.MIKEY.HOST")
 export function createWallArtCertificateTexture(): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = 768;
   canvas.height = 1024;
   const ctx = canvas.getContext('2d')!;
 
-  // Aged warm parchment background
+  // Aged Warm Neapolitan Parchment Background
   ctx.fillStyle = '#f8f1e3';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Paper grain texture
+  // Subtle parchment fibers
   ctx.fillStyle = 'rgba(160, 120, 80, 0.03)';
-  for (let i = 0; i < 3000; i++) {
+  for (let i = 0; i < 2500; i++) {
     ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 2, 2);
   }
 
-  // Antique aged vignette around edges
-  const edgeGrad = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, 300, canvas.width / 2, canvas.height / 2, 540);
+  // Warm edge vignette
+  const edgeGrad = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, 280, canvas.width / 2, canvas.height / 2, 540);
   edgeGrad.addColorStop(0, 'rgba(0,0,0,0)');
   edgeGrad.addColorStop(0.85, 'rgba(180, 140, 90, 0.2)');
   edgeGrad.addColorStop(1, 'rgba(120, 80, 40, 0.45)');
@@ -1753,356 +1725,289 @@ export function createWallArtCertificateTexture(): THREE.CanvasTexture {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   // Ornate Double Gold & Burgundy Filigree Border
-  ctx.strokeStyle = '#8b2635'; // Deep burgundy
+  ctx.strokeStyle = '#8b2635';
   ctx.lineWidth = 6;
   ctx.strokeRect(38, 38, canvas.width - 76, canvas.height - 76);
 
-  ctx.strokeStyle = '#c59b27'; // Antique gold
+  ctx.strokeStyle = '#c59b27';
   ctx.lineWidth = 3;
   ctx.strokeRect(48, 48, canvas.width - 96, canvas.height - 96);
 
-  ctx.strokeStyle = '#8b2635';
-  ctx.lineWidth = 1;
-  ctx.strokeRect(54, 54, canvas.width - 108, canvas.height - 108);
-
-  // Ornate Corner Flourishes
-  const drawCornerFlourish = (x: number, y: number, flipX: number, flipY: number) => {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.scale(flipX, flipY);
-    ctx.strokeStyle = '#c59b27';
-    ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    ctx.moveTo(10, 35);
-    ctx.bezierCurveTo(10, 10, 20, 10, 35, 10);
-    ctx.stroke();
-
-    ctx.fillStyle = '#8b2635';
-    ctx.beginPath();
-    ctx.arc(22, 22, 5, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-  };
-  drawCornerFlourish(54, 54, 1, 1);
-  drawCornerFlourish(canvas.width - 54, 54, -1, 1);
-  drawCornerFlourish(54, canvas.height - 54, 1, -1);
-  drawCornerFlourish(canvas.width - 54, canvas.height - 54, -1, -1);
-
-  // Top Heraldic Crest / Crown
-  ctx.fillStyle = '#c59b27';
-  ctx.beginPath();
-  ctx.arc(canvas.width / 2, 110, 24, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = '#8b2635';
-  ctx.font = 'bold 26px serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('🍕', canvas.width / 2, 119);
-
   // Header Titles
   ctx.fillStyle = '#8b2635';
-  ctx.font = 'bold 30px Georgia, "Times New Roman", serif';
+  ctx.font = 'bold 22px Georgia, serif';
   ctx.textAlign = 'center';
-  ctx.fillText('ASSOCIAZIONE VERA PIZZA NAPOLETANA', canvas.width / 2, 175);
+  ctx.fillText('★ ORDINI SPECIALI DELLO CHEF • CONCIERGE ★', canvas.width / 2, 95);
+
+  ctx.fillStyle = '#2b1b17';
+  ctx.font = '900 50px Georgia, serif';
+  ctx.fillText('JELLYSEERR', canvas.width / 2, 154);
 
   ctx.fillStyle = '#6d4c41';
-  ctx.font = 'italic 18px Georgia, serif';
-  ctx.fillText('DISCIPLINARE INTERNAZIONALE • CERTIFICATO N° 1984', canvas.width / 2, 205);
+  ctx.font = 'italic bold 20px Georgia, serif';
+  ctx.fillText('Richieste Film & Serie TV su Misura • Custom Requests', canvas.width / 2, 188);
 
   ctx.strokeStyle = '#c59b27';
   ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.moveTo(140, 225);
-  ctx.lineTo(canvas.width - 140, 225);
+  ctx.moveTo(100, 210);
+  ctx.lineTo(canvas.width - 100, 210);
   ctx.stroke();
 
-  // Certificate Subtitle
-  ctx.fillStyle = '#2b1b17';
-  ctx.font = 'bold 38px "Playfair Display", Georgia, serif';
-  ctx.fillText('ATTESTATO DI MAESTRIA', canvas.width / 2, 290);
+  // Centerpiece: Jellyseerr Logo Medallion Served on a Neapolitan Silver Platter
+  const cx = canvas.width / 2;
+  const cy = 460;
 
+  // Outer Gold Laurel / Platter Ring
+  ctx.fillStyle = '#1e1b2e';
+  ctx.beginPath();
+  ctx.arc(cx, cy, 175, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.strokeStyle = '#c59b27';
+  ctx.lineWidth = 8;
+  ctx.beginPath();
+  ctx.arc(cx, cy, 175, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.strokeStyle = '#8b2635';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.arc(cx, cy, 160, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Jellyseerr Brand Gradient Circle (Indigo/Violet `#6366f1` -> `#a855f7` -> `#ec4899`)
+  const jsGrad = ctx.createLinearGradient(cx - 120, cy - 120, cx + 120, cy + 120);
+  jsGrad.addColorStop(0, '#4f46e5');
+  jsGrad.addColorStop(0.5, '#9333ea');
+  jsGrad.addColorStop(1, '#db2777');
+
+  ctx.fillStyle = jsGrad;
+  ctx.beginPath();
+  ctx.arc(cx, cy, 132, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Jellyseerr Stylized Eye / Film Aperture Emblem + Pizza Slice Play Icon
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.moveTo(cx - 95, cy);
+  ctx.quadraticCurveTo(cx, cy - 82, cx + 95, cy);
+  ctx.quadraticCurveTo(cx, cy + 82, cx - 95, cy);
+  ctx.closePath();
+  ctx.fill();
+
+  // Iris
+  ctx.fillStyle = '#1e1b2e';
+  ctx.beginPath();
+  ctx.arc(cx, cy, 42, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Inner Golden Pizza Play Triangle inside Iris
+  ctx.fillStyle = '#ffd54f';
+  ctx.beginPath();
+  ctx.moveTo(cx - 14, cy - 20);
+  ctx.lineTo(cx + 22, cy);
+  ctx.lineTo(cx - 14, cy + 20);
+  ctx.closePath();
+  ctx.fill();
+
+  // Eye highlight glint
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.arc(cx - 18, cy - 16, 8, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Description Card on Parchment
+  ctx.fillStyle = '#efe5d2';
+  ctx.fillRect(68, 680, canvas.width - 136, 150);
+  ctx.strokeStyle = '#8b2635';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(68, 680, canvas.width - 136, 150);
+
+  ctx.fillStyle = '#8b2635';
+  ctx.font = 'bold 22px Georgia, serif';
+  ctx.fillText('🍿 SOMMELIER DEL CINEMA • AUTOMATED REQUESTS', canvas.width / 2, 720);
+
+  ctx.fillStyle = '#2b1b17';
+  ctx.font = 'bold 18px monospace';
+  ctx.fillText('DISCOVER MOVIES & TV • 1-CLICK RADARR/SONARR SYNC', canvas.width / 2, 760);
   ctx.fillStyle = '#5c4033';
-  ctx.font = 'italic 20px Georgia, serif';
-  ctx.fillText('Si certifica con la presente che il Maestro Pizzaiolo & Tecnico', canvas.width / 2, 335);
+  ctx.font = 'italic 18px Georgia, serif';
+  ctx.fillText('“Order any film like a fresh custom Neapolitan pie!”', canvas.width / 2, 798);
 
-  // Recipient Name
-  ctx.fillStyle = '#8b2635';
-  ctx.font = 'bold 46px "Brush Script MT", "Great Vibes", Georgia, cursive';
-  ctx.fillText('Michael Chavez', canvas.width / 2, 395);
+  // Bottom Interactive Quick-Link Callout Banner
+  const btnGrad = ctx.createLinearGradient(68, 865, canvas.width - 68, 865);
+  btnGrad.addColorStop(0, '#6366f1');
+  btnGrad.addColorStop(0.5, '#8b2635');
+  btnGrad.addColorStop(1, '#c59b27');
+  ctx.fillStyle = btnGrad;
+  ctx.fillRect(68, 865, canvas.width - 136, 78);
+  ctx.strokeStyle = '#2b1b17';
+  ctx.lineWidth = 2.5;
+  ctx.strokeRect(68, 865, canvas.width - 136, 78);
 
-  // Underline beneath name
-  ctx.strokeStyle = '#c59b27';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(220, 415);
-  ctx.lineTo(canvas.width - 220, 415);
-  ctx.stroke();
-
-  // Citation Body Text
-  ctx.fillStyle = '#3e2723';
-  ctx.font = '17px Georgia, serif';
-  const lines = [
-    'Ha superato con massimo encomio la perizia tecnica per la creazione',
-    'della Vera Pizza Napoletana a 48 ore di lenta fermentazione naturale,',
-    'dimostrando eccellenza artigianale nei forni a legna ad alta temperatura (450°C),',
-    'nonché la perfetta orchestrazione di cluster server e servizi homelab.',
-    '',
-    'Farina Tipo 00 • San Marzano D.O.P. • Fiordilatte Campano • ZFS Raid-Z2'
-  ];
-  lines.forEach((l, idx) => {
-    ctx.fillText(l, canvas.width / 2, 465 + idx * 30);
-  });
-
-  // Center Emblem: Stylized Mt. Vesuvius & Laurel Wreath
-  ctx.strokeStyle = '#c59b27';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.arc(canvas.width / 2, 700, 55, 0, Math.PI * 2);
-  ctx.stroke();
-
-  ctx.fillStyle = '#8b2635';
-  ctx.font = '36px serif';
-  ctx.fillText('🌋', canvas.width / 2, 712);
-
-  // Signatures
-  ctx.fillStyle = '#2b1b17';
-  ctx.font = 'italic 16px Georgia, serif';
-  ctx.fillText('Napoli, Anno Domini 1984', 180, 840);
-  ctx.strokeStyle = '#4e342e';
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.moveTo(110, 890);
-  ctx.lineTo(260, 890);
-  ctx.stroke();
-  ctx.font = 'bold 14px Georgia, serif';
-  ctx.fillText('Il Presidente AVPN', 180, 915);
-
-  // Embossed Crimson Wax Seal Stamp (Bottom Right)
-  const sealX = canvas.width - 180;
-  const sealY = 855;
-
-  // Ribbon tails
-  ctx.fillStyle = '#8b1e2a';
-  ctx.beginPath();
-  ctx.moveTo(sealX - 18, sealY);
-  ctx.lineTo(sealX - 35, sealY + 80);
-  ctx.lineTo(sealX - 18, sealY + 68);
-  ctx.lineTo(sealX, sealY + 80);
-  ctx.closePath();
-  ctx.fill();
-
-  ctx.beginPath();
-  ctx.moveTo(sealX + 18, sealY);
-  ctx.lineTo(sealX, sealY + 80);
-  ctx.lineTo(sealX + 18, sealY + 68);
-  ctx.lineTo(sealX + 35, sealY + 80);
-  ctx.closePath();
-  ctx.fill();
-
-  // Wax Seal Medallion
-  ctx.fillStyle = '#a61c28';
-  ctx.beginPath();
-  ctx.arc(sealX, sealY, 48, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Scalloped edges
-  for (let a = 0; a < Math.PI * 2; a += Math.PI / 10) {
-    const sx = sealX + 46 * Math.cos(a);
-    const sy = sealY + 46 * Math.sin(a);
-    ctx.beginPath();
-    ctx.arc(sx, sy, 8, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  // Gold embossed inner ring & text
-  ctx.strokeStyle = '#ffd700';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.arc(sealX, sealY, 36, 0, Math.PI * 2);
-  ctx.stroke();
-
-  ctx.fillStyle = '#ffd700';
-  ctx.font = 'bold 10px sans-serif';
-  ctx.fillText('ORIGINALE', sealX, sealY - 14);
-  ctx.font = 'bold 18px serif';
-  ctx.fillText('★ 100% ★', sealX, sealY + 6);
-  ctx.font = 'bold 9px sans-serif';
-  ctx.fillText('DOCG NAPOLI', sealX, sealY + 22);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 24px monospace';
+  ctx.fillText('▶ CLICK TO OPEN JELLYSEERR', canvas.width / 2, 902);
+  ctx.fillStyle = '#ffe082';
+  ctx.font = 'bold 16px monospace';
+  ctx.fillText('HTTPS://JELLYSEERR.MIKEY.HOST', canvas.width / 2, 928);
 
   const texture = new THREE.CanvasTexture(canvas);
   return texture;
 }
 
-// 3. Retro Cyber-Modern Pop Art: "Pizza & Packets (Homelab '84)"
+// 3. Frame 3 (Right): Pizzaiolo's Workshop & Developer Tools ("TOOLS.MIKEY.HOST")
 export function createWallArtPopArtTexture(): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = 768;
   canvas.height = 1024;
   const ctx = canvas.getContext('2d')!;
 
-  // Dark obsidian cyber background
-  ctx.fillStyle = '#0f141d';
+  // Dark Espresso & Roasted Brick Workshop Background
+  ctx.fillStyle = '#10151c';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Diagonal subtle tech accent lines
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
-  ctx.lineWidth = 1;
-  for (let i = -canvas.height; i < canvas.width; i += 32) {
+  // Diagonal subtle carbon/workshop stripes
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.035)';
+  ctx.lineWidth = 2;
+  for (let i = -canvas.height; i < canvas.width; i += 28) {
     ctx.beginPath();
     ctx.moveTo(i, 0);
     ctx.lineTo(i + canvas.height, canvas.height);
     ctx.stroke();
   }
 
-  // Top retro badge
-  ctx.fillStyle = '#ff5722';
-  ctx.fillRect(50, 48, 140, 32);
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 15px monospace';
-  ctx.textAlign = 'center';
-  ctx.fillText('HOMELAB 84', 120, 70);
+  // Border (Emerald IT-Tools Accent + Warm Oven Orange)
+  ctx.strokeStyle = '#10b981';
+  ctx.lineWidth = 5;
+  ctx.strokeRect(36, 36, canvas.width - 72, canvas.height - 72);
+  ctx.strokeStyle = '#ff7043';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(48, 48, canvas.width - 96, canvas.height - 96);
 
-  ctx.fillStyle = '#00e5ff';
-  ctx.fillRect(200, 48, 180, 32);
-  ctx.fillStyle = '#0f141d';
-  ctx.fillText('100% SELF-HOSTED', 290, 70);
+  // Top Retro Badges
+  ctx.fillStyle = '#ff5722';
+  ctx.fillRect(68, 66, 290, 34);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 16px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('BOTTEGA DEL PIZZAIOLO', 213, 89);
+
+  ctx.fillStyle = '#10b981';
+  ctx.fillRect(374, 66, 326, 34);
+  ctx.fillStyle = '#091310';
+  ctx.fillText('CHEF & DEV UTILITY SUITE', 537, 89);
 
   // Big Bold Headline
-  ctx.textAlign = 'left';
-  ctx.fillStyle = '#ff7043';
-  ctx.font = '900 76px Impact, Arial Black, sans-serif';
-  ctx.fillText('PIZZA &', 50, 165);
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '900 52px Impact, "Arial Black", sans-serif';
+  ctx.fillText('PIZZERIA TOOLS', canvas.width / 2, 162);
 
-  ctx.fillStyle = '#ffd54f';
-  ctx.fillText('PACKETS', 50, 240);
+  ctx.fillStyle = '#34d399';
+  ctx.font = 'bold 20px monospace';
+  ctx.fillText('SWISS-ARMY DEVELOPER & SYSADMIN TOOLKIT', canvas.width / 2, 196);
 
-  ctx.fillStyle = '#e0e6ed';
-  ctx.font = 'bold 22px monospace';
-  ctx.fillText('CRISP DOUGH • LOW LATENCY • ZERO TRUST', 50, 280);
+  // Centerpiece: IT-Tools / Pizzaiolo Gear & Pizza Cutter Wheel Emblem
+  const cx = canvas.width / 2;
+  const cy = 465;
 
-  // Center Geometric Pop-Art Pizza Slice with Circuit Traces
-  const centerX = canvas.width / 2;
-  const centerY = 520;
-
-  // Background neon aura circle
-  const auraGrad = ctx.createRadialGradient(centerX, centerY, 50, centerX, centerY, 240);
-  auraGrad.addColorStop(0, 'rgba(255, 112, 67, 0.35)');
-  auraGrad.addColorStop(0.6, 'rgba(0, 229, 255, 0.15)');
+  // Emerald & Amber Aura
+  const auraGrad = ctx.createRadialGradient(cx, cy, 40, cx, cy, 230);
+  auraGrad.addColorStop(0, 'rgba(16, 185, 129, 0.35)');
+  auraGrad.addColorStop(0.6, 'rgba(255, 112, 67, 0.18)');
   auraGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
   ctx.fillStyle = auraGrad;
   ctx.beginPath();
-  ctx.arc(centerX, centerY, 240, 0, Math.PI * 2);
+  ctx.arc(cx, cy, 230, 0, Math.PI * 2);
   ctx.fill();
 
-  // Geometric Pizza Wedge
+  // Outer Gear Teeth (12 teeth around pizza cutter wheel)
   ctx.save();
-  ctx.translate(centerX, centerY);
+  ctx.translate(cx, cy);
+  ctx.fillStyle = '#10b981';
+  for (let i = 0; i < 12; i++) {
+    ctx.save();
+    ctx.rotate((i * Math.PI) / 6);
+    ctx.fillRect(-18, -192, 36, 34);
+    ctx.restore();
+  }
 
-  // Golden Crust Arc
-  ctx.fillStyle = '#d87d27';
+  // Outer Steel Pizza Cutter Wheel Ring
   ctx.beginPath();
-  ctx.arc(0, -160, 190, 0.35 * Math.PI, 0.65 * Math.PI);
-  ctx.lineTo(0, 160);
-  ctx.closePath();
+  ctx.arc(0, 0, 168, 0, Math.PI * 2);
+  ctx.fillStyle = '#18242c';
   ctx.fill();
-
-  // Cheese Surface
-  ctx.fillStyle = '#ffca28';
-  ctx.beginPath();
-  ctx.arc(0, -150, 170, 0.38 * Math.PI, 0.62 * Math.PI);
-  ctx.lineTo(0, 140);
-  ctx.closePath();
-  ctx.fill();
-
-  // Printed circuit board trace lines on pizza slice
-  ctx.strokeStyle = '#00bcd4';
-  ctx.lineWidth = 3;
-
-  // Bus line 1
-  ctx.beginPath();
-  ctx.moveTo(-60, -40);
-  ctx.lineTo(-20, 20);
-  ctx.lineTo(-20, 80);
-  ctx.lineTo(0, 120);
+  ctx.lineWidth = 10;
+  ctx.strokeStyle = '#10b981';
   ctx.stroke();
 
-  // Bus line 2
+  // Inner Golden Pizza Crust Ring
   ctx.beginPath();
-  ctx.moveTo(60, -40);
-  ctx.lineTo(20, 20);
-  ctx.lineTo(20, 80);
-  ctx.lineTo(0, 120);
+  ctx.arc(0, 0, 132, 0, Math.PI * 2);
+  ctx.strokeStyle = '#ffd54f';
+  ctx.lineWidth = 4;
   ctx.stroke();
 
-  // Vias (circuit pads)
+  // Code Brackets & Wrench/Peel Icon inside Medallion (`</>`)
   ctx.fillStyle = '#ffffff';
-  [[-60, -40], [60, -40], [-20, 20], [20, 20], [0, 120]].forEach(([vx, vy]) => {
-    ctx.beginPath();
-    ctx.arc(vx, vy, 6, 0, Math.PI * 2);
-    ctx.fill();
-  });
+  ctx.font = '900 84px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('</>', 0, 28);
 
-  // Pepperoni Data Discs
-  ctx.fillStyle = '#d32f2f';
-  [[-40, -10], [40, -10], [0, 50]].forEach(([px, py]) => {
-    ctx.beginPath();
-    ctx.arc(px, py, 26, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Inner gold ring
-    ctx.strokeStyle = '#ffe082';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    // Core fiber dot
-    ctx.fillStyle = '#00e5ff';
-    ctx.beginPath();
-    ctx.arc(px, py, 6, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#d32f2f';
-  });
-
+  // Top & Bottom Mini Icons inside badge
+  ctx.fillStyle = '#ff7043';
+  ctx.font = 'bold 22px monospace';
+  ctx.fillText('🛠️ KITCHEN & CODE 🍕', 0, -68);
+  ctx.fillStyle = '#34d399';
+  ctx.font = 'bold 18px monospace';
+  ctx.fillText('CRYPTO • JSON • NET • DOCKER', 0, 82);
   ctx.restore();
 
-  // Lower Pop Art Stat Cards
+  // Tool Categories Grid
   const stats = [
-    { title: 'HYDRATION', value: '70% SOURDOUGH' },
-    { title: 'LATENCY', value: '< 1ms INTRA-RACK' },
-    { title: 'UPTIME', value: '99.99% BARE METAL' }
+    { title: 'CRYPTO & TOKENS', value: 'HASH / JWT / BCRYPT' },
+    { title: 'NETWORK & DNS', value: 'IPV4 / CIDR / MAC' },
+    { title: 'DEV & CONVERTERS', value: 'JSON / YAML / REGEX' }
   ];
 
   stats.forEach((st, idx) => {
-    const bx = 50 + idx * 230;
-    const by = 750;
-    ctx.fillStyle = '#18202c';
-    ctx.fillRect(bx, by, 210, 80);
-    ctx.strokeStyle = '#ff7043';
+    const bx = 68 + idx * 216;
+    const by = 710;
+    ctx.fillStyle = '#16202a';
+    ctx.fillRect(bx, by, 200, 110);
+    ctx.strokeStyle = '#10b981';
     ctx.lineWidth = 2;
-    ctx.strokeRect(bx, by, 210, 80);
+    ctx.strokeRect(bx, by, 200, 110);
 
-    ctx.fillStyle = '#00e5ff';
-    ctx.font = 'bold 12px monospace';
-    ctx.textAlign = 'left';
-    ctx.fillText(st.title, bx + 16, by + 28);
+    ctx.fillStyle = '#ffd54f';
+    ctx.font = 'bold 14px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(st.title, bx + 100, by + 42);
 
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 15px monospace';
-    ctx.fillText(st.value, bx + 16, by + 58);
+    ctx.font = 'bold 14px monospace';
+    ctx.fillText(st.value, bx + 100, by + 76);
   });
 
-  // Bottom Barcode & Serial
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 16px monospace';
-  ctx.textAlign = 'left';
-  ctx.fillText('SYS-SERIES-1984 // MIKEY CHAVEZ', 50, 890);
+  // Bottom Interactive Quick-Link Callout Button
+  const btnGrad = ctx.createLinearGradient(68, 865, canvas.width - 68, 865);
+  btnGrad.addColorStop(0, '#059669');
+  btnGrad.addColorStop(1, '#ea580c');
+  ctx.fillStyle = btnGrad;
+  ctx.fillRect(68, 865, canvas.width - 136, 78);
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 2.5;
+  ctx.strokeRect(68, 865, canvas.width - 136, 78);
 
-  // Barcode lines
-  let barX = 50;
-  ctx.fillStyle = '#e0e6ed';
-  while (barX < canvas.width - 50) {
-    const bw = Math.floor(Math.random() * 4) + 2;
-    ctx.fillRect(barX, 915, bw, 35);
-    barX += bw + Math.floor(Math.random() * 5) + 3;
-  }
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 24px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('▶ CLICK TO OPEN WEB TOOLS', canvas.width / 2, 902);
+  ctx.fillStyle = '#a7f3d0';
+  ctx.font = 'bold 16px monospace';
+  ctx.fillText('HTTPS://TOOLS.MIKEY.HOST', canvas.width / 2, 928);
 
   const texture = new THREE.CanvasTexture(canvas);
   return texture;

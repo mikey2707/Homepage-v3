@@ -137,17 +137,39 @@ export class PizzaWorld {
     rightWainscot.position.set(7.94, 1.6, 0);
     this.scene.add(rightWainscot);
 
-    // Framed Artwork / Architecture Prints on Right Wall
+    // Framed Pizzeria Quick-Link Posters on Right Wall (Jellyfin, Jellyseerr, Tools)
     const frameMat = new THREE.MeshStandardMaterial({ color: 0x1a120b, roughness: 0.4 });
     const goldFilletMat = new THREE.MeshStandardMaterial({ color: 0xd4af37, metalness: 0.85, roughness: 0.3 });
-    const artPositions = [-3.8, -1.2, 1.4];
-    const artTextures = [
-      createWallArtBlueprintTexture(),
-      createWallArtCertificateTexture(),
-      createWallArtPopArtTexture()
+    const wallFrames = [
+      {
+        z: -3.8,
+        tex: createWallArtBlueprintTexture(),
+        title: '🎬 Jellyfin Cinema',
+        subtitle: 'jelly.mikey.host · Click to open',
+        color: '#00a4dc',
+        url: 'https://jelly.mikey.host'
+      },
+      {
+        z: -1.2,
+        tex: createWallArtCertificateTexture(),
+        title: '🍿 Jellyseerr Requests',
+        subtitle: 'jellyseerr.mikey.host · Click to open',
+        color: '#a855f7',
+        url: 'https://jellyseerr.mikey.host'
+      },
+      {
+        z: 1.4,
+        tex: createWallArtPopArtTexture(),
+        title: '🛠️ Pizzeria Web Tools',
+        subtitle: 'tools.mikey.host · Click to open',
+        color: '#10b981',
+        url: 'https://tools.mikey.host'
+      }
     ];
 
-    artPositions.forEach((az, idx) => {
+    wallFrames.forEach((frameCfg) => {
+      const az = frameCfg.z;
+
       // Dark Walnut Outer Frame
       const artFrame = new THREE.Mesh(new THREE.BoxGeometry(0.12, 2.3, 1.7), frameMat);
       artFrame.position.set(7.9, 5.6, az);
@@ -159,7 +181,7 @@ export class PizzaWorld {
       this.scene.add(goldFillet);
 
       // Canvas with Custom Picture Texture
-      const tex = artTextures[idx];
+      const tex = frameCfg.tex;
       const artCanvas = new THREE.Mesh(
         new THREE.PlaneGeometry(1.46, 2.06),
         new THREE.MeshStandardMaterial({
@@ -168,12 +190,28 @@ export class PizzaWorld {
           metalness: 0.05,
           emissive: new THREE.Color(0xffffff),
           emissiveMap: tex,
-          emissiveIntensity: 0.28
+          emissiveIntensity: 0.32
         })
       );
       artCanvas.rotation.y = -Math.PI / 2;
       artCanvas.position.set(7.83, 5.6, az);
       this.scene.add(artCanvas);
+
+      // Interactive Hitbox for Quick-Link Picture Frame
+      const frameHitbox = new THREE.Mesh(
+        new THREE.BoxGeometry(0.45, 2.4, 1.8),
+        new THREE.MeshBasicMaterial({ visible: false })
+      );
+      frameHitbox.position.set(7.75, 5.6, az);
+      this.scene.add(frameHitbox);
+
+      this.hitboxes.push({
+        mesh: frameHitbox,
+        title: frameCfg.title,
+        subtitle: frameCfg.subtitle,
+        color: frameCfg.color,
+        url: frameCfg.url
+      });
 
       // Warm Brass Wall Sconce above artwork
       const sconceArm = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.3), new THREE.MeshStandardMaterial({ color: 0xc8a452, metalness: 0.8 }));

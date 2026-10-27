@@ -99,14 +99,25 @@ export class PizzaRaycaster {
     this.clearHover();
   }
 
+  private navigateToHitboxUrl(url: string) {
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } else {
+      window.location.href = url;
+    }
+  }
+
   private onClick(e: MouseEvent) {
+    const dist = Math.hypot(e.clientX - this.downCoords.x, e.clientY - this.downCoords.y);
+    if (dist >= 15) return;
+
     this.updatePointerCoords(e.clientX, e.clientY);
     this.checkIntersections(e.clientX, e.clientY);
     if (this.hoveredHitbox && !this.camera.isTransitioning) {
       const targetHitbox = this.hoveredHitbox;
       this.clearHover();
       if (targetHitbox.url) {
-        window.location.href = targetHitbox.url;
+        this.navigateToHitboxUrl(targetHitbox.url);
         return;
       }
       if (targetHitbox.station && targetHitbox.station !== 'secret') {
@@ -117,19 +128,6 @@ export class PizzaRaycaster {
 
   private onMouseUp(e: MouseEvent) {
     this.isPointerDown = false;
-    // Check if it was a quick click vs a drag orbit
-    const dist = Math.hypot(e.clientX - this.downCoords.x, e.clientY - this.downCoords.y);
-    if (dist < 15 && this.hoveredHitbox && !this.camera.isTransitioning) {
-      const targetHitbox = this.hoveredHitbox;
-      this.clearHover();
-      if (targetHitbox.url) {
-        window.location.href = targetHitbox.url;
-        return;
-      }
-      if (targetHitbox.station && targetHitbox.station !== 'secret') {
-        this.selectStation(targetHitbox.station);
-      }
-    }
   }
 
   private onTouchStart(e: TouchEvent) {
@@ -149,7 +147,7 @@ export class PizzaRaycaster {
         const targetHitbox = this.hoveredHitbox;
         this.clearHover();
         if (targetHitbox.url) {
-          window.location.href = targetHitbox.url;
+          this.navigateToHitboxUrl(targetHitbox.url);
           return;
         }
         if (targetHitbox.station && targetHitbox.station !== 'secret') {
