@@ -577,21 +577,28 @@
     });
   }
 
-  // 5. Live TrueNAS Telemetry Polling (Every 30 seconds, paused when tab is hidden)
+  // 5. Live TrueNAS Telemetry & Bookmark Sconce Status Polling (Every 30 seconds, paused when tab is hidden)
   async function fetchTrueNASTelemetry() {
     if (document.hidden) return;
     try {
-      const res = await fetch('/api/truenas');
-      if (res.ok) {
-        const data = await res.json();
+      const [tnRes, bmRes] = await Promise.all([
+        fetch('/api/truenas').catch(() => null),
+        fetch('/api/bookmarks-status').catch(() => null),
+      ]);
+      if (tnRes && tnRes.ok) {
+        const data = await tnRes.json();
         const tempEl = document.getElementById('fridge-hud-temp');
         if (tempEl && data.cpuTempC !== undefined && data.cpuTempF !== undefined) {
           tempEl.textContent = `${data.cpuTempC}°C // ${data.cpuTempF}°F`;
         }
         window.dispatchEvent(new CustomEvent('pizza-telemetry-update', { detail: data }));
       }
+      if (bmRes && bmRes.ok) {
+        const bmStatus = await bmRes.json();
+        window.dispatchEvent(new CustomEvent('pizza-bookmarks-status', { detail: bmStatus }));
+      }
     } catch (e) {
-      console.warn('TrueNAS telemetry fetch error:', e);
+      console.warn('Telemetry fetch error:', e);
     }
   }
 

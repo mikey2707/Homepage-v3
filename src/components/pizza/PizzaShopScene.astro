@@ -46,6 +46,14 @@
       }
     }) as EventListener);
 
+    // Event listener for live Bookmark Frame Sconce Status (Green = Online, Red = Offline)
+    window.addEventListener('pizza-bookmarks-status', ((e: CustomEvent) => {
+      const status = e.detail;
+      if (status && experience?.world) {
+        experience.world.updateBookmarkStatus(status);
+      }
+    }) as EventListener);
+
     // Event listener for Dark Mode / Cozy Lighting toggle
     window.addEventListener('pizza-lighting-mode', ((e: CustomEvent) => {
       const isDark = !!e.detail?.dark;

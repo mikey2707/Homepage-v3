@@ -102,7 +102,7 @@ const { redirectUrl = '/dashboard', class: className = '' } = Astro.props;
     </div>
   </div>
 
-  <!-- 2. OVERLYING COMPLETE FULL-PAGE TEARABLE CLOTH CANVAS (VERLET PHYSICS) -->
+  <!-- 2. OVERLYING 3D WEBGL + WASM TEARABLE CLOTH CANVAS (pushmatrix/tearable engine) -->
   <canvas
     id="tearable-cloth-canvas"
     class="fixed inset-0 w-full h-full z-20 cursor-grab active:cursor-grabbing touch-none select-none"
@@ -123,200 +123,584 @@ const { redirectUrl = '/dashboard', class: className = '' } = Astro.props;
 </div>
 
 <script>
-  // Verlet Physics Point with UV Texture Mapping Coordinates
-  class Point {
-    x: number;
-    y: number;
-    px: number;
-    py: number;
-    u: number;
-    v: number;
-    pinned: boolean;
+  import * as THREE from 'three';
 
-    constructor(x: number, y: number, u: number, v: number, pinned = false) {
-      this.x = x;
-      this.y = y;
-      this.px = x;
-      this.py = y;
-      this.u = u;
-      this.v = v;
-      this.pinned = pinned;
-    }
+  const isTouch =
+    typeof window !== 'undefined' &&
+    ('ontouchstart' in window || navigator.maxTouchPoints > 0);
 
-    update(gravity: number, damping: number) {
-      if (this.pinned) return;
-      const vx = (this.x - this.px) * damping;
-      const vy = (this.y - this.py) * damping + gravity;
-      this.px = this.x;
-      this.py = this.y;
-      this.x += vx;
-      this.y += vy;
-    }
-  }
+  // Exact physics & mesh configuration from pushmatrix/tearable
+  const CLOTH_CFG = {
+    gridWidth: isTouch ? 40 : 100,
+    gridHeight: isTouch ? 40 : 100,
+    damping: 0.97,
+    gravity: { x: 0, y: isTouch ? -0.0006 : -0.0003, z: 0 },
+    constraintIterations: isTouch ? 1 : 2,
+    subSteps: 1,
+    stiffness: 0.25,
+    tearThreshold: isTouch ? 4.1 : 5.5,
+    mouseRadius: isTouch ? 0.2 : 0.4,
+    mouseStrength: isTouch ? 0.72 : 0.6,
+    cutRadius: 0.05,
+    dropTearPercent: isTouch ? 5.5 : 4.5,
+  };
 
-  // Verlet Distance Constraint
-  class Constraint {
-    p1: Point;
-    p2: Point;
-    length: number;
-    broken: boolean = false;
-
-    constructor(p1: Point, p2: Point) {
-      this.p1 = p1;
-      this.p2 = p2;
-      const dx = p1.x - p2.x;
-      const dy = p1.y - p2.y;
-      this.length = Math.sqrt(dx * dx + dy * dy);
-    }
-
-    resolve() {
-      if (this.broken) return;
-      const dx = this.p2.x - this.p1.x;
-      const dy = this.p2.y - this.p1.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist === 0) return;
-
-      const diff = ((this.length - dist) / dist) * 0.5;
-      const offsetX = dx * diff;
-      const offsetY = dy * diff;
-
-      if (!this.p1.pinned) {
-        this.p1.x -= offsetX;
-        this.p1.y -= offsetY;
-      }
-      if (!this.p2.pinned) {
-        this.p2.x += offsetX;
-        this.p2.y += offsetY;
-      }
-    }
-  }
-
-  // Full-Page Tearable Sourdough Codex Simulation Engine
-  class FullPageTearableCloth {
+  class WebGLTearableCloth {
     canvas: HTMLCanvasElement;
-    ctx: CanvasRenderingContext2D;
-    parchmentBuffer: HTMLCanvasElement;
-    bufferCtx: CanvasRenderingContext2D;
+    renderer: THREE.WebGLRenderer;
+    scene: THREE.Scene;
+    camera: THREE.OrthographicCamera;
+    mesh!: THREE.Mesh;
+    geometry!: THREE.BufferGeometry;
+    material!: THREE.Material;
+    parchmentTexture!: THREE.CanvasTexture;
 
-    cols = 28;
-    rows = 20;
-    points: Point[] = [];
-    constraints: Constraint[] = [];
-    hConstraints: Constraint[][] = [];
-    vConstraints: Constraint[][] = [];
-    initialConstraintCount = 0;
+    worker: Worker;
+    instanceId = 1;
+    width = 0;
+    height = 0;
+    worldWidth = 2;
+    worldHeight = 2;
+    particleCount = 0;
+    constraintCount = 1;
+    brokenCount = 0;
+    drawCount = 0;
+    posArray!: Float32Array;
+    normalsArray!: Float32Array;
+    indexArray!: Uint32Array;
+    transitBuffer: ArrayBuffer | null = null;
+    inFlight = false;
+
     isDragging = false;
-    mouse = { x: 0, y: 0, px: 0, py: 0 };
-    gravity = 0.38;
-    damping = 0.96;
-    tearDistance = 38;
-    isDropped = false;
-    hasTorn = false;
-    isStopped = false;
-    settleFrames = 0;
+    dragButton = 0;
+    hasInteracted = false;
+    dropped = false;
+    destroyed = false;
+    curWorld = { x: 0, y: 0, z: 0 };
+    prevWorld = { x: 0, y: 0, z: 0 };
+    activeTouches = new Map<number, { slot: number; x: number; y: number; z: number }>();
+    slotUsed = new Array(8).fill(false);
+
+    lastFrameTime = performance.now();
     rafId: number | null = null;
-    onTearProgress?: (percent: number) => void;
     onDropped?: () => void;
-    sparks: Array<{ x: number; y: number; vx: number; vy: number; color: string; life: number }> = [];
 
     constructor(canvas: HTMLCanvasElement) {
       this.canvas = canvas;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) throw new Error('Cannot get 2d context');
-      this.ctx = ctx;
+      this.width = window.innerWidth;
+      this.height = window.innerHeight;
 
-      // Create offscreen buffer for the full parchment manuscript graphics
-      this.parchmentBuffer = document.createElement('canvas');
-      const bCtx = this.parchmentBuffer.getContext('2d');
-      if (!bCtx) throw new Error('Cannot get buffer 2d context');
-      this.bufferCtx = bCtx;
+      this.renderer = new THREE.WebGLRenderer({
+        canvas: this.canvas,
+        alpha: true,
+        antialias: true,
+        powerPreference: 'high-performance',
+      });
+      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      this.renderer.setSize(this.width, this.height, false);
+      this.renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-      this.init();
+      this.scene = new THREE.Scene();
+
+      const aspect = this.width / this.height;
+      this.camera = new THREE.OrthographicCamera(
+        aspect > 1 ? -aspect : -1,
+        aspect > 1 ? aspect : 1,
+        aspect > 1 ? 1 : 1 / aspect,
+        aspect > 1 ? -1 : -1 / aspect,
+        0.1,
+        100
+      );
+      this.camera.position.set(0, 0, 5);
+
+      // 3D Lighting identical to pushmatrix/tearable for realistic cloth fold shading
+      const ambient = new THREE.AmbientLight(0xffffff, 1.5);
+      this.scene.add(ambient);
+
+      const dirLight1 = new THREE.DirectionalLight(0xffffff, 0.4);
+      dirLight1.position.set(0.3, 0.3, 5);
+      this.scene.add(dirLight1);
+
+      const dirLight2 = new THREE.DirectionalLight(0xffffff, 1.2);
+      dirLight2.position.set(0, 5, 4);
+      this.scene.add(dirLight2);
+
+      this.worker = new Worker('/cloth.worker.js');
+      this.worker.onmessage = (e) => this.onWorkerMessage(e.data);
+
+      this.initClothMesh();
       this.bindEvents();
+      this.lastFrameTime = performance.now();
+      this.rafId = requestAnimationFrame(this.animate);
     }
 
-    init() {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      const dpr = window.devicePixelRatio || 1;
+    initClothMesh() {
+      this.width = window.innerWidth;
+      this.height = window.innerHeight;
+      const aspect = this.width / this.height;
 
-      this.canvas.width = width * dpr;
-      this.canvas.height = height * dpr;
-      this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      this.camera.left = aspect > 1 ? -aspect : -1;
+      this.camera.right = aspect > 1 ? aspect : 1;
+      this.camera.top = aspect > 1 ? 1 : 1 / aspect;
+      this.camera.bottom = aspect > 1 ? -1 : -1 / aspect;
+      this.camera.updateProjectionMatrix();
+      this.renderer.setSize(this.width, this.height, false);
 
-      // Render the complete high-res vintage sourdough codex & fun facts into buffer
-      this.renderParchmentBuffer(width, height);
+      this.worldWidth = aspect > 1 ? aspect * 2 : 2;
+      this.worldHeight = aspect > 1 ? 2 : 2 / aspect;
 
-      // Set grid resolution based on aspect ratio
-      this.cols = Math.max(22, Math.min(36, Math.floor(width / 50)));
-      this.rows = Math.max(16, Math.min(26, Math.floor(height / 50)));
+      const segX = CLOTH_CFG.gridWidth;
+      const segY = CLOTH_CFG.gridHeight;
+      const count = (segX + 1) * (segY + 1);
+      this.particleCount = count;
 
-      const spacingX = width / (this.cols - 1);
-      const spacingY = height / (this.rows - 1);
+      this.posArray = new Float32Array(count * 3);
+      this.normalsArray = new Float32Array(count * 3);
+      const uvs = new Float32Array(count * 2);
+      const colors = new Float32Array(count * 3);
+      colors.fill(1);
 
-      this.points = [];
-      this.constraints = [];
-      this.hConstraints = [];
-      this.vConstraints = [];
+      const dx = this.worldWidth / segX;
+      const dy = this.worldHeight / segY;
+      const halfW = this.worldWidth / 2;
+      const halfH = this.worldHeight / 2;
+      const stride = segX + 1;
 
-      // Generate grid points across entire screen (pin top row)
-      for (let r = 0; r < this.rows; r++) {
-        for (let c = 0; c < this.cols; c++) {
-          const x = c * spacingX;
-          const y = r * spacingY;
-          const pinned = r === 0;
-          this.points.push(new Point(x, y, x, y, pinned));
+      for (let r = 0; r <= segY; r++) {
+        for (let c = 0; c <= segX; c++) {
+          const idx = r * stride + c;
+          const pIdx = idx * 3;
+          this.posArray[pIdx] = c * dx - halfW;
+          this.posArray[pIdx + 1] = halfH - r * dy;
+          this.posArray[pIdx + 2] = 0;
+
+          this.normalsArray[pIdx] = 0;
+          this.normalsArray[pIdx + 1] = 0;
+          this.normalsArray[pIdx + 2] = 1;
+
+          const uIdx = idx * 2;
+          uvs[uIdx] = c / segX;
+          uvs[uIdx + 1] = 1 - r / segY;
         }
       }
 
-      // Generate horizontal structural constraints
-      for (let r = 0; r < this.rows; r++) {
-        this.hConstraints[r] = [];
-        for (let c = 0; c < this.cols - 1; c++) {
-          const idx = r * this.cols + c;
-          const cons = new Constraint(this.points[idx], this.points[idx + 1]);
-          this.constraints.push(cons);
-          this.hConstraints[r][c] = cons;
+      this.indexArray = new Uint32Array(segX * segY * 6);
+      let ptr = 0;
+      for (let r = 0; r < segY; r++) {
+        for (let c = 0; c < segX; c++) {
+          const i0 = c + stride * r;
+          const i1 = c + stride * (r + 1);
+          const i2 = c + 1 + stride * (r + 1);
+          const i3 = c + 1 + stride * r;
+          this.indexArray[ptr++] = i0;
+          this.indexArray[ptr++] = i1;
+          this.indexArray[ptr++] = i3;
+          this.indexArray[ptr++] = i1;
+          this.indexArray[ptr++] = i2;
+          this.indexArray[ptr++] = i3;
+        }
+      }
+      this.drawCount = ptr;
+
+      if (this.mesh) {
+        this.scene.remove(this.mesh);
+        this.geometry.dispose();
+        this.material.dispose();
+        if (this.parchmentTexture) this.parchmentTexture.dispose();
+      }
+
+      this.geometry = new THREE.BufferGeometry();
+      const posAttr = new THREE.BufferAttribute(this.posArray, 3);
+      posAttr.setUsage(THREE.DynamicDrawUsage);
+      const normAttr = new THREE.BufferAttribute(this.normalsArray, 3);
+      normAttr.setUsage(THREE.DynamicDrawUsage);
+      const indexAttr = new THREE.BufferAttribute(this.indexArray, 1);
+      indexAttr.setUsage(THREE.DynamicDrawUsage);
+
+      this.geometry.setAttribute('position', posAttr);
+      this.geometry.setAttribute('normal', normAttr);
+      this.geometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+      this.geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+      this.geometry.setIndex(indexAttr);
+      this.geometry.setDrawRange(0, this.drawCount);
+
+      const texCanvas = this.createParchmentCanvas(this.width, this.height);
+      this.parchmentTexture = new THREE.CanvasTexture(texCanvas);
+      this.parchmentTexture.colorSpace = THREE.SRGBColorSpace;
+      this.parchmentTexture.minFilter = THREE.LinearFilter;
+      this.parchmentTexture.magFilter = THREE.LinearFilter;
+
+      this.material = isTouch
+        ? new THREE.MeshLambertMaterial({
+            map: this.parchmentTexture,
+            color: 0xffffff,
+            side: THREE.DoubleSide,
+            vertexColors: true,
+          })
+        : new THREE.MeshStandardMaterial({
+            map: this.parchmentTexture,
+            color: 0xffffff,
+            side: THREE.DoubleSide,
+            roughness: 0.92,
+            metalness: 0.08,
+            vertexColors: true,
+          });
+
+      this.mesh = new THREE.Mesh(this.geometry, this.material);
+      this.scene.add(this.mesh);
+
+      this.instanceId++;
+      this.inFlight = false;
+      this.transitBuffer = null;
+      this.brokenCount = 0;
+
+      this.worker.postMessage({
+        type: 'init',
+        id: this.instanceId,
+        width: this.worldWidth,
+        height: this.worldHeight,
+        segX,
+        segY,
+        tearThreshold: CLOTH_CFG.tearThreshold,
+        stiffness: CLOTH_CFG.stiffness,
+      });
+
+      this.renderer.render(this.scene, this.camera);
+    }
+
+    onWorkerMessage(msg: any) {
+      if (this.destroyed || msg.id !== this.instanceId) return;
+
+      if (msg.type === 'ready') {
+        this.constraintCount = msg.constraintCount || 1;
+        return;
+      }
+
+      if (msg.type === 'stepResult') {
+        const nextPos = new Float32Array(msg.buffer);
+        if (nextPos.length === this.posArray.length) {
+          this.posArray.set(nextPos);
+          (this.geometry.attributes.position as THREE.BufferAttribute).needsUpdate = true;
+        }
+        this.transitBuffer = msg.buffer;
+
+        if (msg.normals) {
+          const nextNorm = new Float32Array(msg.normals);
+          if (nextNorm.length === this.normalsArray.length) {
+            this.normalsArray.set(nextNorm);
+            (this.geometry.attributes.normal as THREE.BufferAttribute).needsUpdate = true;
+          }
+        }
+
+        if (msg.index) {
+          const nextIdx = new Uint32Array(msg.index);
+          const count = Math.min(nextIdx.length, this.indexArray.length);
+          this.indexArray.set(nextIdx.subarray(0, count));
+          this.drawCount = count;
+          this.geometry.setDrawRange(0, count);
+          if (this.geometry.index) {
+            this.geometry.index.needsUpdate = true;
+          }
+        }
+
+        this.brokenCount = msg.brokenCount || 0;
+        this.inFlight = false;
+
+        // Check tear percentage threshold (identical to pushmatrix/tearable z4 threshold)
+        const tearPct = (this.brokenCount / this.constraintCount) * 100;
+        if (!this.dropped && tearPct >= CLOTH_CFG.dropTearPercent) {
+          this.triggerDrop();
+        }
+      }
+    }
+
+    triggerDrop() {
+      if (this.dropped) return;
+      this.dropped = true;
+      this.worker.postMessage({ type: 'drop', id: this.instanceId });
+      if (this.onDropped) {
+        this.onDropped();
+      }
+    }
+
+    screenToWorld(clientX: number, clientY: number) {
+      const ndcX = (clientX / this.width) * 2 - 1;
+      const ndcY = -(clientY / this.height) * 2 + 1;
+      return {
+        x: ndcX * (this.worldWidth * 0.5),
+        y: ndcY * (this.worldHeight * 0.5),
+        z: 0,
+      };
+    }
+
+    allocSlot(): number {
+      for (let i = 0; i < this.slotUsed.length; i++) {
+        if (!this.slotUsed[i]) {
+          this.slotUsed[i] = true;
+          return i;
+        }
+      }
+      return -1;
+    }
+
+    freeSlot(slot: number) {
+      if (slot >= 0 && slot < this.slotUsed.length) {
+        this.slotUsed[slot] = false;
+      }
+    }
+
+    bindEvents() {
+      this.canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+      this.canvas.addEventListener('mousedown', (e) => {
+        if (this.dropped) return;
+        e.preventDefault();
+        this.hasInteracted = true;
+        this.isDragging = true;
+        this.dragButton = e.button ?? 0;
+
+        const pt = this.screenToWorld(e.clientX, e.clientY);
+        this.curWorld = { ...pt };
+        this.prevWorld = { ...pt };
+
+        if (this.dragButton === 0) {
+          this.worker.postMessage({
+            type: 'grab',
+            id: this.instanceId,
+            slot: 0,
+            x: pt.x,
+            y: pt.y,
+            z: pt.z,
+            radius: CLOTH_CFG.mouseRadius,
+          });
+        }
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!this.isDragging || this.dropped) return;
+        this.prevWorld = { ...this.curWorld };
+        this.curWorld = this.screenToWorld(e.clientX, e.clientY);
+
+        if (this.dragButton === 2) {
+          this.worker.postMessage({
+            type: 'cut',
+            id: this.instanceId,
+            mx: this.curWorld.x,
+            my: this.curWorld.y,
+            mz: this.curWorld.z,
+            px: this.prevWorld.x,
+            py: this.prevWorld.y,
+            radius: CLOTH_CFG.cutRadius,
+          });
+        } else {
+          this.worker.postMessage({
+            type: 'moveGrab',
+            id: this.instanceId,
+            slot: 0,
+            x: this.curWorld.x,
+            y: this.curWorld.y,
+            strength: CLOTH_CFG.mouseStrength,
+          });
+        }
+      });
+
+      const endMouseDrag = () => {
+        if (!this.isDragging) return;
+        this.isDragging = false;
+        this.worker.postMessage({
+          type: 'releaseGrab',
+          id: this.instanceId,
+        });
+      };
+
+      window.addEventListener('mouseup', endMouseDrag);
+      window.addEventListener('mouseleave', endMouseDrag);
+
+      this.canvas.addEventListener(
+        'touchstart',
+        (e) => {
+          if (this.dropped) return;
+          e.preventDefault();
+          this.hasInteracted = true;
+          for (let i = 0; i < e.changedTouches.length; i++) {
+            const t = e.changedTouches[i];
+            if (this.activeTouches.has(t.identifier)) continue;
+            const slot = this.allocSlot();
+            if (slot < 0) continue;
+            const pt = this.screenToWorld(t.clientX, t.clientY);
+            this.activeTouches.set(t.identifier, { slot, ...pt });
+            this.worker.postMessage({
+              type: 'grab',
+              id: this.instanceId,
+              slot,
+              x: pt.x,
+              y: pt.y,
+              z: pt.z,
+              radius: CLOTH_CFG.mouseRadius,
+            });
+          }
+        },
+        { passive: false }
+      );
+
+      window.addEventListener(
+        'touchmove',
+        (e) => {
+          if (this.dropped || this.activeTouches.size === 0) return;
+          e.preventDefault();
+          for (let i = 0; i < e.changedTouches.length; i++) {
+            const t = e.changedTouches[i];
+            const info = this.activeTouches.get(t.identifier);
+            if (!info) continue;
+            const pt = this.screenToWorld(t.clientX, t.clientY);
+            info.x = pt.x;
+            info.y = pt.y;
+            info.z = pt.z;
+            this.worker.postMessage({
+              type: 'moveGrab',
+              id: this.instanceId,
+              slot: info.slot,
+              x: pt.x,
+              y: pt.y,
+              strength: CLOTH_CFG.mouseStrength,
+            });
+          }
+        },
+        { passive: false }
+      );
+
+      const endTouches = (e: TouchEvent) => {
+        for (let i = 0; i < e.changedTouches.length; i++) {
+          const t = e.changedTouches[i];
+          const info = this.activeTouches.get(t.identifier);
+          if (info) {
+            this.activeTouches.delete(t.identifier);
+            this.freeSlot(info.slot);
+            this.worker.postMessage({
+              type: 'releaseGrab',
+              id: this.instanceId,
+              slot: info.slot,
+            });
+          }
+        }
+      };
+
+      window.addEventListener('touchend', endTouches);
+      window.addEventListener('touchcancel', endTouches);
+
+      let resizeTimer: any = null;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+          if (!this.dropped && !this.destroyed) {
+            this.initClothMesh();
+          }
+        }, 150);
+      });
+    }
+
+    animate = (now: number) => {
+      if (this.destroyed) {
+        this.rafId = null;
+        return;
+      }
+
+      const dtSec = Math.min(0.05, Math.max(0.001, (now - this.lastFrameTime) / 1000));
+      this.lastFrameTime = now;
+
+      const isIdle = !this.hasInteracted && !this.dropped && this.brokenCount === 0 && !this.isDragging;
+      if (!isIdle && !this.inFlight) {
+        if (!this.dropped && this.isDragging && this.dragButton === 0) {
+          this.worker.postMessage({
+            type: 'moveGrab',
+            id: this.instanceId,
+            slot: 0,
+            x: this.curWorld.x,
+            y: this.curWorld.y,
+            strength: CLOTH_CFG.mouseStrength,
+          });
+        }
+
+        if (!this.dropped && this.activeTouches.size > 0) {
+          for (const [, info] of this.activeTouches) {
+            this.worker.postMessage({
+              type: 'moveGrab',
+              id: this.instanceId,
+              slot: info.slot,
+              x: info.x,
+              y: info.y,
+              strength: CLOTH_CFG.mouseStrength,
+            });
+          }
+        }
+
+        const timeScale = Math.min(3, Math.max(0.5, dtSec * 60));
+        const gravMult = this.dropped ? 3 : this.brokenCount > 0 ? 2.5 : 1;
+        const gFactor = (gravMult * timeScale) / CLOTH_CFG.subSteps;
+        const gx = CLOTH_CFG.gravity.x * gFactor;
+        const gy = CLOTH_CFG.gravity.y * gFactor;
+        const gz = CLOTH_CFG.gravity.z * gFactor;
+
+        this.inFlight = true;
+        const transferBuf = this.transitBuffer;
+        this.transitBuffer = null;
+
+        if (transferBuf) {
+          this.worker.postMessage(
+            {
+              type: 'step',
+              id: this.instanceId,
+              gx,
+              gy,
+              gz,
+              damping: CLOTH_CFG.damping,
+              iterations: CLOTH_CFG.constraintIterations,
+              subSteps: CLOTH_CFG.subSteps,
+              buffer: transferBuf,
+            },
+            [transferBuf]
+          );
+        } else {
+          this.worker.postMessage({
+            type: 'step',
+            id: this.instanceId,
+            gx,
+            gy,
+            gz,
+            damping: CLOTH_CFG.damping,
+            iterations: CLOTH_CFG.constraintIterations,
+            subSteps: CLOTH_CFG.subSteps,
+          });
         }
       }
 
-      // Generate vertical structural constraints
-      for (let r = 0; r < this.rows - 1; r++) {
-        this.vConstraints[r] = [];
-        for (let c = 0; c < this.cols; c++) {
-          const idx = r * this.cols + c;
-          const cons = new Constraint(this.points[idx], this.points[idx + this.cols]);
-          this.constraints.push(cons);
-          this.vConstraints[r][c] = cons;
-        }
-      }
+      this.renderer.render(this.scene, this.camera);
+      this.rafId = requestAnimationFrame(this.animate);
+    };
 
-      this.initialConstraintCount = this.constraints.length;
-      this.hasTorn = false;
-      this.settleFrames = 0;
-      this.wakeUp();
-    }
-
-    wakeUp() {
-      if (this.isStopped) return;
-      if (this.rafId === null) {
-        this.rafId = requestAnimationFrame(this.animate);
-      }
-    }
-
-    stop() {
-      this.isStopped = true;
+    destroy() {
+      if (this.destroyed) return;
+      this.destroyed = true;
       if (this.rafId !== null) {
         cancelAnimationFrame(this.rafId);
         this.rafId = null;
       }
+      this.worker.postMessage({ type: 'dispose', id: this.instanceId });
+      this.worker.terminate();
+      this.geometry?.dispose();
+      this.material?.dispose();
+      this.parchmentTexture?.dispose();
+      this.renderer.dispose();
     }
 
-    // Render the authentic 1924 Sourdough Codex and Fun Facts document to the buffer
-    renderParchmentBuffer(width: number, height: number) {
-      this.parchmentBuffer.width = width;
-      this.parchmentBuffer.height = height;
-      const ctx = this.bufferCtx;
+    // Render the authentic 1924 Sourdough Codex and Fun Facts document to an offscreen canvas
+    createParchmentCanvas(width: number, height: number): HTMLCanvasElement {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const canvas = document.createElement('canvas');
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      const ctx = canvas.getContext('2d')!;
+      ctx.scale(dpr, dpr);
 
       // 1. Aged Warm Sourdough Parchment Background
       const bgGrad = ctx.createLinearGradient(0, 0, width, height);
@@ -329,7 +713,7 @@ const { redirectUrl = '/dashboard', class: className = '' } = Astro.props;
 
       // 2. Micro paper grain & fibers
       ctx.fillStyle = 'rgba(120, 80, 40, 0.035)';
-      for (let i = 0; i < 6000; i++) {
+      for (let i = 0; i < 3500; i++) {
         ctx.fillRect(Math.random() * width, Math.random() * height, 2, 2);
       }
 
@@ -453,14 +837,12 @@ const { redirectUrl = '/dashboard', class: className = '' } = Astro.props;
         funFacts.forEach((fact, i) => {
           const colX = cardMargin + 10 + i * colWidth;
 
-          // Card Background
           ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
           ctx.strokeStyle = '#c59b27';
           ctx.lineWidth = 1.2;
           ctx.fillRect(colX + 6, contentTop, colWidth - 12, cardH);
           ctx.strokeRect(colX + 6, contentTop, colWidth - 12, cardH);
 
-          // Fact Header
           ctx.fillStyle = '#8a252c';
           ctx.font = '22px serif';
           ctx.textAlign = 'center';
@@ -474,14 +856,12 @@ const { redirectUrl = '/dashboard', class: className = '' } = Astro.props;
           ctx.font = 'bold 9px monospace';
           ctx.fillText(fact.sub, colX + colWidth / 2, contentTop + 78);
 
-          // Body text wrapped
           ctx.fillStyle = '#2c1810';
           ctx.font = '12px/1.45 Georgia, serif';
           ctx.textAlign = 'left';
           this.wrapText(ctx, fact.body, colX + 18, contentTop + 102, colWidth - 36, 17);
         });
       } else {
-        // Narrow/Tablet viewport: 2 top facts stacked with proportional height
         const cardH = Math.min(125, Math.floor((availableHeight - 80) / 2));
         funFacts.slice(0, 2).forEach((fact, i) => {
           const rowY = contentTop + i * (cardH + 8);
@@ -517,7 +897,7 @@ const { redirectUrl = '/dashboard', class: className = '' } = Astro.props;
         ctx.fillStyle = '#8a252c';
         ctx.font = `bold ${isVeryNarrow ? 10 : 12}px Georgia, serif`;
         ctx.textAlign = 'center';
-        ctx.fillText("📜 THE BAKER'S SECRET MAIN NOTE", width / 2, noteY + 22);
+        ctx.fillText("📜 THE BAKER'S SECRET MAIN NOTE (GRAB & PULL TO TEAR)", width / 2, noteY + 22);
 
         ctx.fillStyle = '#1c0e08';
         ctx.font = `italic ${isVeryNarrow ? 10 : 12}px Georgia, serif`;
@@ -538,7 +918,6 @@ const { redirectUrl = '/dashboard', class: className = '' } = Astro.props;
       const sealX = width - margin - (isVeryNarrow ? 40 : 65);
       const sealY = height - margin - (isVeryNarrow ? 45 : 65);
 
-      // Ribbon tails
       ctx.fillStyle = '#a82c35';
       ctx.beginPath();
       ctx.moveTo(sealX - 12 * sealScale, sealY + 15 * sealScale);
@@ -548,7 +927,6 @@ const { redirectUrl = '/dashboard', class: className = '' } = Astro.props;
       ctx.lineTo(sealX - 4 * sealScale, sealY + 15 * sealScale);
       ctx.fill();
 
-      // Wax Seal
       const waxGrad = ctx.createRadialGradient(sealX - 8, sealY - 8, 4, sealX, sealY, sealR);
       waxGrad.addColorStop(0, '#e53935');
       waxGrad.addColorStop(0.7, '#b71c1c');
@@ -589,9 +967,10 @@ const { redirectUrl = '/dashboard', class: className = '' } = Astro.props;
       ctx.fillText('VERIFIED TRADITIONAL', 0, -3 * stampScale);
       ctx.fillText('★ S.T.G. SPECIALITÀ ★', 0, 10 * stampScale);
       ctx.restore();
+
+      return canvas;
     }
 
-    // Helper text wrapper
     wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, lineHeight: number) {
       const words = text.split(' ');
       let line = '';
@@ -610,345 +989,6 @@ const { redirectUrl = '/dashboard', class: className = '' } = Astro.props;
       }
       ctx.fillText(line, x, curY);
     }
-
-    // Distance from point to line segment
-    distToSegment(px: number, py: number, x1: number, y1: number, x2: number, y2: number): number {
-      const l2 = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1);
-      if (l2 === 0) return Math.hypot(px - x1, py - y1);
-      let t = ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / l2;
-      t = Math.max(0, Math.min(1, t));
-      return Math.hypot(px - (x1 + t * (x2 - x1)), py - (y1 + t * (y2 - y1)));
-    }
-
-    bindEvents() {
-      const getPos = (e: MouseEvent | Touch) => {
-        return { x: e.clientX, y: e.clientY };
-      };
-
-      const onStart = (pos: { x: number; y: number }) => {
-        this.isDragging = true;
-        this.mouse.x = pos.x;
-        this.mouse.y = pos.y;
-        this.mouse.px = pos.x;
-        this.mouse.py = pos.y;
-        this.wakeUp();
-        this.sliceCloth();
-      };
-
-      const onMove = (pos: { x: number; y: number }) => {
-        this.mouse.px = this.mouse.x;
-        this.mouse.py = this.mouse.y;
-        this.mouse.x = pos.x;
-        this.mouse.y = pos.y;
-
-        if (this.isDragging) {
-          this.sliceCloth();
-        }
-      };
-
-      const onEnd = () => {
-        this.isDragging = false;
-      };
-
-      this.canvas.addEventListener('mousedown', (e) => onStart(getPos(e)));
-      window.addEventListener('mousemove', (e) => onMove(getPos(e)));
-      window.addEventListener('mouseup', onEnd);
-
-      this.canvas.addEventListener('touchstart', (e) => {
-        if (e.touches.length > 0) onStart(getPos(e.touches[0]));
-      }, { passive: true });
-
-      window.addEventListener('touchmove', (e) => {
-        if (e.touches.length > 0) onMove(getPos(e.touches[0]));
-      }, { passive: true });
-
-      window.addEventListener('touchend', onEnd);
-
-      this.canvas.addEventListener('dblclick', () => {
-        this.zipRip();
-      });
-
-      let resizeTimeout: any = null;
-      window.addEventListener('resize', () => {
-        clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(() => {
-          if (!this.isDropped) {
-            this.init();
-          }
-        }, 100);
-      });
-
-      window.addEventListener('orientationchange', () => {
-        if (!this.isDropped) {
-          setTimeout(() => this.init(), 150);
-        }
-      });
-    }
-
-    // Slices constraints intersected by mouse drag
-    sliceCloth() {
-      if (this.isDropped) return;
-
-      const x1 = this.mouse.px;
-      const y1 = this.mouse.py;
-      const x2 = this.mouse.x;
-      const y2 = this.mouse.y;
-      let toreSomething = false;
-
-      for (const c of this.constraints) {
-        if (c.broken) continue;
-
-        const midX = (c.p1.x + c.p2.x) * 0.5;
-        const midY = (c.p1.y + c.p2.y) * 0.5;
-        const dist = this.distToSegment(midX, midY, x1, y1, x2, y2);
-
-        if (dist < 55) {
-          c.broken = true;
-          toreSomething = true;
-          this.emitSparks(midX, midY);
-        }
-      }
-
-      if (toreSomething) {
-        this.hasTorn = true;
-        this.wakeUp();
-        this.checkTearProgress();
-      }
-    }
-
-    emitSparks(x: number, y: number) {
-      const colors = ['#f39c12', '#f5c542', '#ffd700', '#faf0e6', '#e0c8a0'];
-      for (let i = 0; i < 4; i++) {
-        this.sparks.push({
-          x,
-          y,
-          vx: (Math.random() - 0.5) * 8,
-          vy: (Math.random() - 0.5) * 8 - 3,
-          color: colors[Math.floor(Math.random() * colors.length)],
-          life: 1.0,
-        });
-      }
-    }
-
-    // Programmatic zipper rip down the middle
-    zipRip() {
-      if (this.isDropped) return;
-      this.hasTorn = true;
-      this.wakeUp();
-
-      const midCol = Math.floor(this.cols / 2);
-      let step = 0;
-
-      const interval = setInterval(() => {
-        if (step >= this.rows) {
-          clearInterval(interval);
-          this.dropCloth();
-          return;
-        }
-
-        // Sever constraints down the center channel
-        for (let colOffset = -1; colOffset <= 1; colOffset++) {
-          const c = midCol + colOffset;
-          if (c < 0 || c >= this.cols) continue;
-          const idx = step * this.cols + c;
-          for (const k of this.constraints) {
-            if (k.p1 === this.points[idx] || k.p2 === this.points[idx]) {
-              k.broken = true;
-              this.emitSparks(this.points[idx].x, this.points[idx].y);
-            }
-          }
-        }
-
-        this.checkTearProgress();
-        step++;
-      }, 20);
-    }
-
-    checkTearProgress() {
-      const brokenCount = this.constraints.filter((c) => c.broken).length;
-      const percent = Math.min(100, Math.round((brokenCount / (this.initialConstraintCount * 0.28)) * 100));
-
-      if (this.onTearProgress) {
-        this.onTearProgress(percent);
-      }
-
-      if (percent >= 55 && !this.isDropped) {
-        this.dropCloth();
-      }
-    }
-
-    dropCloth() {
-      if (this.isDropped) return;
-      this.isDropped = true;
-      this.gravity = 0.95;
-
-      // Unpin all points so cloth drops away with gravity and fluttering impulse
-      for (const p of this.points) {
-        p.pinned = false;
-        p.py -= Math.random() * 5;
-        p.px += (Math.random() - 0.5) * 8;
-      }
-      if (this.onDropped) {
-        this.onDropped();
-      }
-    }
-
-    // High-performance affine texture triangle mapper for HTML5 2D Canvas
-    drawTexturedTriangle(
-      ctx: CanvasRenderingContext2D,
-      img: HTMLCanvasElement,
-      x0: number, y0: number,
-      x1: number, y1: number,
-      x2: number, y2: number,
-      u0: number, v0: number,
-      u1: number, v1: number,
-      u2: number, v2: number
-    ) {
-      const delta = u0 * (v1 - v2) + u1 * (v2 - v0) + u2 * (v0 - v1);
-      if (Math.abs(delta) < 0.001) return;
-
-      const a = (x0 * (v1 - v2) + x1 * (v2 - v0) + x2 * (v0 - v1)) / delta;
-      const b = (y0 * (v1 - v2) + y1 * (v2 - v0) + y2 * (v0 - v1)) / delta;
-      const c = (x0 * (u2 - u1) + x1 * (u0 - u2) + x2 * (u1 - u0)) / delta;
-      const d = (y0 * (u2 - u1) + y1 * (u0 - u2) + y2 * (u1 - u0)) / delta;
-      const e = (x0 * (u1 * v2 - u2 * v1) + x1 * (u2 * v0 - u0 * v2) + x2 * (u0 * v1 - u1 * v0)) / delta;
-      const f = (y0 * (u1 * v2 - u2 * v1) + y1 * (u2 * v0 - u0 * v2) + y2 * (u0 * v1 - u1 * v0)) / delta;
-
-      // Expand clip boundary slightly from centroid to guarantee seamless triangle edges without gaps
-      const height = window.innerHeight;
-      if (y0 > height + 20 && y1 > height + 20 && y2 > height + 20) return;
-
-      const cx = (x0 + x1 + x2) / 3;
-      const cy = (y0 + y1 + y2) / 3;
-
-      const expand = (x: number, y: number) => {
-        const dx = x - cx;
-        const dy = y - cy;
-        const len = Math.hypot(dx, dy);
-        if (len < 0.001) return { x, y };
-        return {
-          x: x + (dx / len) * 0.75,
-          y: y + (dy / len) * 0.75,
-        };
-      };
-
-      const e0 = expand(x0, y0);
-      const e1 = expand(x1, y1);
-      const e2 = expand(x2, y2);
-
-      ctx.save();
-      ctx.beginPath();
-      ctx.moveTo(e0.x, e0.y);
-      ctx.lineTo(e1.x, e1.y);
-      ctx.lineTo(e2.x, e2.y);
-      ctx.closePath();
-      ctx.clip();
-
-      ctx.transform(a, b, c, d, e, f);
-      ctx.drawImage(img, 0, 0);
-      ctx.restore();
-    }
-
-    animate = () => {
-      if (this.isStopped) {
-        this.rafId = null;
-        return;
-      }
-
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-
-      this.ctx.clearRect(0, 0, width, height);
-
-      // Physics update: point positions & relaxation
-      for (const p of this.points) {
-        p.update(this.gravity, this.damping);
-      }
-
-      for (let iter = 0; iter < 4; iter++) {
-        for (const c of this.constraints) {
-          c.resolve();
-        }
-      }
-
-      // Render cloth mesh as genuine torn parchment textured triangles
-      this.renderCloth(width, height);
-
-      // Render sparks
-      for (let i = this.sparks.length - 1; i >= 0; i--) {
-        const s = this.sparks[i];
-        s.x += s.vx;
-        s.y += s.vy;
-        s.life -= 0.04;
-        if (s.life <= 0) {
-          this.sparks.splice(i, 1);
-        } else {
-          this.ctx.fillStyle = s.color;
-          this.ctx.globalAlpha = s.life;
-          this.ctx.beginPath();
-          this.ctx.arc(s.x, s.y, 2.5, 0, Math.PI * 2);
-          this.ctx.fill();
-          this.ctx.globalAlpha = 1;
-        }
-      }
-
-      this.settleFrames++;
-      // Pause animation loop when untouched parchment has settled so reading uses 0% CPU
-      if (!this.hasTorn && !this.isDragging && !this.isDropped && this.sparks.length === 0 && this.settleFrames > 45) {
-        this.rafId = null;
-        return;
-      }
-
-      this.rafId = requestAnimationFrame(this.animate);
-    };
-
-    // Renders the genuine torn parchment document using affine texture mapping on intact triangles
-    renderCloth(width: number, height: number) {
-      for (let r = 0; r < this.rows - 1; r++) {
-        for (let c = 0; c < this.cols - 1; c++) {
-          const idx = r * this.cols + c;
-          const p1 = this.points[idx];                  // Top-Left (r, c)
-          const p2 = this.points[idx + 1];              // Top-Right (r, c + 1)
-          const p3 = this.points[idx + this.cols + 1];  // Bottom-Right (r + 1, c + 1)
-          const p4 = this.points[idx + this.cols];      // Bottom-Left (r + 1, c)
-
-          const cTop = this.hConstraints[r]?.[c];
-          const cBottom = this.hConstraints[r + 1]?.[c];
-          const cLeft = this.vConstraints[r]?.[c];
-          const cRight = this.vConstraints[r]?.[c + 1];
-
-          // Triangle 1: Top-Left half (p1, p2, p4)
-          // Intact if its primary structural boundaries are unbroken
-          if (!cTop?.broken && !cLeft?.broken) {
-            this.drawTexturedTriangle(
-              this.ctx,
-              this.parchmentBuffer,
-              p1.x, p1.y,
-              p2.x, p2.y,
-              p4.x, p4.y,
-              p1.u, p1.v,
-              p2.u, p2.v,
-              p4.u, p4.v
-            );
-          }
-
-          // Triangle 2: Bottom-Right half (p2, p3, p4)
-          // Intact if its primary structural boundaries are unbroken
-          if (!cRight?.broken && !cBottom?.broken) {
-            this.drawTexturedTriangle(
-              this.ctx,
-              this.parchmentBuffer,
-              p2.x, p2.y,
-              p3.x, p3.y,
-              p4.x, p4.y,
-              p2.u, p2.v,
-              p3.u, p3.v,
-              p4.u, p4.v
-            );
-          }
-        }
-      }
-    }
   }
 
   // Initialize Component
@@ -962,20 +1002,21 @@ const { redirectUrl = '/dashboard', class: className = '' } = Astro.props;
 
     if (!canvas) return;
 
-    const cloth = new FullPageTearableCloth(canvas);
+    const cloth = new WebGLTearableCloth(canvas);
 
     cloth.onDropped = () => {
-      // Fade canvas out smoothly so terminal is crisp and interactive, then halt physics loop
+      // Allow clicking/typing into the underlying terminal immediately as the 3D cloth drops
+      canvas.style.pointerEvents = 'none';
+      const userField = document.getElementById('tear-username');
+      if (userField) userField.focus();
+
       setTimeout(() => {
-        canvas.style.transition = 'opacity 0.6s ease';
+        canvas.style.transition = 'opacity 0.5s ease';
         canvas.style.opacity = '0';
-        canvas.style.pointerEvents = 'none';
-        const userField = document.getElementById('tear-username');
-        if (userField) userField.focus();
         setTimeout(() => {
-          cloth.stop();
-        }, 650);
-      }, 1400);
+          cloth.destroy();
+        }, 550);
+      }, 3200);
     };
 
     // Handle AJAX Form Submission

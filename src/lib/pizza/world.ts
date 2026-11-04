@@ -50,8 +50,8 @@ export class PizzaWorld {
           (gltf) => {
             gltf.scene.traverse((c) => {
               if ((c as THREE.Mesh).isMesh) {
-                c.castShadow = true;
-                c.receiveShadow = true;
+                c.castShadow = false;
+                c.receiveShadow = false;
               }
             });
             resolve(gltf.scene);
@@ -77,6 +77,15 @@ export class PizzaWorld {
   public dirLight!: THREE.DirectionalLight;
   public pendantLights: THREE.PointLight[] = [];
   public fridgeLight!: THREE.PointLight;
+  public bookmarkIndicators = new Map<
+    string,
+    {
+      bulbMat: THREE.MeshStandardMaterial;
+      haloMat: THREE.MeshBasicMaterial;
+      hitbox: InteractiveHitbox;
+      hostLabel: string;
+    }
+  >();
 
   constructor(scene: THREE.Scene) {
     this.scene = scene;
@@ -142,26 +151,32 @@ export class PizzaWorld {
     const goldFilletMat = new THREE.MeshStandardMaterial({ color: 0xd4af37, metalness: 0.85, roughness: 0.3 });
     const wallFrames = [
       {
+        key: 'jellyfin',
         z: -3.8,
         tex: createWallArtBlueprintTexture(),
         title: '🎬 Jellyfin Cinema',
-        subtitle: 'jelly.mikey.host · Click to open',
+        hostLabel: 'jelly.mikey.host',
+        subtitle: 'jelly.mikey.host · ● ONLINE',
         color: '#00a4dc',
         url: 'https://jelly.mikey.host'
       },
       {
+        key: 'jellyseerr',
         z: -1.2,
         tex: createWallArtCertificateTexture(),
         title: '🍿 Jellyseerr Requests',
-        subtitle: 'jellyseerr.mikey.host · Click to open',
+        hostLabel: 'jellyseerr.mikey.host',
+        subtitle: 'jellyseerr.mikey.host · ● ONLINE',
         color: '#a855f7',
         url: 'https://jellyseerr.mikey.host'
       },
       {
+        key: 'tools',
         z: 1.4,
         tex: createWallArtPopArtTexture(),
         title: '🛠️ Pizzeria Web Tools',
-        subtitle: 'tools.mikey.host · Click to open',
+        hostLabel: 'tools.mikey.host',
+        subtitle: 'tools.mikey.host · ● ONLINE',
         color: '#10b981',
         url: 'https://tools.mikey.host'
       }
@@ -205,28 +220,54 @@ export class PizzaWorld {
       frameHitbox.position.set(7.75, 5.6, az);
       this.scene.add(frameHitbox);
 
-      this.hitboxes.push({
+      const hitboxEntry: InteractiveHitbox = {
         mesh: frameHitbox,
         title: frameCfg.title,
         subtitle: frameCfg.subtitle,
         color: frameCfg.color,
         url: frameCfg.url
-      });
+      };
+      this.hitboxes.push(hitboxEntry);
 
-      // Warm Brass Wall Sconce above artwork
+      // Warm Brass Wall Sconce above artwork (Status Indicator Light: Green = Online, Red = Offline)
       const sconceArm = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.3), new THREE.MeshStandardMaterial({ color: 0xc8a452, metalness: 0.8 }));
       sconceArm.rotation.z = Math.PI / 2;
       sconceArm.position.set(7.75, 7.0, az);
       this.scene.add(sconceArm);
 
-      const sconceBulb = new THREE.Mesh(new THREE.SphereGeometry(0.08, 12, 12), new THREE.MeshStandardMaterial({ color: 0xffe6b0, emissive: 0xffa500, emissiveIntensity: 1.2 }));
+      const bulbMat = new THREE.MeshStandardMaterial({
+        color: 0x66ffaa,
+        emissive: 0x00ff66,
+        emissiveIntensity: 2.2,
+        roughness: 0.15
+      });
+      const sconceBulb = new THREE.Mesh(new THREE.SphereGeometry(0.095, 14, 14), bulbMat);
       sconceBulb.position.set(7.62, 7.0, az);
       this.scene.add(sconceBulb);
 
-      const sconceLight = new THREE.PointLight(0xffb84d, 1.2, 4.5, 1.5);
-      sconceLight.position.set(7.5, 6.9, az);
-      this.scene.add(sconceLight);
+      // Soft glowing status halo around sconce bulb for clear visual readout
+      const haloMat = new THREE.MeshBasicMaterial({
+        color: 0x00ff66,
+        transparent: true,
+        opacity: 0.36,
+        depthWrite: false
+      });
+      const sconceHalo = new THREE.Mesh(new THREE.SphereGeometry(0.17, 12, 12), haloMat);
+      sconceHalo.position.set(7.62, 7.0, az);
+      this.scene.add(sconceHalo);
+
+      this.bookmarkIndicators.set(frameCfg.key, {
+        bulbMat,
+        haloMat,
+        hitbox: hitboxEntry,
+        hostLabel: frameCfg.hostLabel
+      });
     });
+
+    // Single consolidated warm gallery light for the 3 right-wall frames (saves 2 PBR PointLights)
+    const galleryLight = new THREE.PointLight(0xffb84d, 1.5, 8.5, 1.4);
+    galleryLight.position.set(7.2, 6.9, -1.2);
+    this.scene.add(galleryLight);
 
     // 2d. Front Wall (z = 8) - Storefront Windows & Entrance Doors
     const frontWall = new THREE.Mesh(new THREE.PlaneGeometry(16, 10), wallMat);
@@ -446,14 +487,8 @@ export class PizzaWorld {
       log.rotation.x = Math.PI / 2 + (idx % 2 === 0 ? 0.02 : -0.02);
       log.rotation.z = (Math.random() - 0.5) * 0.04;
       log.position.set(lx, ly, lz);
-      log.castShadow = true;
       ovenGroup.add(log);
     });
-
-    // Warm Accent Spotlight illuminating the firewood niche from the floor
-    const nicheLight = new THREE.PointLight(0xffecd0, 1.5, 4.2, 1.4);
-    nicheLight.position.set(0, 0.85, 2.6);
-    ovenGroup.add(nicheLight);
 
     // 2. Thick Circular Carrara Granite Hearth Ledge & Forward Staging Landing
     const hearthMat = new THREE.MeshStandardMaterial({
@@ -1642,11 +1677,6 @@ export class PizzaWorld {
     sconceHood.rotation.x = 0.35;
     codexGroup.add(sconceHood);
 
-    // Warm illumination pool on the manuscript
-    const codexLight = new THREE.PointLight(0xffdf9e, 1.4, 4.0, 1.8);
-    codexLight.position.set(0, 0.62, 0.35);
-    codexGroup.add(codexLight);
-
     // 4. Pulsing Emissive Warmth / Mysterious Halo
     this.animatedUpdaters.push((time) => {
       const pulse = 0.35 + Math.sin(time * 2.2) * 0.12;
@@ -1706,13 +1736,13 @@ export class PizzaWorld {
       );
       shade.position.set(x, 7.0, 2.0);
       this.scene.add(shade);
-
-      // Warm Point Light pool shining down on marble counter
-      const lampPoint = new THREE.PointLight(0xffb366, 1.25, 7.0, 1.5);
-      lampPoint.position.set(x, 6.7, 2.0);
-      this.scene.add(lampPoint);
-      this.pendantLights.push(lampPoint);
     });
+
+    // Single consolidated warm PointLight over the marble service counter (saves 2 PBR PointLights)
+    const counterLampPoint = new THREE.PointLight(0xffb366, 1.85, 10.5, 1.3);
+    counterLampPoint.position.set(0, 6.7, 2.0);
+    this.scene.add(counterLampPoint);
+    this.pendantLights.push(counterLampPoint);
 
     // 4. Vibrant "HOT SLICES" Neon Sign on Left Wall
     const neonSignGroup = new THREE.Group();
@@ -1820,6 +1850,26 @@ export class PizzaWorld {
     this.fridgeLedMaterial.needsUpdate = true;
   }
 
+  public updateBookmarkStatus(status: Record<string, boolean>) {
+    for (const [key, isOnline] of Object.entries(status)) {
+      const ind = this.bookmarkIndicators.get(key);
+      if (!ind) continue;
+      if (isOnline) {
+        ind.bulbMat.color.setHex(0x66ffaa);
+        ind.bulbMat.emissive.setHex(0x00ff66);
+        ind.bulbMat.emissiveIntensity = 2.2;
+        ind.haloMat.color.setHex(0x00ff66);
+        ind.hitbox.subtitle = `${ind.hostLabel} · ● ONLINE`;
+      } else {
+        ind.bulbMat.color.setHex(0xff8080);
+        ind.bulbMat.emissive.setHex(0xff1744);
+        ind.bulbMat.emissiveIntensity = 2.4;
+        ind.haloMat.color.setHex(0xff1744);
+        ind.hitbox.subtitle = `${ind.hostLabel} · ○ OFFLINE`;
+      }
+    }
+  }
+
   public setDarkMode(isDark: boolean) {
     if (this.ambientLight) {
       this.ambientLight.intensity = isDark ? 0.18 : 0.48;
@@ -1830,7 +1880,7 @@ export class PizzaWorld {
       this.dirLight.color.setHex(isDark ? 0x99b3ff : 0xffe2b8);
     }
     for (const lamp of this.pendantLights) {
-      lamp.intensity = isDark ? 0.72 : 1.25;
+      lamp.intensity = isDark ? 1.05 : 1.85;
     }
     if (this.fridgeLight) {
       this.fridgeLight.intensity = isDark ? 0.30 : 0.42;

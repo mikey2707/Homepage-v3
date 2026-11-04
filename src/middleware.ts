@@ -10,8 +10,9 @@ const publicApiRoutes = [
   '/api/auth/login',
   '/api/auth/logout',
   '/api/gateway',
-  // Public API route for the 3D diorama walk-in fridge station
+  // Public API routes for the 3D diorama walk-in fridge station & bookmark status lights
   '/api/truenas',
+  '/api/bookmarks-status',
 ];
 
 export const onRequest = defineMiddleware(async (context, next) => {

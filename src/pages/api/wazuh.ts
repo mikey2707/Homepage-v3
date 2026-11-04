@@ -133,26 +133,11 @@ export const GET: APIRoute = async () => {
 
   try {
     const npmAwkCmd = `awk '{
-      if ($1 ~ /^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$/) {
-        ip = $1; host = "default-ingress"; status = $9;
-        counts[ip]++; total++;
-        if (!(ip in topHost)) topHost[ip] = host;
-        lastStatus[ip] = status;
-      } else {
-        ip = ""; host = $9; status = $4;
-        for (i=1; i<=NF; i++) {
-          if ($i == "[Client" && $(i+1) ~ /^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+/) {
-            ip = $(i+1);
-            gsub(/\\]/, "", ip);
-            break;
-          }
-        }
-        if (ip != "") {
-          counts[ip]++; total++;
-          topHost[ip] = host;
-          lastStatus[ip] = status;
-        }
-      }
+      host = $3; ip = $4; status = $9;
+      sub(/:[0-9]+$/, "", host);
+      if (ip == "") next;
+      counts[ip]++; total++;
+      topHost[ip] = host; lastStatus[ip] = status;
     } END {
       u = 0;
       for (ip in counts) u++;
@@ -160,10 +145,10 @@ export const GET: APIRoute = async () => {
       for (ip in counts) {
         printf "IP|%d|%s|%s|%s\\n", counts[ip], ip, topHost[ip], lastStatus[ip];
       }
-    }' /data/logs/default-host_access.log /data/logs/proxy-host-*_access.log 2>/dev/null | sort -t"|" -k2,2nr | head -n 12`;
+    }' /data/nginx/logs/access.log 2>/dev/null | sort -t"|" -k2,2nr | head -n 12`;
 
     const [npmRaw, crowdsecRaw] = await Promise.all([
-      execInContainer(PORTAINER_URL, PORTAINER_API_KEY, 'nginx-proxy-manager', npmAwkCmd).catch(() => null),
+      execInContainer(PORTAINER_URL, PORTAINER_API_KEY, 'npmplus', npmAwkCmd).catch(() => null),
       execInContainer(
         PORTAINER_URL,
         PORTAINER_API_KEY,

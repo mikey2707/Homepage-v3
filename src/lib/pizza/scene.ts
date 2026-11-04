@@ -31,11 +31,14 @@ export class PizzaExperience {
       powerPreference: 'high-performance'
     });
     this.renderer.setSize(width, height, true);
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 0.92;
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    // All shadow-casting geometry and directional light are stationary — bake shadow map once instead of 60x/sec
+    this.renderer.shadowMap.autoUpdate = false;
+    this.renderer.shadowMap.needsUpdate = true;
 
     // 3. Camera Manager
     this.cameraManager = new PizzaCamera(this.canvas, width, height);
@@ -63,11 +66,18 @@ export class PizzaExperience {
 
     this.cameraManager.resize(width, height);
     this.renderer.setSize(width, height, true);
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+    this.renderer.shadowMap.needsUpdate = true;
   }
 
   private tick() {
     if (!this.isRunning) return;
+
+    if (document.hidden) {
+      this.clock.getDelta();
+      this.animationFrameId = requestAnimationFrame(this.tick);
+      return;
+    }
 
     const delta = this.clock.getDelta();
     const elapsedTime = this.clock.getElapsedTime();
