@@ -200,10 +200,9 @@ export function validateCredentials(username: string, password: string): boolean
 
   // Primary constant-time match
   const userMatches = timingSafeEqualStrings(cleanUser, validUsername);
-  const adminMatches = timingSafeEqualStrings(cleanUser, 'admin');
   const passMatches = timingSafeEqualStrings(cleanPass, validPassword);
 
-  if ((userMatches || adminMatches) && passMatches) {
+  if (userMatches && passMatches) {
     return true;
   }
 
